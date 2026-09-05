@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>AMS Manufacturing Cost Engineering Command Center</title>
+<meta name="description" content="TJ Jaiyen — a purpose-built cost-engineering command center for the Amazon Manufacturing Services Senior Manufacturing Cost Engineer role: should-cost/MHR simulator, variance waterfall, build-vs-buy/NPV analyzer, multi-site rollup. Illustrative data throughout.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0F1D'/%3E%3Cpath d='M6 22 L12 15 L18 18 L26 8' stroke='%2306B6D4' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --c-bg-primary:10 15 29; --c-bg-surface:15 21 38; --c-bg-card:30 41 59; --c-accent:6 182 212;
+    --c-text-primary:241 245 249; --c-text-secondary:148 163 184; --c-text-code:34 211 238;
+    --c-success:9 170 124; --c-warning:218 146 11; --c-danger:242 93 13;
+    --c-line:rgb(6 182 212 / .20); --c-amz:255 153 0;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --c-bg-primary:248 250 252; --c-bg-surface:255 255 255; --c-bg-card:255 255 255; --c-accent:14 116 144;
+      --c-text-primary:15 23 42; --c-text-secondary:71 85 105; --c-text-code:14 116 144;
+      --c-success:6 121 89; --c-warning:131 87 7; --c-danger:170 65 9;
+      --c-line:rgb(14 116 144 / .22); --c-amz:180 95 0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --c-bg-primary:10 15 29; --c-bg-surface:15 21 38; --c-bg-card:30 41 59; --c-accent:6 182 212;
+    --c-text-primary:241 245 249; --c-text-secondary:148 163 184; --c-text-code:34 211 238;
+    --c-success:9 170 124; --c-warning:218 146 11; --c-danger:242 93 13;
+    --c-line:rgb(6 182 212 / .20); --c-amz:255 153 0;
+  }
+  :root[data-theme="light"]{
+    --c-bg-primary:248 250 252; --c-bg-surface:255 255 255; --c-bg-card:255 255 255; --c-accent:14 116 144;
+    --c-text-primary:15 23 42; --c-text-secondary:71 85 105; --c-text-code:14 116 144;
+    --c-success:6 121 89; --c-warning:131 87 7; --c-danger:170 65 9;
+    --c-line:rgb(14 116 144 / .22); --c-amz:180 95 0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:rgb(var(--c-bg-primary));color:rgb(var(--c-text-primary));
+    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  code,.mono,.tabular{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  a{color:rgb(var(--c-accent))}
+  :focus-visible{outline:2px solid rgb(var(--c-accent));outline-offset:2px;border-radius:4px}
+  .skip-link{position:absolute;left:-999px;top:0;background:rgb(var(--c-accent));color:#04141a;padding:8px 14px;border-radius:0 0 8px 0;z-index:100}
+  .skip-link:focus{left:0}
+
+  header.top{position:sticky;top:0;z-index:40;background:rgb(var(--c-bg-primary) / .94);backdrop-filter:blur(8px);border-bottom:1px solid var(--c-line)}
+  .bar{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .brand{display:flex;gap:9px;align-items:center;font-weight:700;font-size:14px}
+  .dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-accent));flex:none}
+  .brand small{display:block;font:400 11px/1.3 ui-monospace,Menlo,monospace;color:rgb(var(--c-text-secondary));font-weight:400}
+  .icobtn{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:6px 11px;border:1px solid var(--c-line);border-radius:7px;background:transparent;color:inherit;text-decoration:none;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .icobtn:hover{border-color:rgb(var(--c-accent))}
+  .amz-badge{font-family:ui-monospace,Menlo,monospace;background:rgb(var(--c-amz)/.12);color:rgb(var(--c-amz));border:1px solid rgb(var(--c-amz)/.35);padding:5px 10px;border-radius:5px;font-size:11px}
+
+  .tabbar{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto;border-top:1px solid var(--c-line)}
+  .tabbtn{flex:none;padding:10px 14px;font-size:12.5px;font-weight:600;color:rgb(var(--c-text-secondary));background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .tabbtn:hover{color:rgb(var(--c-text-primary))}
+  .tabbtn.active{color:rgb(var(--c-accent));border-bottom-color:rgb(var(--c-accent))}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 72px}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+  h1{font-size:clamp(20px,3vw,26px);margin:0 0 6px}
+  h2{font-size:16px;margin:0 0 4px}
+  .lede{color:rgb(var(--c-text-secondary));max-width:80ch;margin:0 0 18px}
+  .frame{background:rgb(var(--c-accent)/.09);border:1px solid rgb(var(--c-accent)/.28);border-radius:10px;padding:14px 16px;font-size:12.5px;color:rgb(var(--c-text-secondary));margin-bottom:20px}
+  .frame.warn{background:rgb(var(--c-warning)/.09);border-color:rgb(var(--c-warning)/.3)}
+  .frame strong{color:rgb(var(--c-text-primary))}
+
+  .grid{display:grid;gap:16px}
+  .grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+
+  .card{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;padding:18px 20px}
+  .card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--c-line)}
+  .card-head h2{margin:0}
+  .tag{font-size:10.5px;font-family:ui-monospace,Menlo,monospace;color:rgb(var(--c-text-secondary))}
+
+  .kpi-tile{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:10px;padding:14px 16px}
+  .kpi-label{font-size:10.5px;color:rgb(var(--c-text-secondary));text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .kpi-value{font-size:1.55rem;font-weight:700;margin:6px 0 4px;font-family:ui-monospace,Menlo,monospace}
+  .kpi-foot{font-size:11.5px;color:rgb(var(--c-text-secondary));display:flex;align-items:center;gap:5px}
+  .kpi-foot.good{color:rgb(var(--c-success))}
+  .kpi-foot.amber{color:rgb(var(--c-warning))}
+  .kpi-foot.bad{color:rgb(var(--c-danger))}
+
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:10.5px;color:rgb(var(--c-text-secondary));text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+  .field select,.field input{width:100%;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);color:rgb(var(--c-text-primary));padding:7px 9px;border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  .tblwrap{overflow-x:auto}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--c-line);vertical-align:top}
+  th{color:rgb(var(--c-text-secondary));font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
+  tr.total td{font-weight:700;color:rgb(var(--c-accent));border-top:1px solid var(--c-line)}
+
+  .outline{background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:8px;padding:14px 16px}
+  .line{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+  .line.total{border-top:1px solid var(--c-line);margin-top:6px;padding-top:10px;font-weight:700;color:rgb(var(--c-accent));font-size:14.5px}
+
+  .waterfall{display:flex;align-items:flex-end;gap:8px;height:180px;margin:16px 0 8px;padding:0 4px}
+  .wf-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+  .wf-bar{width:100%;border-radius:4px 4px 0 0;transition:height .2s}
+  .wf-bar.base{background:rgb(var(--c-text-secondary)/.5)}
+  .wf-bar.fav{background:rgb(var(--c-success)/.75)}
+  .wf-bar.unfav{background:rgb(var(--c-danger)/.75)}
+  .wf-bar.result{background:rgb(var(--c-accent)/.85)}
+  .wf-label{font-size:10px;color:rgb(var(--c-text-secondary));margin-top:6px;text-align:center;line-height:1.25}
+  .wf-value{font-size:11px;font-family:ui-monospace,Menlo,monospace;font-weight:700;margin-bottom:4px}
+
+  .pillcard{border:1px solid var(--c-line);border-radius:10px;padding:14px 16px}
+  .pillcard h3{margin:0 0 8px;font-size:13.5px}
+  .pillcard ul{margin:0;padding-left:18px;font-size:12.5px;color:rgb(var(--c-text-secondary))}
+  .pillcard li{margin-bottom:6px}
+
+  .cadence-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--c-line);font-size:12.5px}
+  .cadence-row:last-child{border-bottom:none}
+  .cadence-row b{display:block;color:rgb(var(--c-text-primary));font-size:12.5px;margin-bottom:2px}
+
+  .srclist{list-style:none;margin:0;padding:0;font-size:12.5px}
+  .srclist li{padding:8px 0;border-bottom:1px solid var(--c-line)}
+  .srclist li:last-child{border-bottom:none}
+  .srctag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;margin-right:6px}
+  .srctag.real{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
+  .srctag.illustrative{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
+
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--c-line);color:rgb(var(--c-text-secondary));font-size:12px}
+  @media (max-width:640px){.field-row{grid-template-columns:1fr}.cadence-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="top">
+  <div class="bar">
+    <span class="brand"><span class="dot"></span>AMS Manufacturing Cost Engineering Command Center<small>Purpose-built for one role, not a general portfolio dashboard</small></span>
+    <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
+    <button class="icobtn" id="themeBtn" type="button" style="margin-left:auto">Toggle theme</button>
+    <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">Fit brief ↗</a>
+  </div>
+  <div class="tabbar" role="tablist" aria-label="Command center sections">
+    <button class="tabbtn active" data-tab="exec" role="tab" aria-selected="true">Executive Overview</button>
+    <button class="tabbtn" data-tab="shouldcost" role="tab" aria-selected="false">Should-Cost &amp; MHR</button>
+    <button class="tabbtn" data-tab="variance" role="tab" aria-selected="false">Variance Waterfall</button>
+    <button class="tabbtn" data-tab="buildbuy" role="tab" aria-selected="false">Build-vs-Buy / CapEx</button>
+    <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
+    <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="frame warn"><strong>Read this before anything else.</strong> Every dollar figure,
+    KPI reading, and site rollup on this page is a synthetic worked example, built to demonstrate
+    the should-cost/MHR/variance methodology this role's own job posting asks for
+    (<a href="https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services">req 10512991</a>).
+    <strong>None of it is real Amazon Manufacturing Services data</strong> — I have no access to
+    AMS's actual costs, systems, or site names beyond what the posting itself states. The
+    Methodology tab lists exactly what's independently sourced vs. invented for the exercise.</div>
+
+  <!-- ============ TAB 1: EXECUTIVE OVERVIEW ============ -->
+  <section class="tabpanel active" id="tab-exec">
+    <h1>Executive Overview</h1>
+    <p class="lede">A synthetic multi-site rollup, built the way the JD's "own the accuracy of the
+      AMS manufacturing P&amp;L across multiple sites" responsibility would need one to look. Three
+      sites is the posting's own stated scope — the names and numbers below are not.</p>
+
+    <div class="grid cols-4" style="margin-bottom:20px">
+      <div class="kpi-tile">
+        <div class="kpi-label">Cost Model Accuracy</div>
+        <div class="kpi-value" id="kpi-cmar">96.8%</div>
+        <div class="kpi-foot good" id="kpi-cmar-foot">● Above 95% target</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Overhead Absorption</div>
+        <div class="kpi-value" id="kpi-oae">93.1%</div>
+        <div class="kpi-foot amber" id="kpi-oae-foot">▲ Amber (target ≥95%)</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Net Cost Avoidance (Illustrative)</div>
+        <div class="kpi-value" style="color:rgb(var(--c-success))">$486K</div>
+        <div class="kpi-foot">vs. external benchmark quotes, this period</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Sites Modeled</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-foot">Count is JD-stated; names/locations below are illustrative</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Illustrative Multi-Site P&amp;L Rollup — This Period</h2><span class="tag">SYNTHETIC WORKED EXAMPLE</span></div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Site</th><th>Standard COGS</th><th>Actual COGS</th><th>Variance</th><th>OEE</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Site A (Seattle, WA — real posted location)</td><td class="mono">$1,420,000</td><td class="mono">$1,448,200</td><td class="mono" style="color:rgb(var(--c-danger))">+$28,200</td><td class="mono">71%</td><td>Advanced (Fabrico 2026 band)</td></tr>
+            <tr><td>Site B (Bellevue, WA — real posted location)</td><td class="mono">$980,000</td><td class="mono">$955,400</td><td class="mono" style="color:rgb(var(--c-success))">−$24,600</td><td class="mono">64%</td><td>Typical discrete-mfg band</td></tr>
+            <tr><td>Site C (third site — count JD-stated, location not disclosed)</td><td class="mono">$1,105,000</td><td class="mono">$1,132,900</td><td class="mono" style="color:rgb(var(--c-danger))">+$27,900</td><td class="mono">58%</td><td>Typical discrete-mfg band</td></tr>
+            <tr class="total"><td>Rollup</td><td class="mono">$3,505,000</td><td class="mono">$3,536,500</td><td class="mono">+$31,500</td><td class="mono">64% avg</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">OEE bands cited to
+        <a href="https://www.fabrico.io/blog/oee-benchmarks-by-industry-manufacturing-2026/">Fabrico (2026)</a> /
+        <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>: 55–70% typical
+        discrete manufacturing, 70–80% advanced, &gt;80% world-class (top 5–10% of plants) — a real,
+        sourced classification applied to invented site figures, not a claim about AMS's actual OEE.</p>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: SHOULD-COST & MHR ============ -->
+  <section class="tabpanel" id="tab-shouldcost">
+    <h1>Should-Cost &amp; Machine-Hour-Rate Simulator</h1>
+    <p class="lede">Bottom-up should-cost, decomposed the way the JD's "Cost Model Development"
+      responsibility describes — material, machine conversion, labor, overhead, at the part and
+      process level. Fully live: change any input.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Parametric Should-Cost Calculator</h2></div>
+        <div class="field-row">
+          <div class="field"><label>Process / work center</label>
+            <select id="scProcess"><option value="cnc3">CNC 3-Axis Milling</option><option value="cnc5">CNC 5-Axis Milling</option><option value="dmls">Additive (DMLS)</option><option value="sheet">Sheet Metal / Press Brake</option></select></div>
+          <div class="field"><label>Batch quantity</label><input type="number" id="scBatch" value="24" min="1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Raw stock mass (kg)</label><input type="number" id="scMass" value="3.8" step="0.1"></div>
+          <div class="field"><label>Material rate ($/kg)</label><input type="number" id="scMatRate" value="16.50" step="0.5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Buy-to-fly ratio</label><input type="number" id="scBtf" value="1.35" step="0.05"></div>
+          <div class="field"><label>Scrap reclaim credit (%)</label><input type="number" id="scReclaim" value="15" step="1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Cycle time (min/unit)</label><input type="number" id="scRuntime" value="35" min="0"></div>
+          <div class="field"><label>Setup / batch (min)</label><input type="number" id="scSetup" value="40" min="0"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Loaded labor rate ($/hr)</label><input type="number" id="scLabor" value="34.00" step="0.5"></div>
+          <div class="field"><label>Overhead rate (% of mat+conv)</label><input type="number" id="scOh" value="14" step="1"></div>
+        </div>
+        <div class="outline">
+          <div class="line"><span>Machine-hour rate (from rate card →)</span><span class="mono" id="scOutMhr">$0.00/hr</span></div>
+          <div class="line"><span>Net material cost</span><span class="mono" id="scOutMat">$0.00</span></div>
+          <div class="line"><span>Machine conversion</span><span class="mono" id="scOutMach">$0.00</span></div>
+          <div class="line"><span>Direct labor</span><span class="mono" id="scOutLabor">$0.00</span></div>
+          <div class="line"><span>Overhead</span><span class="mono" id="scOutOh">$0.00</span></div>
+          <div class="line total"><span>Should-cost per unit</span><span class="mono" id="scOutTotal">$0.00</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Work-Center Rate Card</h2><span class="tag">STANDING + RUNNING, EDITABLE</span></div>
+        <div class="tblwrap">
+          <table id="rateCardTable">
+            <thead><tr><th>Work Center</th><th>Standing $/hr</th><th>Running $/hr</th><th>MHR $/hr</th></tr></thead>
+            <tbody>
+              <tr data-wc="cnc3"><td>CNC 3-Axis</td><td class="mono">$20.00</td><td class="mono">$6.00</td><td class="mono" data-mhr>$26.00</td></tr>
+              <tr data-wc="cnc5"><td>CNC 5-Axis</td><td class="mono">$36.00</td><td class="mono">$10.00</td><td class="mono" data-mhr>$46.00</td></tr>
+              <tr data-wc="dmls"><td>Additive (DMLS)</td><td class="mono">$52.00</td><td class="mono">$14.00</td><td class="mono" data-mhr>$66.00</td></tr>
+              <tr data-wc="sheet"><td>Sheet Metal</td><td class="mono">$11.00</td><td class="mono">$2.50</td><td class="mono" data-mhr>$13.50</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">Standing =
+          depreciation + floor space + service contracts, spread over scheduled hours × target OEE.
+          Running = power + consumables while actively cutting/building. Same standing-vs-running
+          split documented in public machine-hour-rate guides (Methodology tab) — invented dollar
+          values, real structure. A 5-axis mill and a manual press brake never share one blended rate
+          here, by design.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: VARIANCE WATERFALL ============ -->
+  <section class="tabpanel" id="tab-variance">
+    <h1>Standard-Cost Variance Waterfall</h1>
+    <p class="lede">The six-way decomposition the JD's "variance analysis" and "activity-based
+      actual COGS" responsibilities point at — material price/quantity, labor rate/efficiency,
+      overhead spending/volume. Change any input; the bridge recalculates live.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Variance Inputs</h2></div>
+        <div class="field-row">
+          <div class="field"><label>Std. material qty (kg)</label><input type="number" id="vMSQ" value="1250"></div>
+          <div class="field"><label>Act. material qty (kg)</label><input type="number" id="vMAQ" value="1210"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Std. material price ($/kg)</label><input type="number" id="vMSP" value="26.00" step="0.5"></div>
+          <div class="field"><label>Act. material price ($/kg)</label><input type="number" id="vMAP" value="28.50" step="0.5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Std. labor hours</label><input type="number" id="vLSH" value="480"></div>
+          <div class="field"><label>Act. labor hours</label><input type="number" id="vLAH" value="540"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Std. labor rate ($/hr)</label><input type="number" id="vLSR" value="42.00" step="0.5"></div>
+          <div class="field"><label>Act. labor rate ($/hr)</label><input type="number" id="vLAR" value="44.50" step="0.5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Std. variable OH rate ($/hr)</label><input type="number" id="vVOSR" value="8.00" step="0.5"></div>
+          <div class="field"><label>Actual variable OH spend</label><input type="number" id="vVOAct" value="4750"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Budgeted volume (hrs)</label><input type="number" id="vBudHrs" value="500"></div>
+          <div class="field"><label>Std. fixed OH rate ($/hr)</label><input type="number" id="vFOHR" value="24.00" step="0.5"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Variance Waterfall</h2><span class="tag">GREEN = FAVORABLE, RED = UNFAVORABLE</span></div>
+        <div class="waterfall" id="waterfallChart"></div>
+        <div class="outline" style="margin-top:8px">
+          <div class="line"><span>Material Price Variance (MPV)</span><span class="mono" id="outMPV">$0</span></div>
+          <div class="line"><span>Material Quantity Variance (MQV)</span><span class="mono" id="outMQV">$0</span></div>
+          <div class="line"><span>Labor Rate Variance (DLRV)</span><span class="mono" id="outDLRV">$0</span></div>
+          <div class="line"><span>Labor Efficiency Variance (DLEV)</span><span class="mono" id="outDLEV">$0</span></div>
+          <div class="line"><span>Variable OH Spending (VOSV)</span><span class="mono" id="outVOSV">$0</span></div>
+          <div class="line"><span>Fixed OH Volume (FOHV)</span><span class="mono" id="outFOHV">$0</span></div>
+          <div class="line total"><span>Net Total Variance</span><span class="mono" id="outNet">$0</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 4: BUILD-VS-BUY / CAPEX ============ -->
+  <section class="tabpanel" id="tab-buildbuy">
+    <h1>Build-vs-Buy &amp; CapEx Payback Analyzer</h1>
+    <p class="lede">The JD's "investment decisions, build-vs-buy evaluations, and capacity
+      planning" responsibility, made interactive — same NPV/payback logic used in the
+      <a href="https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html">narrative work sample</a>, generalized here to any part family.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Decision Inputs</h2></div>
+        <div class="field-row">
+          <div class="field"><label>Internal should-cost ($/unit)</label><input type="number" id="bbInternal" value="95.78" step="0.01"></div>
+          <div class="field"><label>External quote ($/unit)</label><input type="number" id="bbExternal" value="186.00" step="0.01"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Annual volume (units)</label><input type="number" id="bbVolume" value="1800"></div>
+          <div class="field"><label>One-time transition cost</label><input type="number" id="bbTransition" value="38000"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Discount rate (%)</label><input type="number" id="bbRate" value="10" step="0.5"></div>
+          <div class="field"><label>Analysis horizon (years)</label><input type="number" id="bbYears" value="3" min="1" max="10"></div>
+        </div>
+        <div class="outline">
+          <div class="line"><span>Annual unit-cost saving</span><span class="mono" id="bbUnitSave">$0.00</span></div>
+          <div class="line"><span>Annual dollar saving</span><span class="mono" id="bbAnnualSave">$0</span></div>
+          <div class="line"><span>Simple payback</span><span class="mono" id="bbPayback">—</span></div>
+          <div class="line total"><span>Net Present Value ({horizon}-yr)</span><span class="mono" id="bbNpv">$0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Year-by-Year Cash Flow</h2></div>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>Year</th><th>Undiscounted Saving</th><th>Discount Factor</th><th>PV of Saving</th></tr></thead>
+            <tbody id="bbCashflowBody"></tbody>
+          </table>
+        </div>
+        <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">Year 0 shows
+          the transition cost as a negative outflow, not discounted (spent up front). NPV = sum of
+          discounted savings minus the Year-0 transition cost.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
+  <section class="tabpanel" id="tab-framework">
+    <h1>Operating Framework — A 90-Day Thesis</h1>
+    <p class="lede">Not a claim about AMS's actual current state — this is how I'd structure the
+      first 90 days in this seat, condensed from the fuller
+      <a href="https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html">90-day plan</a> into a dashboard-native view.</p>
+
+    <div class="grid cols-4" style="margin-bottom:20px">
+      <div class="pillcard">
+        <h3>1 · Cost Modeling &amp; Quoting Automation</h3>
+        <ul><li>Quoting-to-actual drift</li><li>Uniform-overhead MHR distortion</li><li>Additive's hidden cost tail</li></ul>
+      </div>
+      <div class="pillcard">
+        <h3>2 · Variance, Yield &amp; Labor</h3>
+        <ul><li>Buy-to-fly / nesting waste</li><li>Stale routing standards</li><li>Informally-cleared scrap</li></ul>
+      </div>
+      <div class="pillcard">
+        <h3>3 · P&amp;L &amp; Absorption</h3>
+        <ul><li>Unabsorbed capacity drag</li><li>Defensible cost avoidance</li><li>Manual month-end variance</li></ul>
+      </div>
+      <div class="pillcard">
+        <h3>4 · Capital &amp; Build-vs-Buy</h3>
+        <ul><li>Lead-time-driven sourcing calls</li><li>Un-amortized tooling</li><li>CapEx without payback modeling</li></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Operating Cadence I'd Expect</h2><span class="tag">GENERAL AMAZON PRACTICE, NOT AMS-SPECIFIC</span></div>
+      <div class="cadence-row"><div><b>Daily shop-floor standup</b>Supervisors + manufacturing engineers</div><div>Rapid containment of scrap spikes and downtime from the last 24 hours.</div></div>
+      <div class="cadence-row"><div><b>Weekly Business Review</b>Site leadership + cost engineering</div><div>Routing/labor-efficiency variances and capacity utilization while still fixable.</div></div>
+      <div class="cadence-row"><div><b>Monthly Business Review</b>Finance + plant leadership</div><div>The variance walk and absorption reconciliation against the general ledger.</div></div>
+      <div class="cadence-row"><div><b>OP1 / OP2 planning cycles</b>Leadership + cross-functional partners</div><div>Bottoms-up cost projections and CapEx justification, in Amazon's 6-page narrative format.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 6: METHODOLOGY & SOURCING ============ -->
+  <section class="tabpanel" id="tab-methodology">
+    <h1>Methodology &amp; Sourcing</h1>
+    <p class="lede">What's real, what's illustrative, and why — read this before drawing any
+      conclusion about AMS from this page.</p>
+
+    <div class="card">
+      <div class="card-head"><h2>Source Ledger</h2></div>
+      <ul class="srclist">
+        <li><span class="srctag real">REAL</span> The role, responsibilities, qualifications, comp band, and three-site scope — verbatim from <a href="https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services">req 10512991</a>, re-verified 2026-09-04.</li>
+        <li><span class="srctag real">REAL</span> OEE benchmark bands (55–70% typical / 70–80% advanced / &gt;80% world-class) — <a href="https://www.fabrico.io/blog/oee-benchmarks-by-industry-manufacturing-2026/">Fabrico (2026)</a>, <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>.</li>
+        <li><span class="srctag real">REAL</span> Should-cost and machine-hour-rate methodology (bottom-up decomposition, standing vs. running cost) — standard, publicly documented cost-accounting practice.</li>
+        <li><span class="srctag real">REAL</span> Standard-cost variance formulas (MPV/MQV/DLRV/DLEV/VOSV/FOHV) — textbook cost-accounting definitions, not AMS-specific.</li>
+        <li><span class="srctag illustrative">ILLUSTRATIVE</span> Every dollar figure on the Executive, Should-Cost, Variance, and Build-vs-Buy tabs — invented worked-example numbers, editable by design. Not AMS's real costs.</li>
+        <li><span class="srctag illustrative">ILLUSTRATIVE</span> Site names ("Site A/B/C") — the count of three sites is real (JD-stated); the labels, locations beyond Seattle/Bellevue, and per-site figures are not.</li>
+        <li><span class="srctag illustrative">ILLUSTRATIVE</span> The Operating Framework tab's 4-pillar taxonomy — my own structural thesis for how I'd approach the role, not a description of AMS's actual current problems or org chart.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A note on where the framework idea came from</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">An earlier downloaded research
+        document proposed a 20-issue "operational governance framework" for AMS, complete with a
+        RACI matrix naming specific internal roles and a test-suite figure ("1,520 tests") that
+        turned out to be copied verbatim from a separate, earlier fabricated document — two
+        "independent" sources landing on an identical invented number is evidence of copied origin,
+        not corroboration. That document's specific claims (named facilities, a claimed Project
+        Kuiper/Amazon Robotics/AWS-data-center client relationship) were checked against the real
+        job posting and found unsupported. This page keeps the parts of that idea that are actually
+        generic, well-established cost-engineering practice — the pillar taxonomy, the should-cost/
+        MHR/variance mechanics — and drops everything presented as fact about AMS specifically that
+        isn't.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built as a purpose-specific companion to the <a href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">AMS fit brief</a>,
+      <a href="https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html">narrative work sample</a>,
+      <a href="https://tjaiyen.github.io/cost-management-command-center/variance-walkthrough.html">variance walkthrough</a>, and
+      <a href="https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html">90-day plan</a> —
+      not a replacement for any of them. Zero external dependencies; every calculation on this page
+      runs client-side in the functions below.</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Theme toggle ----------
+  var themeBtn = document.getElementById('themeBtn');
+  function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); try{localStorage.setItem('ams-cc-theme', t);}catch(e){} }
+  themeBtn.addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme');
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+  try{ var saved = localStorage.getItem('ams-cc-theme'); if(saved) applyTheme(saved); }catch(e){}
+
+  // ---------- Tabs ----------
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tabbtn'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.tabpanel'));
+  function activateTab(name){
+    tabBtns.forEach(function(b){ var on = b.getAttribute('data-tab') === name; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true':'false'); });
+    panels.forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
+  }
+  tabBtns.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab')); }); });
+
+  // ---------- Rate card (single source of truth for MHR by work center) ----------
+  var RATE_CARD = {
+    cnc3:  { standing: 20.00, running: 6.00 },
+    cnc5:  { standing: 36.00, running: 10.00 },
+    dmls:  { standing: 52.00, running: 14.00 },
+    sheet: { standing: 11.00, running: 2.50 }
+  };
+  var MANNING = { cnc3: 0.5, cnc5: 0.5, dmls: 0.25, sheet: 1.0 };
+  function mhrFor(wc){ var r = RATE_CARD[wc]; return r.standing + r.running; }
+
+  // expose for the stress-test harness
+  window.RATE_CARD = RATE_CARD;
+  window.mhrFor = mhrFor;
+
+  Object.keys(RATE_CARD).forEach(function(wc){
+    var row = document.querySelector('tr[data-wc="'+wc+'"] [data-mhr]');
+    if(row) row.textContent = '$' + mhrFor(wc).toFixed(2);
+  });
+
+  // ---------- Tab 2: Should-Cost calculator ----------
+  function calcShouldCost(){
+    var proc = document.getElementById('scProcess').value;
+    var batch = parseFloat(document.getElementById('scBatch').value) || 1;
+    var mass = parseFloat(document.getElementById('scMass').value) || 0;
+    var matRate = parseFloat(document.getElementById('scMatRate').value) || 0;
+    var btf = parseFloat(document.getElementById('scBtf').value) || 1;
+    var reclaimPct = (parseFloat(document.getElementById('scReclaim').value) || 0) / 100;
+    var runtime = parseFloat(document.getElementById('scRuntime').value) || 0;
+    var setup = parseFloat(document.getElementById('scSetup').value) || 0;
+    var laborRate = parseFloat(document.getElementById('scLabor').value) || 0;
+    var ohPct = (parseFloat(document.getElementById('scOh').value) || 0) / 100;
+    var mhr = mhrFor(proc);
+    var manning = MANNING[proc];
+
+    var grossMass = mass * btf;
+    var scrapMass = grossMass - mass;
+    var matCost = (grossMass * matRate) - (scrapMass * matRate * reclaimPct);
+    var totalHours = (runtime + (setup / batch)) / 60.0;
+    var machineCost = totalHours * mhr;
+    var laborCost = totalHours * laborRate * manning;
+    var overheadCost = (matCost + machineCost + laborCost) * ohPct;
+    var totalCost = matCost + machineCost + laborCost + overheadCost;
+
+    document.getElementById('scOutMhr').textContent = '$' + mhr.toFixed(2) + '/hr';
+    document.getElementById('scOutMat').textContent = '$' + matCost.toFixed(2);
+    document.getElementById('scOutMach').textContent = '$' + machineCost.toFixed(2);
+    document.getElementById('scOutLabor').textContent = '$' + laborCost.toFixed(2);
+    document.getElementById('scOutOh').textContent = '$' + overheadCost.toFixed(2);
+    document.getElementById('scOutTotal').textContent = '$' + totalCost.toFixed(2);
+    return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };
+  }
+  window.calcShouldCost = calcShouldCost;
+  ['scProcess','scBatch','scMass','scMatRate','scBtf','scReclaim','scRuntime','scSetup','scLabor','scOh'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcShouldCost);
+    document.getElementById(id).addEventListener('change', calcShouldCost);
+  });
+
+  // ---------- Tab 3: Variance waterfall ----------
+  function fmtMoney(v){ var sign = v < 0 ? '-' : (v > 0 ? '+' : ''); return sign + '$' + Math.abs(Math.round(v)).toLocaleString(); }
+
+  function calcVariance(){
+    var MSQ = parseFloat(document.getElementById('vMSQ').value) || 0;
+    var MAQ = parseFloat(document.getElementById('vMAQ').value) || 0;
+    var MSP = parseFloat(document.getElementById('vMSP').value) || 0;
+    var MAP = parseFloat(document.getElementById('vMAP').value) || 0;
+    var LSH = parseFloat(document.getElementById('vLSH').value) || 0;
+    var LAH = parseFloat(document.getElementById('vLAH').value) || 0;
+    var LSR = parseFloat(document.getElementById('vLSR').value) || 0;
+    var LAR = parseFloat(document.getElementById('vLAR').value) || 0;
+    var VOSR = parseFloat(document.getElementById('vVOSR').value) || 0;
+    var VOAct = parseFloat(document.getElementById('vVOAct').value) || 0;
+    var budHrs = parseFloat(document.getElementById('vBudHrs').value) || 0;
+    var FOHR = parseFloat(document.getElementById('vFOHR').value) || 0;
+
+    var MPV = (MAP - MSP) * MAQ;                 // material price variance (+ = unfavorable)
+    var MQV = (MAQ - MSQ) * MSP;                 // material quantity variance
+    var DLRV = (LAR - LSR) * LAH;                // labor rate variance
+    var DLEV = (LAH - LSH) * LSR;                // labor efficiency variance
+    var VOSV = VOAct - (LAH * VOSR);             // variable overhead spending variance
+    var FOHV = (budHrs - LAH) * FOHR;            // fixed overhead volume variance
+    var net = MPV + MQV + DLRV + DLEV + VOSV + FOHV;
+
+    document.getElementById('outMPV').textContent = fmtMoney(MPV);
+    document.getElementById('outMQV').textContent = fmtMoney(MQV);
+    document.getElementById('outDLRV').textContent = fmtMoney(DLRV);
+    document.getElementById('outDLEV').textContent = fmtMoney(DLEV);
+    document.getElementById('outVOSV').textContent = fmtMoney(VOSV);
+    document.getElementById('outFOHV').textContent = fmtMoney(FOHV);
+    document.getElementById('outNet').textContent = fmtMoney(net);
+    [['outMPV',MPV],['outMQV',MQV],['outDLRV',DLRV],['outDLEV',DLEV],['outVOSV',VOSV],['outFOHV',FOHV]].forEach(function(pair){
+      document.getElementById(pair[0]).style.color = pair[1] > 0 ? 'rgb(var(--c-danger))' : (pair[1] < 0 ? 'rgb(var(--c-success))' : '');
+    });
+
+    renderWaterfall([
+      { label: 'MPV', value: MPV },
+      { label: 'MQV', value: MQV },
+      { label: 'DLRV', value: DLRV },
+      { label: 'DLEV', value: DLEV },
+      { label: 'VOSV', value: VOSV },
+      { label: 'FOHV', value: FOHV }
+    ], net);
+
+    return { MPV: MPV, MQV: MQV, DLRV: DLRV, DLEV: DLEV, VOSV: VOSV, FOHV: FOHV, net: net };
+  }
+  window.calcVariance = calcVariance;
+
+  function renderWaterfall(items, net){
+    var el = document.getElementById('waterfallChart');
+    el.innerHTML = '';
+    var maxAbs = Math.max.apply(null, items.map(function(i){ return Math.abs(i.value); }).concat([Math.abs(net), 1]));
+    items.concat([{ label: 'NET', value: net, isTotal: true }]).forEach(function(item){
+      var col = document.createElement('div'); col.className = 'wf-col';
+      var barWrap = document.createElement('div'); barWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:100%';
+      var valEl = document.createElement('div'); valEl.className = 'wf-value'; valEl.textContent = fmtMoney(item.value);
+      var bar = document.createElement('div'); bar.className = 'wf-bar ' + (item.isTotal ? 'result' : (item.value > 0 ? 'unfav' : (item.value < 0 ? 'fav' : 'base')));
+      var heightPct = Math.max(4, Math.round((Math.abs(item.value) / maxAbs) * 100));
+      bar.style.height = heightPct + '%';
+      var lbl = document.createElement('div'); lbl.className = 'wf-label'; lbl.textContent = item.label;
+      barWrap.appendChild(valEl); barWrap.appendChild(bar);
+      col.appendChild(barWrap); col.appendChild(lbl);
+      el.appendChild(col);
+    });
+  }
+
+  ['vMSQ','vMAQ','vMSP','vMAP','vLSH','vLAH','vLSR','vLAR','vVOSR','vVOAct','vBudHrs','vFOHR'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcVariance);
+  });
+
+  // ---------- Tab 4: Build-vs-Buy / NPV ----------
+  function calcBuildBuy(){
+    var internal = parseFloat(document.getElementById('bbInternal').value) || 0;
+    var external = parseFloat(document.getElementById('bbExternal').value) || 0;
+    var volume = parseFloat(document.getElementById('bbVolume').value) || 0;
+    var transition = parseFloat(document.getElementById('bbTransition').value) || 0;
+    var rate = (parseFloat(document.getElementById('bbRate').value) || 0) / 100;
+    var years = Math.max(1, Math.round(parseFloat(document.getElementById('bbYears').value) || 1));
+
+    var unitSave = external - internal;
+    var annualSave = unitSave * volume;
+    var payback = annualSave > 0 ? (transition / annualSave) : Infinity;
+
+    var npv = -transition;
+    var rows = '<tr><td>0</td><td class="mono">-$' + Math.round(transition).toLocaleString() + '</td><td class="mono">1.000</td><td class="mono">-$' + Math.round(transition).toLocaleString() + '</td></tr>';
+    for(var y = 1; y <= years; y++){
+      var df = 1 / Math.pow(1 + rate, y);
+      var pv = annualSave * df;
+      npv += pv;
+      rows += '<tr><td>' + y + '</td><td class="mono">$' + Math.round(annualSave).toLocaleString() + '</td><td class="mono">' + df.toFixed(3) + '</td><td class="mono">$' + Math.round(pv).toLocaleString() + '</td></tr>';
+    }
+    document.getElementById('bbCashflowBody').innerHTML = rows;
+    document.getElementById('bbUnitSave').textContent = '$' + unitSave.toFixed(2);
+    document.getElementById('bbAnnualSave').textContent = '$' + Math.round(annualSave).toLocaleString();
+    document.getElementById('bbPayback').textContent = isFinite(payback) ? payback.toFixed(2) + ' years' : 'never (no positive saving)';
+    document.getElementById('bbNpv').textContent = '$' + Math.round(npv).toLocaleString();
+    document.getElementById('bbNpv').style.color = npv >= 0 ? 'rgb(var(--c-success))' : 'rgb(var(--c-danger))';
+
+    return { unitSave: unitSave, annualSave: annualSave, payback: payback, npv: npv };
+  }
+  window.calcBuildBuy = calcBuildBuy;
+  ['bbInternal','bbExternal','bbVolume','bbTransition','bbRate','bbYears'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcBuildBuy);
+  });
+
+  // ---------- Initial render ----------
+  calcShouldCost();
+  calcVariance();
+  calcBuildBuy();
+})();
+</script>
+</body>
+</html>
