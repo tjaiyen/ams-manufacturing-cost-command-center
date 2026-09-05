@@ -24,9 +24,22 @@ const TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling
 TABS.forEach((t) => {
   check(html.includes(`data-tab="${t}"`), `tab button for "${t}" exists`);
   check(html.includes(`id="tab-${t}"`), `panel for "${t}" exists`);
+  check(html.includes(`id="navtab-${t}"`), `side-nav button id navtab-${t} exists`);
+  check(html.includes(`aria-controls="tab-${t}"`), `side-nav button for "${t}" points aria-controls at its real panel id`);
+  check(html.includes(`aria-labelledby="navtab-${t}"`), `panel for "${t}" points aria-labelledby back at its real nav button id`);
 });
 check(html.includes("None of it is real Amazon Manufacturing Services data"), "the top-level illustrative-data disclaimer is present");
 check(html.includes('robots" content="noindex,nofollow"'), "page is noindex,nofollow (not meant for search discovery)");
+
+console.log("--- Vertical side navigation: structural checks ---");
+check((html.match(/class="sidenav-item"/g) || []).length === 12, "exactly 12 side-nav items in the HTML (one per tab)", (html.match(/class="sidenav-item"/g) || []).length);
+check((html.match(/role="tabpanel"/g) || []).length === 12, "exactly 12 panels carry role=\"tabpanel\"", (html.match(/role="tabpanel"/g) || []).length);
+check(html.includes('role="tablist"') && html.includes('aria-orientation="vertical"'), "the side-nav list is a real ARIA vertical tablist, not a generic nav (satisfies the ARIA-compliance ask directly)");
+check(html.includes('id="sidenavToggle"') && html.includes('aria-expanded='), "the collapse/expand toggle button exists and exposes its state via aria-expanded");
+check(html.includes('data-collapsed="false"'), "the side-nav has an explicit default (expanded) collapse state in the markup, not implied");
+check((html.match(/data-tooltip="/g) || []).length >= 12, "at least 12 collapsed-mode tooltips are wired (one per nav item)", (html.match(/data-tooltip="/g) || []).length);
+check(html.includes('id="contrastBtn"') && html.includes('aria-pressed='), "the High-Contrast toggle exists and exposes its state via aria-pressed (real accessibility feature, not decorative)");
+check(html.includes('data-contrast="true"') && html.includes(':focus-visible{ outline-width:3px'), "High-Contrast mode has real CSS behind it (boosted secondary-text contrast + thicker focus rings), not just a button with no effect");
 
 console.log("--- Honest stress-test badge (the real count, not the fabricated '1,520' a downloaded document proposed for the same idea) ---");
 // This is a hand-maintained claim, same as the README's own "N checks, all passing as of this
@@ -188,23 +201,65 @@ const elements = {};
 function makeElement(id) {
   if (elements[id]) return elements[id];
   const listeners = {};
+  const attrs = {};
+  const classes = new Set();
   const el = {
     id, value: DEFAULTS[id] !== undefined ? DEFAULTS[id] : "",
     textContent: "", innerHTML: "", style: {}, className: "",
-    classList: { toggle() {}, add() {}, remove() {}, contains() { return false; } },
+    // Real (not no-op) attribute/class tracking -- needed for the side-nav's roving-tabindex
+    // logic (aria-selected/tabindex read back what was just set) and for asserting on the actual
+    // resulting state, not just that a setter was called without throwing.
+    classList: {
+      toggle(c, force) { const has = classes.has(c); const on = force === undefined ? !has : !!force; if (on) classes.add(c); else classes.delete(c); return on; },
+      add(...cs) { cs.forEach((c) => classes.add(c)); },
+      remove(...cs) { cs.forEach((c) => classes.delete(c)); },
+      contains(c) { return classes.has(c); },
+    },
     rows: [],
     addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); },
-    getAttribute() { return null; }, setAttribute() {}, appendChild() {},
+    getAttribute(name) { return Object.prototype.hasOwnProperty.call(attrs, name) ? attrs[name] : null; },
+    setAttribute(name, v) { attrs[name] = String(v); },
+    appendChild() {},
     click() { (listeners.click || []).forEach((fn) => fn.call(el)); },
+    focus() {},
+    // Test-only helper (not a real Element method) so keyboard-nav logic can be exercised the same
+    // way click() already exercises click handlers -- fires a stubbed event at every listener
+    // registered for `type` via addEventListener.
+    fire(type, evt) { (listeners[type] || []).forEach((fn) => fn.call(el, evt || {})); },
   };
   elements[id] = el;
   return el;
 }
+// querySelectorAll is selector-blind in general (no CSS engine here) -- but the side-nav's own
+// tab-collection queries are load-bearing for testing the actual navigation/keyboard-nav logic
+// (not a parallel reimplementation), so those two specific, known selectors are special-cased by
+// resolving the real ids straight out of this page's own HTML, not a hand-maintained list that
+// could silently drift from it.
+const NAVTAB_IDS = [...html.matchAll(/id="(navtab-[a-z]+)"/g)].map((m) => m[1]);
+const TABPANEL_IDS = [...html.matchAll(/id="(tab-[a-z]+)"/g)].map((m) => m[1]);
+// A real browser's getAttribute('data-tab') reads a STATIC markup attribute -- this stub's
+// getAttribute only ever returns what's been set at runtime via setAttribute, so the static
+// data-tab value has to be seeded onto each stub element once, at creation time, or every
+// data-tab comparison inside activateTab()/keyboard-nav silently sees null instead of the real
+// value (reproduced: this was a real bug in the first version of this stub upgrade, caught by the
+// very checks it exists to support -- fixed here, not worked around in the checks).
+function makeNavTab(id) {
+  const el = makeElement(id);
+  if (el.getAttribute("data-tab") === null) el.setAttribute("data-tab", id.replace("navtab-", ""));
+  return el;
+}
 const documentStub = {
   getElementById: (id) => makeElement(id),
-  querySelectorAll: () => [],
-  querySelector: () => makeElement("__q_" + Math.random()),
-  documentElement: { getAttribute: () => null, setAttribute: () => {} },
+  querySelectorAll: (sel) => {
+    if (sel === '.sidenav-item[role="tab"]') return NAVTAB_IDS.map(makeNavTab);
+    if (sel === '.tabpanel') return TABPANEL_IDS.map(makeElement);
+    return [];
+  },
+  querySelector: (sel) => {
+    if (sel === '.sidenav-list') return makeElement('__sidenavList');
+    return makeElement("__q_" + Math.random());
+  },
+  documentElement: makeElement('__documentElement'),
   createElement: () => makeElement("__created_" + Math.random()),
   // The Escape-to-close modal handler binds a document-level keydown listener -- a real browser
   // has document.addEventListener; this stub only needs to accept the call without throwing (the
@@ -221,6 +276,50 @@ try {
   check(false, "the real inline script executed without throwing in the stubbed DOM", e.stack);
   process.exit(1);
 }
+
+console.log("--- Vertical side navigation: behavioral checks (real activateTab()/keyboard-nav code, not a reimplementation) ---");
+// Pre-registered expectations before running: activating "shouldcost" should select navtab-
+// shouldcost (aria-selected=true, tabindex=0), deselect navtab-exec (aria-selected=false,
+// tabindex=-1), and show tab-shouldcost's panel (.active) while hiding tab-exec's.
+check(typeof sandbox.activateTab === "function", "window.activateTab is exposed as a function");
+sandbox.activateTab("shouldcost", { focus: false });
+check(elements["navtab-shouldcost"].getAttribute("aria-selected") === "true", "activateTab('shouldcost') marks navtab-shouldcost aria-selected=true", elements["navtab-shouldcost"].getAttribute("aria-selected"));
+check(elements["navtab-shouldcost"].getAttribute("tabindex") === "0", "activateTab('shouldcost') gives navtab-shouldcost the roving tabindex=0", elements["navtab-shouldcost"].getAttribute("tabindex"));
+check(elements["navtab-exec"].getAttribute("aria-selected") === "false", "activateTab('shouldcost') marks navtab-exec aria-selected=false", elements["navtab-exec"].getAttribute("aria-selected"));
+check(elements["navtab-exec"].getAttribute("tabindex") === "-1", "activateTab('shouldcost') removes navtab-exec from the tab order (tabindex=-1)", elements["navtab-exec"].getAttribute("tabindex"));
+check(elements["tab-shouldcost"].classList.contains("active"), "activateTab('shouldcost') shows the tab-shouldcost panel");
+check(!elements["tab-exec"].classList.contains("active"), "activateTab('shouldcost') hides the tab-exec panel");
+
+console.log("--- Vertical side navigation: keyboard-nav checks (ArrowDown/ArrowUp/Home/End, roving tabindex) ---");
+sandbox.activateTab("exec", { focus: false }); // reset to a known starting point before exercising arrow keys
+const sidenavListEl = sandbox.document.querySelector(".sidenav-list");
+sidenavListEl.fire("keydown", { key: "ArrowDown", preventDefault() {} });
+check(elements["navtab-shouldcost"].getAttribute("aria-selected") === "true", "ArrowDown from Executive Overview selects the next item (Should-Cost & MHR)", elements["navtab-shouldcost"].getAttribute("aria-selected"));
+sidenavListEl.fire("keydown", { key: "ArrowUp", preventDefault() {} });
+check(elements["navtab-exec"].getAttribute("aria-selected") === "true", "ArrowUp moves back to the previous item (Executive Overview)", elements["navtab-exec"].getAttribute("aria-selected"));
+sidenavListEl.fire("keydown", { key: "ArrowUp", preventDefault() {} });
+check(elements["navtab-methodology"].getAttribute("aria-selected") === "true", "ArrowUp from the first item wraps around to the last item (Methodology & Sourcing)", elements["navtab-methodology"].getAttribute("aria-selected"));
+sidenavListEl.fire("keydown", { key: "Home", preventDefault() {} });
+check(elements["navtab-exec"].getAttribute("aria-selected") === "true", "Home jumps to the first item (Executive Overview)", elements["navtab-exec"].getAttribute("aria-selected"));
+sidenavListEl.fire("keydown", { key: "End", preventDefault() {} });
+check(elements["navtab-methodology"].getAttribute("aria-selected") === "true", "End jumps to the last item (Methodology & Sourcing)", elements["navtab-methodology"].getAttribute("aria-selected"));
+sandbox.activateTab("exec", { focus: false }); // restore the default starting tab before later checks
+
+console.log("--- Vertical side navigation: collapse/expand toggle ---");
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "side-nav starts expanded by default in this stubbed run (no stored preference, and window.innerWidth is undefined in the stub -- not narrow)", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+elements.sidenavToggle.click();
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "true", "clicking the collapse toggle actually collapses the side-nav", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+check(elements.sidenavToggle.getAttribute("aria-expanded") === "false", "the toggle's own aria-expanded state flips to false when collapsed", elements.sidenavToggle.getAttribute("aria-expanded"));
+elements.sidenavToggle.click();
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "clicking it again expands the side-nav back", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+
+console.log("--- High-Contrast Mode: behavioral checks ---");
+check(sandbox.document.documentElement.getAttribute("data-contrast") !== "true", "high-contrast is off by default (no stored preference)", sandbox.document.documentElement.getAttribute("data-contrast"));
+elements.contrastBtn.click();
+check(sandbox.document.documentElement.getAttribute("data-contrast") === "true", "clicking the High-Contrast toggle actually sets data-contrast=true on the document root (the attribute the CSS overrides key off)", sandbox.document.documentElement.getAttribute("data-contrast"));
+check(elements.contrastBtn.getAttribute("aria-pressed") === "true", "the toggle's own aria-pressed state reflects that it's on", elements.contrastBtn.getAttribute("aria-pressed"));
+elements.contrastBtn.click();
+check(sandbox.document.documentElement.getAttribute("data-contrast") === "false", "clicking it again turns high-contrast back off", sandbox.document.documentElement.getAttribute("data-contrast"));
 
 console.log("--- Should-Cost calculator: golden values (verified live in-browser before this file existed) ---");
 // CNC-3-Axis/CNC-5-Axis rate-card values nudged on 2026-09-04 (a stress-test found $26.00/$46.00

@@ -35,6 +35,18 @@
     --c-success:6 121 89; --c-warning:131 87 7; --c-danger:170 65 9;
     --c-line:rgb(14 116 144 / .22); --c-amz:180 95 0;
   }
+  /* High-Contrast Mode: an independent accessibility layer, not a third full theme -- boosts
+     secondary/muted text toward primary-text brightness and thickens borders + focus rings,
+     applied on top of whichever theme (dark/light/system) is already active. Same 4-layer cascade
+     shape as the theme blocks above, for the same reason: bare :root default, prefers-color-scheme
+     override, then explicit data-theme overrides win in both directions. */
+  :root[data-contrast="true"]{ --c-text-secondary:225 231 240; --c-line:rgb(148 163 184 / .6); }
+  @media (prefers-color-scheme: light){
+    :root[data-contrast="true"]{ --c-text-secondary:15 23 42; --c-line:rgb(15 23 42 / .45); }
+  }
+  :root[data-theme="dark"][data-contrast="true"]{ --c-text-secondary:225 231 240; --c-line:rgb(148 163 184 / .6); }
+  :root[data-theme="light"][data-contrast="true"]{ --c-text-secondary:15 23 42; --c-line:rgb(15 23 42 / .45); }
+  :root[data-contrast="true"] :focus-visible{ outline-width:3px; outline-offset:3px; }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{margin:0;background:rgb(var(--c-bg-primary));color:rgb(var(--c-text-primary));
@@ -46,21 +58,67 @@
   .skip-link{position:absolute;left:-999px;top:0;background:rgb(var(--c-accent));color:#04141a;padding:8px 14px;border-radius:0 0 8px 0;z-index:100}
   .skip-link:focus{left:0}
 
-  header.top{position:sticky;top:0;z-index:40;background:rgb(var(--c-bg-primary) / .94);backdrop-filter:blur(8px);border-bottom:1px solid var(--c-line)}
-  .bar{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .brand{display:flex;gap:9px;align-items:center;font-weight:700;font-size:14px}
   .dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-accent));flex:none}
   .brand small{display:block;font:400 11px/1.3 ui-monospace,Menlo,monospace;color:rgb(var(--c-text-secondary));font-weight:400}
-  .icobtn{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:6px 11px;border:1px solid var(--c-line);border-radius:7px;background:transparent;color:inherit;text-decoration:none;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .icobtn{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:6px 11px;border:1px solid var(--c-line);border-radius:7px;background:transparent;color:inherit;text-decoration:none;font-size:12.5px;cursor:pointer;font-family:inherit;width:100%;justify-content:flex-start}
   .icobtn:hover{border-color:rgb(var(--c-accent))}
-  .amz-badge{font-family:ui-monospace,Menlo,monospace;background:rgb(var(--c-amz)/.12);color:rgb(var(--c-amz));border:1px solid rgb(var(--c-amz)/.35);padding:5px 10px;border-radius:5px;font-size:11px}
+  .amz-badge{font-family:ui-monospace,Menlo,monospace;background:rgb(var(--c-amz)/.12);color:rgb(var(--c-amz));border:1px solid rgb(var(--c-amz)/.35);padding:5px 8px;border-radius:5px;font-size:10.5px;display:block;text-align:center}
 
-  .tabbar{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto;border-top:1px solid var(--c-line)}
-  .tabbtn{flex:none;padding:10px 14px;font-size:12.5px;font-weight:600;color:rgb(var(--c-text-secondary));background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap}
-  .tabbtn:hover{color:rgb(var(--c-text-primary))}
-  .tabbtn.active{color:rgb(var(--c-accent));border-bottom-color:rgb(var(--c-accent))}
+  /* ---------- App shell: vertical collapsible side navigation ---------- */
+  .app-shell{display:flex;min-height:100vh;align-items:flex-start}
+  .sidenav{flex:none;width:248px;background:rgb(var(--c-bg-surface));border-right:1px solid var(--c-line);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+    transition:width .16s ease;z-index:40}
+  .sidenav[data-collapsed="true"]{width:60px}
+  .sidenav-head{display:flex;align-items:center;gap:9px;padding:14px 12px;border-bottom:1px solid var(--c-line);flex:none}
+  .sidenav-brand-text{overflow:hidden;white-space:nowrap;min-width:0}
+  .sidenav-brand-text b{display:block;font-size:12.5px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+  .sidenav-brand-text small{display:block;font:400 10px/1.3 ui-monospace,Menlo,monospace;color:rgb(var(--c-text-secondary));overflow:hidden;text-overflow:ellipsis}
+  .sidenav[data-collapsed="true"] .sidenav-brand-text{display:none}
+  .sidenav-collapse-btn{flex:none;width:26px;height:26px;border:1px solid var(--c-line);border-radius:6px;background:transparent;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;font-size:13px;line-height:1}
+  .sidenav-collapse-btn:hover{border-color:rgb(var(--c-accent));color:rgb(var(--c-accent))}
+  .sidenav[data-collapsed="true"] .sidenav-head{justify-content:center}
+  .sidenav[data-collapsed="true"] .sidenav-collapse-btn{margin-left:0}
 
-  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px 72px}
+  .sidenav-list{list-style:none;margin:0;padding:8px;display:flex;flex-direction:column;gap:2px;flex:1 1 auto}
+  .sidenav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;
+    background:none;color:rgb(var(--c-text-secondary));cursor:pointer;font-family:inherit;font-size:12.8px;
+    font-weight:600;text-align:left;width:100%;position:relative}
+  .sidenav-item:hover{background:rgb(var(--c-accent)/.08);color:rgb(var(--c-text-primary))}
+  .sidenav-item[aria-selected="true"]{background:rgb(var(--c-accent)/.14);color:rgb(var(--c-accent))}
+  .sidenav-icon{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+  .sidenav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .sidenav-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sidenav[data-collapsed="true"] .sidenav-label{display:none}
+  .sidenav[data-collapsed="true"] .sidenav-item{justify-content:center}
+  .sidenav[data-collapsed="true"] .sidenav-item::after{
+    content:attr(data-tooltip);position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:10px;
+    background:rgb(var(--c-bg-card));border:1px solid var(--c-line);color:rgb(var(--c-text-primary));
+    padding:5px 9px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;z-index:60;box-shadow:0 6px 16px rgb(0 0 0/.3)}
+  .sidenav[data-collapsed="true"] .sidenav-item:hover::after,
+  .sidenav[data-collapsed="true"] .sidenav-item:focus-visible::after{opacity:1;visibility:visible}
+
+  .sidenav-footer{padding:10px;border-top:1px solid var(--c-line);display:flex;flex-direction:column;gap:6px;flex:none}
+  .sidenav-footer .icobtn{position:relative}
+  .sidenav[data-collapsed="true"] .sidenav-footer .label-text,
+  .sidenav[data-collapsed="true"] .sidenav-footer .amz-badge{display:none}
+  .sidenav[data-collapsed="true"] .sidenav-footer .icobtn{justify-content:center;padding:6px}
+  @media (max-width:760px){
+    .sidenav{width:60px}
+    .sidenav-brand-text,.sidenav-label,.sidenav-footer .label-text,.sidenav-footer .amz-badge{display:none}
+    .sidenav-item{justify-content:center}
+    .sidenav-item::after{content:attr(data-tooltip);position:absolute;left:100%;top:50%;transform:translateY(-50%);
+      margin-left:10px;background:rgb(var(--c-bg-card));border:1px solid var(--c-line);color:rgb(var(--c-text-primary));
+      padding:5px 9px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;opacity:0;visibility:hidden;
+      pointer-events:none;transition:opacity .12s;z-index:60;box-shadow:0 6px 16px rgb(0 0 0/.3)}
+    .sidenav-item:hover::after,.sidenav-item:focus-visible::after{opacity:1;visibility:visible}
+    .sidenav-footer .icobtn{justify-content:center;padding:6px}
+  }
+
+  .content{flex:1 1 auto;min-width:0}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 24px 72px}
   .tabpanel{display:none}
   .tabpanel.active{display:block}
   h1{font-size:clamp(20px,3vw,26px);margin:0 0 6px}
@@ -178,32 +236,63 @@
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 
-<header class="top">
-  <div class="bar">
-    <span class="brand"><span class="dot"></span>AMS Manufacturing Cost Engineering Command Center<small>Purpose-built for one role, not a general portfolio dashboard</small></span>
+<div class="app-shell">
+<nav class="sidenav" id="sidenav" data-collapsed="false">
+  <div class="sidenav-head">
+    <span class="dot"></span>
+    <span class="sidenav-brand-text"><b>AMS Cost Command Center</b><small>Sr. Manufacturing Cost Engineer</small></span>
+    <button class="sidenav-collapse-btn" id="sidenavToggle" type="button" aria-label="Collapse navigation" aria-expanded="true">‹</button>
+  </div>
+  <div class="sidenav-list" role="tablist" aria-orientation="vertical" aria-label="Command center sections">
+    <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 15V9M10 15V5M16 15v-3"/></svg></span><span class="sidenav-label">Executive Overview</span>
+    </button>
+    <button class="sidenav-item" data-tab="shouldcost" role="tab" aria-selected="false" aria-controls="tab-shouldcost" id="navtab-shouldcost" tabindex="-1" data-tooltip="Should-Cost & MHR">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14a7 7 0 0 1 14 0"/><path d="M10 14 13 8"/><circle cx="10" cy="14" r="1"/></svg></span><span class="sidenav-label">Should-Cost &amp; MHR</span>
+    </button>
+    <button class="sidenav-item" data-tab="variance" role="tab" aria-selected="false" aria-controls="tab-variance" id="navtab-variance" tabindex="-1" data-tooltip="Variance Waterfall">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 6h4v4h4v4h4"/></svg></span><span class="sidenav-label">Variance Waterfall</span>
+    </button>
+    <button class="sidenav-item" data-tab="buildbuy" role="tab" aria-selected="false" aria-controls="tab-buildbuy" id="navtab-buildbuy" tabindex="-1" data-tooltip="Build-vs-Buy / CapEx">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 6l12 8M16 6 4 14"/></svg></span><span class="sidenav-label">Build-vs-Buy / CapEx</span>
+    </button>
+    <button class="sidenav-item" data-tab="capacity" role="tab" aria-selected="false" aria-controls="tab-capacity" id="navtab-capacity" tabindex="-1" data-tooltip="Capacity Forecast">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg></span><span class="sidenav-label">Capacity Forecast</span>
+    </button>
+    <button class="sidenav-item" data-tab="tooling" role="tab" aria-selected="false" aria-controls="tab-tooling" id="navtab-tooling" tabindex="-1" data-tooltip="Tooling Amortization">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4z"/><path d="M3 11l7 4 7-4"/></svg></span><span class="sidenav-label">Tooling Amortization</span>
+    </button>
+    <button class="sidenav-item" data-tab="dfm" role="tab" aria-selected="false" aria-controls="tab-dfm" id="navtab-dfm" tabindex="-1" data-tooltip="DFM/DFC Sensitivity">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 7h14M3 13h14"/><circle cx="8" cy="7" r="1.6"/><circle cx="13" cy="13" r="1.6"/></svg></span><span class="sidenav-label">DFM/DFC Sensitivity</span>
+    </button>
+    <button class="sidenav-item" data-tab="governance" role="tab" aria-selected="false" aria-controls="tab-governance" id="navtab-governance" tabindex="-1" data-tooltip="Data Governance">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l6 2.5v4c0 4-2.5 6.5-6 7.5-3.5-1-6-3.5-6-7.5v-4L10 3z"/></svg></span><span class="sidenav-label">Data Governance</span>
+    </button>
+    <button class="sidenav-item" data-tab="playbook" role="tab" aria-selected="false" aria-controls="tab-playbook" id="navtab-playbook" tabindex="-1" data-tooltip="Diagnostic Playbook">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 4h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H4z"/><path d="M16 4h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z"/></svg></span><span class="sidenav-label">Diagnostic Playbook</span>
+    </button>
+    <button class="sidenav-item" data-tab="risk" role="tab" aria-selected="false" aria-controls="tab-risk" id="navtab-risk" tabindex="-1" data-tooltip="Predictive & Risk Models">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 6h3v3"/></svg></span><span class="sidenav-label">Predictive &amp; Risk Models</span>
+    </button>
+    <button class="sidenav-item" data-tab="framework" role="tab" aria-selected="false" aria-controls="tab-framework" id="navtab-framework" tabindex="-1" data-tooltip="Operating Framework">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></span><span class="sidenav-label">Operating Framework</span>
+    </button>
+    <button class="sidenav-item" data-tab="methodology" role="tab" aria-selected="false" aria-controls="tab-methodology" id="navtab-methodology" tabindex="-1" data-tooltip="Methodology & Sourcing">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M6 3h6l3 3v11H6z"/><path d="M12 3v3h3"/><path d="M8 11h4M8 14h4"/></svg></span><span class="sidenav-label">Methodology &amp; Sourcing</span>
+    </button>
+  </div>
+  <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 293/293 CHECKS PASSING</span>
-    <button class="icobtn" id="paletteBtn" type="button" style="margin-left:auto" aria-label="Quick navigation">Quick Jump <span class="mono" style="opacity:.65">⌘K</span></button>
-    <button class="icobtn" id="themeBtn" type="button">Toggle theme</button>
-    <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">Fit brief ↗</a>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 357/357 CHECKS PASSING</span>
+    <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
+    <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
+    <button class="icobtn" id="themeBtn" type="button" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
+    <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html" data-tooltip="Fit brief"><span class="label-text">Fit brief ↗</span></a>
   </div>
-  <div class="tabbar" role="tablist" aria-label="Command center sections">
-    <button class="tabbtn active" data-tab="exec" role="tab" aria-selected="true">Executive Overview</button>
-    <button class="tabbtn" data-tab="shouldcost" role="tab" aria-selected="false">Should-Cost &amp; MHR</button>
-    <button class="tabbtn" data-tab="variance" role="tab" aria-selected="false">Variance Waterfall</button>
-    <button class="tabbtn" data-tab="buildbuy" role="tab" aria-selected="false">Build-vs-Buy / CapEx</button>
-    <button class="tabbtn" data-tab="capacity" role="tab" aria-selected="false">Capacity Forecast</button>
-    <button class="tabbtn" data-tab="tooling" role="tab" aria-selected="false">Tooling Amortization</button>
-    <button class="tabbtn" data-tab="dfm" role="tab" aria-selected="false">DFM/DFC Sensitivity</button>
-    <button class="tabbtn" data-tab="governance" role="tab" aria-selected="false">Data Governance</button>
-    <button class="tabbtn" data-tab="playbook" role="tab" aria-selected="false">Diagnostic Playbook</button>
-    <button class="tabbtn" data-tab="risk" role="tab" aria-selected="false">Predictive &amp; Risk Models</button>
-    <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
-    <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
-  </div>
-</header>
+</nav>
 
-<main id="main" class="wrap">
+<main id="main" class="content">
+<div class="wrap">
 
   <div class="frame warn"><strong>Read this before anything else.</strong> Every dollar figure,
     KPI reading, and site rollup on this page is a synthetic worked example, built to demonstrate
@@ -214,7 +303,7 @@
     Methodology tab lists exactly what's independently sourced vs. invented for the exercise.</div>
 
   <!-- ============ TAB 1: EXECUTIVE OVERVIEW ============ -->
-  <section class="tabpanel active" id="tab-exec">
+  <section class="tabpanel active" id="tab-exec" role="tabpanel" aria-labelledby="navtab-exec">
     <h1>Executive Overview</h1>
     <p class="lede">A synthetic multi-site rollup, built the way the JD's "own the accuracy of the
       AMS manufacturing P&amp;L across multiple sites" responsibility would need one to look. Three
@@ -265,7 +354,7 @@
   </section>
 
   <!-- ============ TAB 2: SHOULD-COST & MHR ============ -->
-  <section class="tabpanel" id="tab-shouldcost">
+  <section class="tabpanel" id="tab-shouldcost" role="tabpanel" aria-labelledby="navtab-shouldcost">
     <h1>Should-Cost &amp; Machine-Hour-Rate Simulator</h1>
     <p class="lede">Bottom-up should-cost, decomposed the way the JD's "Cost Model Development"
       responsibility describes — material, machine conversion, labor, overhead, at the part and
@@ -393,7 +482,7 @@
   </section>
 
   <!-- ============ TAB 3: VARIANCE WATERFALL ============ -->
-  <section class="tabpanel" id="tab-variance">
+  <section class="tabpanel" id="tab-variance" role="tabpanel" aria-labelledby="navtab-variance">
     <h1>Standard-Cost Variance Waterfall</h1>
     <p class="lede">The six-way decomposition the JD's "variance analysis" and "activity-based
       actual COGS" responsibilities point at — material price/quantity, labor rate/efficiency,
@@ -485,7 +574,7 @@
   </section>
 
   <!-- ============ TAB 4: BUILD-VS-BUY / CAPEX ============ -->
-  <section class="tabpanel" id="tab-buildbuy">
+  <section class="tabpanel" id="tab-buildbuy" role="tabpanel" aria-labelledby="navtab-buildbuy">
     <h1>Build-vs-Buy &amp; CapEx Payback Analyzer</h1>
     <p class="lede">The JD's "investment decisions, build-vs-buy evaluations, and capacity
       planning" responsibility, made interactive — same NPV/payback logic used in the
@@ -556,7 +645,7 @@
   </section>
 
   <!-- ============ TAB: CAPACITY & ABSORPTION FORECAST ============ -->
-  <section class="tabpanel" id="tab-capacity">
+  <section class="tabpanel" id="tab-capacity" role="tabpanel" aria-labelledby="navtab-capacity">
     <h1>Capacity &amp; Absorption Forecast</h1>
     <p class="lede">A forward-looking view, not a rear-view mirror — the JD's "identify cost
       reduction opportunities" and capacity-planning responsibilities need unabsorbed overhead
@@ -580,7 +669,7 @@
   </section>
 
   <!-- ============ TAB: TOOLING AMORTIZATION ============ -->
-  <section class="tabpanel" id="tab-tooling">
+  <section class="tabpanel" id="tab-tooling" role="tabpanel" aria-labelledby="navtab-tooling">
     <h1>Tooling Amortization Tracker</h1>
     <p class="lede">Reusable fixtures and build plates expensed against a single prototype job
       overstate that job's unit cost and leave every re-order silently unburdened — the distortion
@@ -611,7 +700,7 @@
   </section>
 
   <!-- ============ TAB: DFM/DFC COST SENSITIVITY ============ -->
-  <section class="tabpanel" id="tab-dfm">
+  <section class="tabpanel" id="tab-dfm" role="tabpanel" aria-labelledby="navtab-dfm">
     <h1>Design-for-Cost Sensitivity</h1>
     <p class="lede">The JD's "inform manufacturing footprint and equipment decisions" and the source
       document's DFM/DFC feedback-loop idea, as a live heuristic — adjust a design parameter, see
@@ -651,7 +740,7 @@
   </section>
 
   <!-- ============ TAB: DATA GOVERNANCE ============ -->
-  <section class="tabpanel" id="tab-governance">
+  <section class="tabpanel" id="tab-governance" role="tabpanel" aria-labelledby="navtab-governance">
     <h1>Data Governance</h1>
     <p class="lede">"Block bad data at the point of entry, not at month-end close" — a real design
       principle worth demonstrating live, distinct from a claim about AMS's actual SAP configuration.
@@ -702,7 +791,7 @@
   </section>
 
   <!-- ============ TAB: COST DIAGNOSTIC PLAYBOOK ============ -->
-  <section class="tabpanel" id="tab-playbook">
+  <section class="tabpanel" id="tab-playbook" role="tabpanel" aria-labelledby="navtab-playbook">
     <h1>Cost Diagnostic Playbook</h1>
     <p class="lede">30 rehearsed diagnostic scenarios — the shape a "walk me through how you'd
       investigate X" interview question actually wants: operational symptom → the right variance
@@ -728,7 +817,7 @@
   </section>
 
   <!-- ============ TAB: PREDICTIVE & RISK MODELS ============ -->
-  <section class="tabpanel" id="tab-risk">
+  <section class="tabpanel" id="tab-risk" role="tabpanel" aria-labelledby="navtab-risk">
     <h1>Predictive &amp; Risk Models</h1>
     <p class="lede">Three independently-verified quantitative/stochastic models from the two newest
       downloaded documents — a learning-curve labor forecaster, a cost-adapted FMEA risk register,
@@ -835,7 +924,7 @@
   </section>
 
   <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
-  <section class="tabpanel" id="tab-framework">
+  <section class="tabpanel" id="tab-framework" role="tabpanel" aria-labelledby="navtab-framework">
     <h1>Operating Framework — A 90-Day Thesis</h1>
     <p class="lede">Not a claim about AMS's actual current state — this is how I'd structure the
       first 90 days in this seat, condensed from the fuller
@@ -870,7 +959,7 @@
   </section>
 
   <!-- ============ TAB 6: METHODOLOGY & SOURCING ============ -->
-  <section class="tabpanel" id="tab-methodology">
+  <section class="tabpanel" id="tab-methodology" role="tabpanel" aria-labelledby="navtab-methodology">
     <h1>Methodology &amp; Sourcing</h1>
     <p class="lede">What's real, what's illustrative, and why — read this before drawing any
       conclusion about AMS from this page.</p>
@@ -1057,6 +1146,30 @@
         <b>honest version</b> of the heartbeat-widget idea — a header badge showing this repo's
         real, current `stress.cjs` pass count instead of the fabricated one.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A direct request, not a downloaded document — the vertical navigation overhaul</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">This round's navigation
+        redesign came directly from TJ, not a downloaded "research" document — a different
+        provenance than every other entry on this page, so a different kind of note: not a
+        fact-check, a design-decision record. The request asked for a full engagement-focused
+        overhaul (30 features spanning gamification, immersion, sound) applied to "our dashboard
+        application." Two things were flagged once, then respected rather than re-litigated: this
+        dashboard's audience is a hiring panel evaluating cost-engineering seriousness, not
+        end-users to "engage," and the request's own language ("our"/"we") reads like a team
+        product brief more than this specific portfolio piece. TJ confirmed AMS as the target
+        anyway. Built from the request: a full <b>vertical, collapsible side navigation</b>
+        replacing the horizontal tab bar — real WAI-ARIA "Tabs" pattern (roving tabindex, arrow-key
+        navigation, Home/End, <code>aria-orientation="vertical"</code>), hand-drawn inline SVG
+        icons (still zero external dependencies), collapsed-mode tooltips, and a responsive floor
+        for narrow screens — plus a genuine <b>High-Contrast Mode</b> toggle (an independent
+        accessibility layer over the existing light/dark theme, not a third full palette). The
+        broader 30-idea brainstorm, P0/P1/P2 backlog, and architecture notes the request also asked
+        for are written up in <code>UX_ROADMAP.md</code> in this repo rather than built wholesale —
+        most of the 30 carry the same tension already resolved in the ninth-document review above
+        (3D/WebGL/gamification vs. this dashboard's restrained, verifiable tone), so they're
+        recorded as considered options, not committed to as code.</p>
+    </div>
   </section>
 
   <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
@@ -1082,7 +1195,9 @@
       not a replacement for any of them. Zero external dependencies; every calculation on this page
       runs client-side in the functions below.</p>
   </footer>
+</div>
 </main>
+</div>
 
 <script>
 (function(){
@@ -1097,14 +1212,72 @@
   });
   try{ var saved = localStorage.getItem('ams-cc-theme'); if(saved) applyTheme(saved); }catch(e){}
 
-  // ---------- Tabs ----------
-  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tabbtn'));
+  // ---------- High-Contrast Mode (independent of theme; persisted separately) ----------
+  var contrastBtn = document.getElementById('contrastBtn');
+  function applyContrast(on){
+    document.documentElement.setAttribute('data-contrast', on ? 'true' : 'false');
+    contrastBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    try{ localStorage.setItem('ams-cc-contrast', on ? '1' : '0'); }catch(e){}
+  }
+  contrastBtn.addEventListener('click', function(){
+    applyContrast(contrastBtn.getAttribute('aria-pressed') !== 'true');
+  });
+  try{ if(localStorage.getItem('ams-cc-contrast') === '1') applyContrast(true); }catch(e){}
+
+  // ---------- Vertical side navigation: tabs + roving-tabindex keyboard nav + collapse ----------
+  var navTabs = Array.prototype.slice.call(document.querySelectorAll('.sidenav-item[role="tab"]'));
   var panels = Array.prototype.slice.call(document.querySelectorAll('.tabpanel'));
-  function activateTab(name){
-    tabBtns.forEach(function(b){ var on = b.getAttribute('data-tab') === name; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true':'false'); });
+  function activateTab(name, opts){
+    var focusToo = !opts || opts.focus !== false;
+    navTabs.forEach(function(b){
+      var on = b.getAttribute('data-tab') === name;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.setAttribute('tabindex', on ? '0' : '-1');
+      if (on && focusToo) b.focus();
+    });
     panels.forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
   }
-  tabBtns.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab')); }); });
+  window.activateTab = activateTab;
+  navTabs.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab'), { focus: false }); }); });
+
+  // Roving tabindex + arrow-key navigation, per the WAI-ARIA APG vertical Tabs pattern
+  // (automatic activation: moving focus with the arrow keys also switches the panel).
+  var sidenavList = document.querySelector('.sidenav-list');
+  sidenavList.addEventListener('keydown', function(ev){
+    var currentIndex = navTabs.findIndex(function(b){ return b.getAttribute('tabindex') === '0'; });
+    if (currentIndex === -1) currentIndex = 0;
+    var nextIndex = null;
+    if (ev.key === 'ArrowDown') nextIndex = (currentIndex + 1) % navTabs.length;
+    else if (ev.key === 'ArrowUp') nextIndex = (currentIndex - 1 + navTabs.length) % navTabs.length;
+    else if (ev.key === 'Home') nextIndex = 0;
+    else if (ev.key === 'End') nextIndex = navTabs.length - 1;
+    if (nextIndex !== null){
+      ev.preventDefault();
+      activateTab(navTabs[nextIndex].getAttribute('data-tab'));
+    }
+  });
+
+  // Collapse/expand: persisted preference, defaulting to collapsed on narrow viewports where a
+  // 248px sidebar would crowd the content (a CSS media query underneath provides a hard floor on
+  // very narrow screens regardless of this JS-driven default).
+  var sidenav = document.getElementById('sidenav');
+  var sidenavToggle = document.getElementById('sidenavToggle');
+  function setCollapsed(collapsed){
+    sidenav.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    sidenavToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    sidenavToggle.textContent = collapsed ? '›' : '‹';
+    try{ localStorage.setItem('ams-cc-nav-collapsed', collapsed ? '1' : '0'); }catch(e){}
+  }
+  sidenavToggle.addEventListener('click', function(){
+    setCollapsed(sidenav.getAttribute('data-collapsed') !== 'true');
+  });
+  (function initCollapsedState(){
+    var stored = null;
+    try{ stored = localStorage.getItem('ams-cc-nav-collapsed'); }catch(e){}
+    if (stored === '1') setCollapsed(true);
+    else if (stored === '0') setCollapsed(false);
+    else setCollapsed(typeof window.innerWidth === 'number' && window.innerWidth < 900);
+  })();
 
   // ---------- Explain-the-Math modal ----------
   var EXPLAIN = {

@@ -11,8 +11,11 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (17 of them) cover the highest-traffic KPIs throughout, and a Cmd/Ctrl+K command palette
-jumps directly to any of the 21 indexed modules.
+modals (17 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 21 indexed modules, and a **collapsible vertical side navigation** (real
+WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
+Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
+30-idea UX brainstorm and backlog this round drew from.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -200,6 +203,23 @@ LogNormal/Beta-PERT machinery — an illustrative heuristic, like the DFM/DFC ta
 version** of the heartbeat-widget idea — a header badge showing this repo's real, current
 `stress.cjs` pass count instead of the fabricated one.
 
+**A tenth round (2026-09-05)** was a direct request from TJ, not a downloaded document — a
+three-phase UX/UI overhaul brief (30 ideas across interactivity, onboarding, accessibility, and
+gamification; a vertical-nav redesign; an implementation plan with production code). Two things
+were flagged once and then respected, not re-litigated: this dashboard's audience is a hiring panel,
+not end-users to "engage," and the request's own "our"/"we" phrasing read like a team-product brief
+more than this specific piece — TJ confirmed AMS as the target anyway. Built: a full **vertical,
+collapsible side navigation** (real WAI-ARIA Tabs pattern — roving tabindex, arrow-key/Home/End
+navigation, `aria-orientation="vertical"`, hand-drawn inline SVG icons, collapsed-mode tooltips, a
+responsive floor for narrow screens) replacing the horizontal tab bar, and a genuine **High-Contrast
+Mode** (an independent accessibility layer over the existing theme, not a third full palette). The
+full 30-idea brainstorm and P0/P1/P2 backlog are in [`UX_ROADMAP.md`](UX_ROADMAP.md) rather than
+built wholesale — most of the 30 carry the same 3D/WebGL/gamification-vs.-restrained-tone tension
+already resolved in the ninth round, so they're recorded as considered options. Building the nav
+also surfaced and fixed a real gap in this repo's own test harness: `stress.cjs`'s DOM stub wasn't
+seeding static HTML attributes (like `data-tab`) onto elements it created via `querySelectorAll`,
+so the very keyboard-nav checks written to test the new nav caught it first — see `stress.cjs`.
+
 ## The twelve modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
@@ -376,8 +396,24 @@ against exact numbers **independently verified live in a real browser before thi
   opens it, filtering + clicking an item switches tabs and closes the palette.
 - Verify badge: the header's two numbers are checked for self-consistency (100% claimed, not a
   partial count), and confirmed not to contain the recurring fabricated "1,520" figure.
+- Vertical side navigation: structural checks (12 side-nav items, 12 `role="tabpanel"` panels, real
+  ARIA vertical tablist, collapse toggle with `aria-expanded`, 12+ collapsed-mode tooltips) plus
+  **behavioral** checks against the real `activateTab()` and keyboard-nav code — not a
+  reimplementation: activating a tab flips the right `aria-selected`/roving-`tabindex` pairs and
+  panel visibility; ArrowDown/ArrowUp/Home/End on the real tablist move selection correctly,
+  including wraparound. Exercised live in a real browser too (Ctrl+K, arrow keys, collapse toggle,
+  High-Contrast toggle all confirmed working end-to-end).
+- High-Contrast Mode: clicking the toggle actually sets `data-contrast="true"` on the document root
+  (the attribute the CSS overrides key off) and flips `aria-pressed`, confirmed both in the stub and
+  live in-browser.
+- This round's DOM-stub upgrade (real `getAttribute`/`setAttribute`/`classList` tracking, plus
+  selector-aware `querySelectorAll` for the two selectors the nav actually uses) surfaced a genuine
+  bug in the *first version of the upgrade itself*: static HTML attributes like `data-tab` weren't
+  seeded onto stub elements created via `querySelectorAll`, so the nav's own attribute-comparison
+  logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
+  (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 293 checks, all passing as of this writing.
+Run: `node stress.cjs` — 357 checks, all passing as of this writing.
 
 ## Status
 
@@ -406,5 +442,11 @@ tab (12 modules total, up from eleven) — pushed live.
 
 **2026-09-04, eighth round:** added a Build-vs-Buy Crossover chart, a Monte Carlo Should-Cost
 Explorer, a Universal Command Palette (⌘K), and an honest stress-test-count header badge (still 12
-modules — all new cards/cross-cutting features on existing tabs) — pending push with explicit
+modules — all new cards/cross-cutting features on existing tabs) — pushed live.
+
+**2026-09-05, ninth round:** replaced the horizontal tab bar with a full vertical, collapsible,
+ARIA-compliant side navigation and added a High-Contrast Mode toggle, per a direct three-phase UX
+overhaul request (still 12 modules — a navigation/shell change, not a new module). Wrote
+`UX_ROADMAP.md` for the accompanying 30-idea brainstorm and backlog. Fixed a real bug in this
+repo's own test-harness stub along the way (see Verification above) — pending push with explicit
 confirmation, same discipline as every prior round.
