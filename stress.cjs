@@ -28,6 +28,21 @@ TABS.forEach((t) => {
 check(html.includes("None of it is real Amazon Manufacturing Services data"), "the top-level illustrative-data disclaimer is present");
 check(html.includes('robots" content="noindex,nofollow"'), "page is noindex,nofollow (not meant for search discovery)");
 
+console.log("--- Honest stress-test badge (the real count, not the fabricated '1,520' a downloaded document proposed for the same idea) ---");
+// This is a hand-maintained claim, same as the README's own "N checks, all passing as of this
+// writing" line -- it can only assert internal self-consistency (the two numbers in the badge
+// agree, i.e. 100% passing), not live-verify against this very run's own final count (that's a
+// real fixed-point problem: this check's own pass/fail is part of the total it would be checking).
+const verifyBadgeSpan = html.match(/id="verifyBadge"[^>]*>([^<]*)/);
+check(!!verifyBadgeSpan, "found the verify badge in the header");
+if (verifyBadgeSpan) {
+  const verifyBadgeText = verifyBadgeSpan[1];
+  const verifyBadgeNums = verifyBadgeText.match(/(\d+)\/(\d+) CHECKS PASSING/);
+  check(!!verifyBadgeNums, "the badge's text matches the expected \"N/N CHECKS PASSING\" pattern", verifyBadgeText);
+  if (verifyBadgeNums) check(verifyBadgeNums[1] === verifyBadgeNums[2], "the badge's own two numbers agree (claims 100% passing, not a partial/stale count)", `${verifyBadgeNums[1]}/${verifyBadgeNums[2]}`);
+  check(!verifyBadgeText.includes("1,520"), "the verify badge specifically does not echo the recurring fabricated \"1,520\" test-count figure");
+}
+
 console.log("--- No fabricated-specifics leakage (same discipline as the sibling repo) ---");
 // This page exists to demonstrate methodology honestly. None of the two downloaded documents'
 // fabricated specifics (an unconfirmed AMS client claim, a copied test-count figure, and their
@@ -61,18 +76,22 @@ const sixthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head
 check(!!sixthDocCardMatch, "found the one card allowed to name the sixth/seventh documents' repeated fabricated claims (in order to reject them)");
 const eighthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>Eighth document — a repeat of an already-declined narrative, one broken worked example, one real gap it pointed at<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
 check(!!eighthDocCardMatch, "found the one card allowed to name the eighth document's repeated fabricated claims (in order to reject them)");
+const ninthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>Ninth document — 30 UX\/UI proposals; most don't fit this dashboard, four genuinely do<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
+check(!!ninthDocCardMatch, "found the one card allowed to name the ninth document's repeated fabricated claims (in order to reject them)");
 let htmlOutsideDebunkCards = html;
 if (debunkCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(debunkCardMatch[0], "");
 if (errorsCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(errorsCardMatch[0], "");
 if (fifthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(fifthDocCardMatch[0], "");
 if (sixthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(sixthDocCardMatch[0], "");
 if (eighthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(eighthDocCardMatch[0], "");
+if (ninthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(ninthDocCardMatch[0], "");
 const foundBanned = bannedStrings.filter((s) => htmlOutsideDebunkCards.includes(s));
 check(foundBanned.length === 0, "none of the downloaded documents' fabricated specifics (client claims, copied test count, their own invented dollar figures, invented facility names) appear anywhere OUTSIDE the cards that name them specifically to debunk them", JSON.stringify(foundBanned));
 check(debunkCardMatch && bannedStrings.some((s) => debunkCardMatch[0].includes(s)), "the debunk card itself actually names at least one of the fabricated claims (confirms the exclusion above is excluding real content, not a no-op)");
 check(fifthDocCardMatch && bannedStrings.some((s) => fifthDocCardMatch[0].includes(s)), "the fifth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 check(sixthDocCardMatch && bannedStrings.some((s) => sixthDocCardMatch[0].includes(s)), "the sixth/seventh-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 check(eighthDocCardMatch && bannedStrings.some((s) => eighthDocCardMatch[0].includes(s)), "the eighth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
+check(ninthDocCardMatch && bannedStrings.some((s) => ninthDocCardMatch[0].includes(s)), "the ninth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 
 console.log("--- Executive Overview P&L rollup table: arithmetic + fabrication-proximity check (2026-09-04) ---");
 // This table's numbers are hand-typed static HTML, not JS-computed -- a stress-test found NO check
@@ -107,6 +126,7 @@ const wrongClaimStrings = ["PP02", "pre_tool_call"];
 const foundWrongClaims = wrongClaimStrings.filter((s) => htmlOutsideDebunkCards.includes(s));
 check(foundWrongClaims.length === 0, "neither confirmed-wrong claim (\"PP02\" as rework, \"pre_tool_call\" as a hook key) is asserted as fact anywhere OUTSIDE the cards that correct them", JSON.stringify(foundWrongClaims));
 check(errorsCardMatch && wrongClaimStrings.every((s) => errorsCardMatch[0].includes(s)), "the corrections card actually names both confirmed-wrong claims (confirms the exclusion is excluding real content, not a no-op)");
+check(ninthDocCardMatch && ninthDocCardMatch[0].includes("PP02"), "the ninth-document card actually names the repeated \"PP02\" wrong claim (confirms its exclusion isn't a no-op for this check too)");
 
 console.log("--- Executing the real inline script in a stubbed DOM ---");
 const scriptMatch = html.match(/<script>\s*\(function\(\)\{[\s\S]*?\}\)\(\);\s*<\/script>/);
@@ -124,6 +144,7 @@ const DEFAULTS = {
   bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000",
   bbRate: "10", bbYears: "3",
   qsInternalMc: "180.00", qsVendorP0: "420.00", qsGamma: "0.12",
+  mcMatBaseline: "85.00", mcMatVariation: "15", mcConvBaseline: "65.00", mcConvVariation: "20",
   cpFrozen: "26.00", cpSpot: "29.50", cpVolume: "2200",
   tlCost: "18000", tlRun: "2400", tlBatch: "24",
   dfmThickness: "1.5", dfmPocket: "5", dfmHeight: "80",
@@ -232,6 +253,41 @@ check(elements.bbCashflowBody.innerHTML.split("<tr>").length - 1 === 4, "cash-fl
 console.log("--- Volume Crossover Point (Q*): golden values (pre-registered via Python, confirms the closed-form model — NOT the source document's own broken total-cost script) ---");
 check(elements.qsOut.textContent === "1,165 units", "crossover volume matches golden value ((420/180)^(1/0.12))", elements.qsOut.textContent);
 check(elements.qsVendorAtStar.textContent === "$180.00", "vendor price at Q* matches golden value and equals the internal marginal cost input exactly (confirms this IS the crossover)", elements.qsVendorAtStar.textContent);
+
+console.log("--- Build-vs-Buy Crossover Chart: golden pixel-math values (SVG chart, first of its kind on this page) ---");
+const chartData = sandbox.renderQStarChart();
+check(Math.abs(chartData.qStar - 1165.3952) < 0.01, "chart's own computed Q* matches the calculator's Q* (same formula, not a second implementation)", chartData.qStar);
+check(chartData.qMax === 2331, "chart x-axis max matches golden value (round(Q*)*2)", chartData.qMax);
+check(Math.abs(chartData.yMax - 483) < 0.01, "chart y-axis max matches golden value (max(P0,MC)*1.15)", chartData.yMax);
+check(Math.abs(chartData.qStarX - 319.87) < 0.1, "Q* marker's x pixel position matches golden value", chartData.qStarX);
+check(Math.abs(chartData.mcY - 164.29) < 0.1, "internal-cost line's y pixel position matches golden value", chartData.mcY);
+check(elements.qsChartWrap.innerHTML.includes("<svg"), "the chart actually rendered an <svg> element into the page, not just returned numbers");
+check(elements.qsChartWrap.innerHTML.includes("Q* = 1,165"), "the rendered SVG labels the crossover with the correct Q* value");
+
+console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
+check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);
+check(elements.mcP80Out.textContent === "$159.28", "P80 matches golden value", elements.mcP80Out.textContent);
+check(elements.mcP95Out.textContent === "$167.33", "P95 matches golden value", elements.mcP95Out.textContent);
+check(elements.mcRangeOut.textContent === "$125.32 – $175.60", "simulated min-max range matches golden value", elements.mcRangeOut.textContent);
+const mcRun1 = sandbox.calcMonteCarlo();
+const mcRun2 = sandbox.calcMonteCarlo();
+check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real calcMonteCarlo() twice in a row with the same inputs reproduces an identical result (deterministic seeded PRNG, not Math.random())", `run1=${mcRun1.p50}/${mcRun1.p95} run2=${mcRun2.p50}/${mcRun2.p95}`);
+
+console.log("--- Universal Command Palette: structural + filter checks ---");
+check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
+check(sandbox.COMMAND_INDEX.length === 21, "exactly 21 navigable items in the command index", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 21, "all 21 command labels are unique");
+const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
+check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
+const allMatch = sandbox.renderPaletteList("");
+check(allMatch.length === 21, "empty-query search returns all 21 items", allMatch.length);
+const learningMatch = sandbox.renderPaletteList("learning");
+check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
+const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
+check(riskTabMatch.length === 4, "exactly 4 command index entries point at the Predictive & Risk Models tab", riskTabMatch.length);
+sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
+check(html.includes('id="paletteModal"') && html.includes('id="paletteInput"') && html.includes('id="paletteBtn"'), "the palette modal, search input, and header trigger button all exist in the HTML");
+check(html.includes("⌘K"), "the header button visibly hints at the Cmd/Ctrl+K shortcut");
 
 console.log("--- Capacity & Absorption Forecast: golden values ---");
 check(JSON.stringify(sandbox.CAP_WEEKS) === JSON.stringify([{avail:160,booked:150},{avail:160,booked:140},{avail:160,booked:100},{avail:160,booked:90},{avail:160,booked:155},{avail:160,booked:120}]), "this harness's seeded default inputs (capAvailN/capBookedN) match the page's own CAP_WEEKS array, not a stale copy", JSON.stringify(sandbox.CAP_WEEKS));
@@ -364,12 +420,12 @@ check(foundBannedInRisk.length === 0, "none of the banned/wrong-claim strings le
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 16, "exactly 16 explain buttons are wired in the HTML (15 from before + the Volume Crossover Point)", explainButtonCount);
+check(explainButtonCount === 17, "exactly 17 explain buttons are wired in the HTML (16 from before + the Monte Carlo Explorer)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");

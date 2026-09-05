@@ -167,6 +167,12 @@
   .pb-row b{color:rgb(var(--c-text-primary))}
   .pb-formula{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:rgb(var(--c-accent));background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;margin:8px 0}
   .pb-result{font-weight:700;font-family:ui-monospace,Menlo,monospace}
+
+  .palette-input{width:100%;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);color:inherit;padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;margin-bottom:10px}
+  .palette-list{max-height:320px;overflow-y:auto}
+  .palette-item{padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px}
+  .palette-item:hover{background:rgb(var(--c-accent)/.08)}
+  .palette-item.selected{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
 </style>
 </head>
 <body>
@@ -176,7 +182,9 @@
   <div class="bar">
     <span class="brand"><span class="dot"></span>AMS Manufacturing Cost Engineering Command Center<small>Purpose-built for one role, not a general portfolio dashboard</small></span>
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <button class="icobtn" id="themeBtn" type="button" style="margin-left:auto">Toggle theme</button>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 293/293 CHECKS PASSING</span>
+    <button class="icobtn" id="paletteBtn" type="button" style="margin-left:auto" aria-label="Quick navigation">Quick Jump <span class="mono" style="opacity:.65">⌘K</span></button>
+    <button class="icobtn" id="themeBtn" type="button">Toggle theme</button>
     <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">Fit brief ↗</a>
   </div>
   <div class="tabbar" role="tablist" aria-label="Command center sections">
@@ -358,6 +366,30 @@
         <div class="line total"><span>Fully burdened MHR</span><span class="mono" id="mhrTotalOut">$0.00/hr</span></div>
       </div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Monte Carlo Should-Cost Explorer <button class="explain-btn" data-explain="montecarlo" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">5,000 SIMULATED TRIALS, SEEDED &amp; REPRODUCIBLE</span></div>
+      <p class="lede" style="margin-bottom:12px">Should-cost is a distribution, not a single number.
+        This runs 5,000 trials varying material and conversion cost within the ranges below, then
+        reports the P50/P80/P95 percentiles a real quoting or budgeting process would use. A
+        simplified uniform-variation model (not the LogNormal/Beta-PERT distributions a full
+        version would use) — an illustrative heuristic, like the DFM/DFC tab, not a physics-based
+        simulation. Deterministically seeded so the same inputs always reproduce the same result.</p>
+      <div class="grid cols-2">
+        <div>
+          <div class="field"><label>Baseline material cost ($/unit)</label><input type="number" id="mcMatBaseline" value="85.00" step="1"></div>
+          <div class="field"><label>Material cost variation (±%)</label><input type="number" id="mcMatVariation" value="15" step="1"></div>
+          <div class="field"><label>Baseline conversion cost ($/unit)</label><input type="number" id="mcConvBaseline" value="65.00" step="1"></div>
+          <div class="field"><label>Conversion cost variation (±%)</label><input type="number" id="mcConvVariation" value="20" step="1"></div>
+        </div>
+        <div class="outline">
+          <div class="line"><span>P50 — quoting target</span><span class="mono" id="mcP50Out">$0.00</span></div>
+          <div class="line"><span>P80 — budget commitment line</span><span class="mono" id="mcP80Out">$0.00</span></div>
+          <div class="line total"><span>P95 — commercial review ceiling</span><span class="mono" id="mcP95Out">$0.00</span></div>
+          <div class="line" style="margin-top:8px;font-size:11px;color:rgb(var(--c-text-secondary))"><span>Simulated range</span><span class="mono" id="mcRangeOut">$0.00 – $0.00</span></div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ TAB 3: VARIANCE WATERFALL ============ -->
@@ -519,6 +551,7 @@
         downloaded document's own worked example for a similar solver (different formulation —
         integrating a fixed tooling investment into total cost, not marginal cost) doesn't actually
         find a crossover when run with its own stated numbers; see the Methodology tab.</p>
+      <div id="qsChartWrap" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -996,12 +1029,48 @@
         the cleaner, closed-form marginal-cost-equality model from the sixth document's "Model 6"
         instead — a single, monotonic, verifiable crossover, not the broken total-cost integral.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Ninth document — 30 UX/UI proposals; most don't fit this dashboard, four genuinely do</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">A ninth downloaded document
+        proposed 30 UX/UI features for a much more elaborate version of this dashboard — WebGL 3D
+        viewports, particle animations, an oscilloscope-style live sensor stream, an isometric
+        plant-floor twin, drag-and-drop kanban, gamification with celebratory particle effects, and
+        sound cues. This is a design-fit question, not a factual one, so the useful check here was
+        against this page's own established architecture rather than a fact-check: most of the 30
+        would mean either real 3D/WebGL engineering effort disproportionate to the payoff, or
+        <b>fabricated telemetry data</b> to animate (there's no real sensor stream behind this page
+        to visualize), or would trade the deliberately restrained, verifiable, professional tone
+        this whole exercise depends on for something that reads as a flashy demo. One proposal
+        (a "Solution Action Dispatcher") suggested the dashboard draft a real
+        <b>"SAP Rework Order PP02"</b> — the same confirmed-wrong claim from the third document,
+        now proposed as something to actually dispatch, compounding a wrong fact with an implied
+        live-system-access claim already declined five times this session. Another (a "Parity Proof
+        Heartbeat Widget") proposed displaying <b>"1,520 Parity Tests Passing"</b> as a persistent
+        header badge — the fabricated figure, live and prominent, for a second time in a proposed
+        UI mockup. Four proposals were genuinely a good fit — feasible in plain JS/CSS/SVG, no
+        fabricated data required, consistent with the existing design language — and are now built:
+        the <b>Universal Command Palette</b> (⌘K quick navigation, feature #23), the
+        <b>Build-vs-Buy Crossover chart</b> (a real visualization of the Q* solver, feature #17),
+        the <b>Monte Carlo Should-Cost Explorer</b> (feature #16, using a seeded PRNG instead of the
+        document's LogNormal/Beta-PERT machinery for a simpler, still-genuine simulation), and the
+        <b>honest version</b> of the heartbeat-widget idea — a header badge showing this repo's
+        real, current `stress.cjs` pass count instead of the fabricated one.</p>
+    </div>
   </section>
 
   <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
     <div class="modal-box">
       <div class="modal-head"><h3 id="explainTitle">Formula</h3><button class="modal-close" id="explainClose" type="button" aria-label="Close">×</button></div>
       <div class="modal-body" id="explainBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="paletteModal" role="dialog" aria-modal="true" aria-label="Quick navigation">
+    <div class="modal-box">
+      <div class="modal-head"><h3>Quick Navigation</h3><button class="modal-close" id="paletteClose" type="button" aria-label="Close">×</button></div>
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Jump to a tab or module…" aria-label="Search tabs and modules">
+      <div class="palette-list" id="paletteList"></div>
     </div>
   </div>
 
@@ -1053,7 +1122,8 @@
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
     ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above.' },
-    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab).' }
+    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab).' },
+    montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1069,9 +1139,92 @@
   window.openExplain = openExplain;
   document.getElementById('explainClose').addEventListener('click', closeExplain);
   explainModal.addEventListener('click', function(ev){ if(ev.target === explainModal) closeExplain(); });
-  document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeExplain(); });
   Array.prototype.slice.call(document.querySelectorAll('[data-explain]')).forEach(function(btn){
     btn.addEventListener('click', function(ev){ ev.stopPropagation(); openExplain(btn.getAttribute('data-explain')); });
+  });
+
+  // ---------- Universal Command Palette (Cmd/Ctrl+K quick navigation) ----------
+  var COMMAND_INDEX = [
+    { label: 'Executive Overview', tab: 'exec' },
+    { label: 'Should-Cost & MHR Simulator', tab: 'shouldcost' },
+    { label: 'MHR Build-Up Calculator', tab: 'shouldcost', scrollTo: 'mhrDepOut' },
+    { label: 'Monte Carlo Should-Cost Explorer', tab: 'shouldcost', scrollTo: 'mcP50Out' },
+    { label: 'Variance Waterfall', tab: 'variance' },
+    { label: 'Commodity Price Exposure Early Warning', tab: 'variance', scrollTo: 'cpShiftPct' },
+    { label: 'Mean-Reversion Forward Band', tab: 'variance', scrollTo: 'ouExpected' },
+    { label: 'Build-vs-Buy / CapEx', tab: 'buildbuy' },
+    { label: 'Volume Crossover Point (Q*)', tab: 'buildbuy', scrollTo: 'qsOut' },
+    { label: 'Capacity & Absorption Forecast', tab: 'capacity' },
+    { label: 'Tooling Amortization Tracker', tab: 'tooling' },
+    { label: 'Design-for-Cost Sensitivity', tab: 'dfm' },
+    { label: 'Data Governance (MDQS)', tab: 'governance' },
+    { label: 'Guardrail Gate Simulator', tab: 'governance', scrollTo: 'gateBomOut' },
+    { label: 'Cost Diagnostic Playbook', tab: 'playbook' },
+    { label: 'Predictive & Risk Models', tab: 'risk' },
+    { label: 'Learning Curve Forecaster', tab: 'risk', scrollTo: 'lcB' },
+    { label: 'Cost Risk Register (CRPN)', tab: 'risk', scrollTo: 'riskRegisterBody' },
+    { label: 'Manufacturing Value at Risk (M-VaR)', tab: 'risk', scrollTo: 'mvarOut' },
+    { label: 'Operating Framework', tab: 'framework' },
+    { label: 'Methodology & Sourcing', tab: 'methodology' }
+  ];
+  var paletteModal = document.getElementById('paletteModal');
+  var paletteInput = document.getElementById('paletteInput');
+  var paletteListEl = document.getElementById('paletteList');
+  var paletteFiltered = [];
+  var paletteSelectedIndex = -1;
+  function renderPaletteList(query){
+    var q = (query || '').toLowerCase();
+    paletteFiltered = COMMAND_INDEX.filter(function(item){ return item.label.toLowerCase().indexOf(q) > -1; });
+    paletteSelectedIndex = paletteFiltered.length ? 0 : -1;
+    paletteListEl.innerHTML = paletteFiltered.length
+      ? paletteFiltered.map(function(item, i){
+          return '<div class="palette-item' + (i === 0 ? ' selected' : '') + '" data-idx="' + i + '">' + item.label + '</div>';
+        }).join('')
+      : '<div class="palette-item" style="opacity:.6;cursor:default">No matches</div>';
+    return paletteFiltered;
+  }
+  function updatePaletteSelection(){
+    Array.prototype.slice.call(paletteListEl.querySelectorAll('.palette-item')).forEach(function(el, i){
+      el.classList.toggle('selected', i === paletteSelectedIndex);
+    });
+  }
+  function activatePaletteItem(item){
+    if (!item) return;
+    activateTab(item.tab);
+    closePalette();
+    if (item.scrollTo){
+      var target = document.getElementById(item.scrollTo);
+      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  function openPalette(){
+    paletteModal.classList.add('open');
+    paletteInput.value = '';
+    renderPaletteList('');
+    paletteInput.focus();
+  }
+  function closePalette(){ paletteModal.classList.remove('open'); }
+  window.COMMAND_INDEX = COMMAND_INDEX;
+  window.renderPaletteList = renderPaletteList;
+  window.activatePaletteItem = activatePaletteItem;
+  window.openPalette = openPalette;
+  window.closePalette = closePalette;
+  document.getElementById('paletteBtn').addEventListener('click', openPalette);
+  document.getElementById('paletteClose').addEventListener('click', closePalette);
+  paletteModal.addEventListener('click', function(ev){ if (ev.target === paletteModal) closePalette(); });
+  paletteInput.addEventListener('input', function(){ renderPaletteList(paletteInput.value); });
+  paletteListEl.addEventListener('click', function(ev){
+    var itemEl = ev.target.closest ? ev.target.closest('.palette-item[data-idx]') : null;
+    if (itemEl) activatePaletteItem(paletteFiltered[parseInt(itemEl.getAttribute('data-idx'), 10)]);
+  });
+  paletteInput.addEventListener('keydown', function(ev){
+    if (ev.key === 'ArrowDown'){ ev.preventDefault(); if (paletteFiltered.length){ paletteSelectedIndex = (paletteSelectedIndex + 1) % paletteFiltered.length; updatePaletteSelection(); } }
+    else if (ev.key === 'ArrowUp'){ ev.preventDefault(); if (paletteFiltered.length){ paletteSelectedIndex = (paletteSelectedIndex - 1 + paletteFiltered.length) % paletteFiltered.length; updatePaletteSelection(); } }
+    else if (ev.key === 'Enter'){ ev.preventDefault(); if (paletteSelectedIndex > -1) activatePaletteItem(paletteFiltered[paletteSelectedIndex]); }
+  });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape'){ closeExplain(); closePalette(); }
+    else if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); openPalette(); }
   });
 
   // ---------- Rate card (single source of truth for MHR by work center) ----------
@@ -1126,6 +1279,47 @@
   window.calcMhrBuildup = calcMhrBuildup;
   ['mhrCapital','mhrLife','mhrFloor','mhrFloorRate','mhrService','mhrSchedHrs','mhrOee','mhrPower','mhrUtilRate','mhrConsumables'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcMhrBuildup);
+  });
+
+  // ---------- Monte Carlo Should-Cost Explorer ----------
+  // Seeded PRNG (mulberry32, public domain) instead of Math.random() -- deterministic and
+  // reproducible: the same inputs always produce the same P50/P80/P95, in the browser and in this
+  // repo's own test harness alike. Not a shortcut around real randomness -- a fixed seed for
+  // reproducible simulation is standard practice, not a fabrication-adjacent choice.
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var MC_TRIALS = 5000;
+  var MC_SEED = 42;
+  function calcMonteCarlo(){
+    var matBase = parseFloat(document.getElementById('mcMatBaseline').value) || 0;
+    var matVar = (parseFloat(document.getElementById('mcMatVariation').value) || 0) / 100;
+    var convBase = parseFloat(document.getElementById('mcConvBaseline').value) || 0;
+    var convVar = (parseFloat(document.getElementById('mcConvVariation').value) || 0) / 100;
+    var rand = mulberry32(MC_SEED);
+    var results = [];
+    for (var i = 0; i < MC_TRIALS; i++){
+      var matTrial = matBase * (1 + (rand() * 2 - 1) * matVar);
+      var convTrial = convBase * (1 + (rand() * 2 - 1) * convVar);
+      results.push(matTrial + convTrial);
+    }
+    results.sort(function(a, b){ return a - b; });
+    function pct(p){ return results[Math.floor(p * MC_TRIALS)]; }
+    var p50 = pct(0.50), p80 = pct(0.80), p95 = pct(0.95);
+    document.getElementById('mcP50Out').textContent = '$' + p50.toFixed(2);
+    document.getElementById('mcP80Out').textContent = '$' + p80.toFixed(2);
+    document.getElementById('mcP95Out').textContent = '$' + p95.toFixed(2);
+    document.getElementById('mcRangeOut').textContent = '$' + results[0].toFixed(2) + ' – $' + results[MC_TRIALS - 1].toFixed(2);
+    return { p50: p50, p80: p80, p95: p95, min: results[0], max: results[MC_TRIALS - 1] };
+  }
+  window.calcMonteCarlo = calcMonteCarlo;
+  ['mcMatBaseline', 'mcMatVariation', 'mcConvBaseline', 'mcConvVariation'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcMonteCarlo);
   });
 
   // ---------- Tab 2: Should-Cost calculator ----------
@@ -1331,8 +1525,53 @@
     return { qStar: qStar, vendorAtStar: vendorAtStar };
   }
   window.calcQStar = calcQStar;
+
+  // First SVG-based chart on this page (the bar-chart pattern used elsewhere doesn't fit a
+  // continuous curve). Native SVG, no charting library -- same zero-dependency stance as the rest
+  // of the page. Returns the underlying numeric chart parameters (not just renders) so they can be
+  // asserted against directly, the same testability contract as every other calculator here.
+  function renderQStarChart(){
+    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
+    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
+    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
+    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
+    var qMax = Math.max(Math.round(qStar * 2), 200);
+    var yMax = Math.max(p0, mc) * 1.15;
+
+    var W = 600, H = 280, marginLeft = 60, marginRight = 20, marginTop = 20, marginBottom = 30;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    function xScale(q){ return marginLeft + (q - 1) / (qMax - 1) * plotW; }
+    function yScale(price){ return marginTop + (1 - price / yMax) * plotH; }
+
+    var steps = 80;
+    var pathPoints = [];
+    for (var i = 0; i <= steps; i++){
+      var q = 1 + (qMax - 1) * (i / steps);
+      var price = p0 * Math.pow(q, -gamma);
+      pathPoints.push((i === 0 ? 'M' : 'L') + xScale(q).toFixed(1) + ',' + yScale(price).toFixed(1));
+    }
+    var pathD = pathPoints.join(' ');
+    var qStarX = xScale(qStar), mcY = yScale(mc);
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked">' +
+      '<line x1="' + marginLeft + '" y1="' + (H - marginBottom) + '" x2="' + (W - marginRight) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + mcY.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + mcY.toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="4,3"/>' +
+      '<path d="' + pathD + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
+      '<line x1="' + qStarX.toFixed(1) + '" y1="' + marginTop + '" x2="' + qStarX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-danger))" stroke-width="1" stroke-dasharray="3,3"/>' +
+      '<circle cx="' + qStarX.toFixed(1) + '" cy="' + mcY.toFixed(1) + '" r="4" fill="rgb(var(--c-danger))"/>' +
+      '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Vendor unit price vs. volume (Q)</text>' +
+      '<text x="' + (marginLeft + 4) + '" y="' + (mcY - 5).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))">Internal marginal cost $' + mc.toFixed(2) + '</text>' +
+      '<text x="' + (qStarX + 6).toFixed(1) + '" y="' + (marginTop + 10) + '" font-size="10" fill="rgb(var(--c-danger))">Q* = ' + Math.round(qStar).toLocaleString() + '</text>' +
+      '<text x="' + marginLeft + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))">1</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">' + qMax.toLocaleString() + ' units</text>' +
+      '</svg>';
+    document.getElementById('qsChartWrap').innerHTML = svg;
+    return { qStar: qStar, qMax: qMax, yMax: yMax, qStarX: qStarX, mcY: mcY };
+  }
+  window.renderQStarChart = renderQStarChart;
   ['qsInternalMc', 'qsVendorP0', 'qsGamma'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', calcQStar);
+    document.getElementById(id).addEventListener('input', function(){ calcQStar(); renderQStarChart(); });
   });
 
   // ---------- Capacity & Absorption Forecast ----------
@@ -1908,10 +2147,12 @@
 
   // ---------- Initial render ----------
   calcMhrBuildup();
+  calcMonteCarlo();
   calcShouldCost();
   calcVariance();
   calcBuildBuy();
   calcQStar();
+  renderQStarChart();
   renderCapacityInputs();
   calcCapacity();
   calcTooling();

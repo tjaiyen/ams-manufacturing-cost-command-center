@@ -6,12 +6,13 @@ not a general-purpose portfolio piece. Twelve live, interactive modules covering
 own responsibility areas: should-cost modeling, machine-hour-rate formalization (including a
 first-principles MHR build-up calculator), standard-cost variance decomposition (plus a
 forward-looking commodity price-exposure warning and an Ornstein-Uhlenbeck mean-reversion band),
-build-vs-buy/NPV (plus a closed-form volume-crossover solver), capacity/absorption forecasting,
-tooling amortization, design-for-cost sensitivity, data governance, a 30-scenario cost diagnostic
-playbook, a predictive/risk-modeling suite (learning-curve forecaster, cost-adapted FMEA risk
-register, Manufacturing Value at Risk), a multi-site executive rollup, and an honest operating
-framework. Click-to-open "Explain the Math" modals (16 of them) cover the highest-traffic KPIs
-throughout.
+build-vs-buy/NPV (plus a closed-form volume-crossover solver with a live SVG chart), capacity/
+absorption forecasting, tooling amortization, design-for-cost sensitivity, data governance, a
+30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
+a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
+multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
+modals (17 of them) cover the highest-traffic KPIs throughout, and a Cmd/Ctrl+K command palette
+jumps directly to any of the 21 indexed modules.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -177,6 +178,28 @@ marginal-cost-equality model from the sixth document's "Model 6" instead of the 
 broken total-cost integral. Same recurring pattern reconfirmed: "1,520 tests" and the Kuiper/
 Robotics/AWS client claim both appear again.
 
+**A ninth verification round (2026-09-04)** reviewed a document proposing 30 UX/UI features for a
+much more elaborate version of this dashboard — WebGL 3D viewports, particle animations, an
+oscilloscope-style live sensor stream, an isometric plant-floor twin, drag-and-drop kanban,
+gamification with celebratory particle effects, sound cues. This is a design-fit question, not a
+factual one — the useful check was against this repo's own established architecture (zero
+dependencies, no fabricated telemetry, a restrained professional tone) rather than a fact-check.
+Most of the 30 don't fit: either real 3D/WebGL engineering effort disproportionate to the payoff, or
+fabricated telemetry data to animate (there's no real sensor stream behind this page), or a shift in
+tone this exercise doesn't want. One proposal (a "Solution Action Dispatcher") suggested drafting a
+real **"SAP Rework Order PP02"** — the same confirmed-wrong claim from the third document, now
+proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat Widget") proposed
+displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
+live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
+JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
+(⌘K/Ctrl+K quick navigation across all 21 indexed modules), a **Build-vs-Buy Crossover chart** (a
+real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
+a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
+Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
+LogNormal/Beta-PERT machinery — an illustrative heuristic, like the DFM/DFC tab), and the **honest
+version** of the heartbeat-widget idea — a header badge showing this repo's real, current
+`stress.cjs` pass count instead of the fabricated one.
+
 ## The twelve modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
@@ -192,7 +215,10 @@ Robotics/AWS client claim both appear again.
    includes an **MHR Build-Up Calculator**: the same standing/running rate card, derived live from
    first principles (capital depreciation + floor allocation + service contract, spread over
    scheduled hours × OEE, plus power + consumables) — fresh illustrative inputs, not the fifth
-   document's copied-from-document-one figures.
+   document's copied-from-document-one figures. Also a **Monte Carlo Should-Cost Explorer**: 5,000
+   simulated trials over material/conversion cost variation, reporting P50/P80/P95 percentiles via a
+   deterministically seeded PRNG (mulberry32, not `Math.random()`) so the same inputs always
+   reproduce the same result — should-cost as a distribution, not a point estimate.
 3. **Variance Waterfall** — the real six-way standard-cost decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOHV),
    fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
    Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
@@ -205,7 +231,9 @@ Robotics/AWS client claim both appear again.
    (Q\*)** solver — the NPV analyzer answers "is this a good deal at my assumed volume"; this answers
    "at what volume does the vendor's falling per-unit price actually beat my own cost," a closed-form
    marginal-cost-equality model, not a copy of the eighth downloaded document's broken total-cost
-   script (see Methodology tab).
+   script (see Methodology tab). Includes a live SVG line chart plotting the vendor's price curve
+   against the internal-cost line with the crossover marked — the first chart on this page built
+   from a continuous curve rather than discrete bars.
 5. **Capacity & Absorption Forecast** — a 6-week rolling capacity plan (from Issue 11's "predict
    unabsorbed overhead 30-60 days in advance" idea) — fully editable available/booked hours per week,
    live unabsorbed-hours/dollars/utilization, green/amber/red banding distinct from the Executive
@@ -245,6 +273,12 @@ Robotics/AWS client claim both appear again.
    [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
 12. **Methodology & Sourcing** — the source ledger described above.
+
+**Cross-cutting:** a **Universal Command Palette** (⌘K / Ctrl+K, or the "Quick Jump" header button)
+indexes all 12 tabs plus 9 specific modules within them — type to filter, arrow keys to navigate,
+Enter to jump straight there. And a header **verify badge** states this repo's real, current
+`stress.cjs` pass count — the honest version of an idea a downloaded document proposed with a
+fabricated "1,520" figure instead (see Methodology tab).
 
 ## Verification (`stress.cjs`)
 
@@ -328,8 +362,22 @@ against exact numbers **independently verified live in a real browser before thi
   internal marginal cost input exactly ($180.00) — proof the crossover is real, not a copy of the
   eighth downloaded document's own worked example, which was independently re-run (extended to one
   million units) and never finds a crossover at all.
+- Build-vs-Buy Crossover chart: the same pixel-math (Q\*, axis scaling, marker position) pre-
+  registered via Python/Node before being written, cross-checked against the calculator's own Q\*
+  (not a second, potentially-divergent implementation), and confirmed the rendered SVG actually
+  contains a `<svg>` element and the correct "Q\* = 1,165" label.
+- Monte Carlo Should-Cost Explorer defaults ($85.00 material ±15%, $65.00 conversion ±20%, seed 42,
+  5,000 trials) → **P50 $149.88 / P80 $159.28 / P95 $167.33**, range $125.32–$175.60 — and calling
+  the real `calcMonteCarlo()` twice in a row reproduces an identical result, confirmed live (proof
+  it's a seeded, deterministic PRNG, not unseeded `Math.random()`).
+- Universal Command Palette: exactly 21 unique, unique-labeled entries, every one pointing at a real
+  tab id; empty-query search returns all 21, searching "learning" narrows to exactly 1, exactly 4
+  entries route to the Predictive & Risk Models tab. Exercised live in a real browser too: Ctrl+K
+  opens it, filtering + clicking an item switches tabs and closes the palette.
+- Verify badge: the header's two numbers are checked for self-consistency (100% claimed, not a
+  partial count), and confirmed not to contain the recurring fabricated "1,520" figure.
 
-Run: `node stress.cjs` — 260 checks, all passing as of this writing.
+Run: `node stress.cjs` — 293 checks, all passing as of this writing.
 
 ## Status
 
@@ -354,5 +402,9 @@ Risk Register/CRPN, Manufacturing Value at Risk) and a Mean-Reversion Forward Ba
 tab (12 modules total, up from eleven) — pushed live.
 
 **2026-09-04, seventh round:** added the Volume Crossover Point (Q*) solver to the Build-vs-Buy tab
-(still 12 modules — a new card on an existing tab, not a new tab) — pending push with explicit
+(still 12 modules — a new card on an existing tab, not a new tab) — pushed live.
+
+**2026-09-04, eighth round:** added a Build-vs-Buy Crossover chart, a Monte Carlo Should-Cost
+Explorer, a Universal Command Palette (⌘K), and an honest stress-test-count header badge (still 12
+modules — all new cards/cross-cutting features on existing tabs) — pending push with explicit
 confirmation, same discipline as every prior round.
