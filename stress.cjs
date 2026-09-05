@@ -457,9 +457,25 @@ const expectedCum = [3025, 1985, 3335, 5855, 6285, 5325];
 bridgeResult.steps.slice(0, 6).forEach((s, i) => {
   check(Math.abs(s.to - expectedCum[i]) < 0.01, `step ${i} ("${s.label}") cascades to the pre-registered running cumulative total`, `to=${s.to} expected=${expectedCum[i]}`);
 });
-check(bridgeResult.steps[0].from === 0, "the first bar starts its cascade at zero, not floating in isolation like the old grouped-bar chart");
 check(bridgeResult.steps[5].to === bridgeResult.steps[6].to && bridgeResult.steps[6].to === 5325, "the running cumulative total after all 6 variances exactly equals the NET bar's own total (internal consistency -- the bridge really bridges to the number the calculator reports separately)", bridgeResult.steps[6].to);
-check(bridgeResult.steps[6].isTotal === true && bridgeResult.steps[6].from === 0, "the final NET bar is a full bar from zero, correctly distinguished from the cascading variance deltas", JSON.stringify(bridgeResult.steps[6]));
+check(bridgeResult.steps[6].isTotal === true, "the final NET bar is correctly flagged as the total, distinguishing it from the cascading variance deltas", JSON.stringify(bridgeResult.steps[6]));
+// A stress-test found the prior two checks here (steps[0].from===0, steps[6].from===0) were
+// tautological -- both `from` values are hardcoded literals in renderWaterfall's own source
+// (`var cum = 0` and the NET step's own `from: 0`), so asserting they equal 0 asserts a constant
+// equals itself; they'd pass even if the cascade math were completely broken. Replaced with a check
+// that verifies the RENDERED SVG geometry (a separate code path -- string-building, not the `steps`
+// array) independently matches the same yAt() transform renderWaterfall itself uses, computed here
+// from the function's own returned yMin/yMax rather than a re-typed pixel constant.
+const wfPlotH = 240 - 16 - 54; // H - marginTop - marginBottom, matching renderWaterfall's own layout
+function wfYAt(v) { return 16 + (1 - (v - bridgeResult.yMin) / (bridgeResult.yMax - bridgeResult.yMin)) * wfPlotH; }
+const firstRectMatch = elements.waterfallChart.innerHTML.match(/<rect x="([\d.]+)" y="([\d.]+)"/);
+check(!!firstRectMatch, "found the first rendered <rect> in the bridge chart to check its actual geometry");
+if (firstRectMatch) {
+  const expectedFirstBarX = 62; // marginLeft, i === 0 so xAt(0) === marginLeft exactly
+  const expectedFirstBarY = wfYAt(Math.max(bridgeResult.steps[0].from, bridgeResult.steps[0].to));
+  check(Math.abs(parseFloat(firstRectMatch[1]) - expectedFirstBarX) < 0.1, "the first bar's rendered SVG x-coordinate matches marginLeft exactly", `rendered=${firstRectMatch[1]} expected=${expectedFirstBarX}`);
+  check(Math.abs(parseFloat(firstRectMatch[2]) - expectedFirstBarY) < 0.5, "the first bar's rendered SVG y-coordinate matches the independently-recomputed expected pixel position -- verifies the SVG string-building code itself, not just the cascade data model", `rendered=${firstRectMatch[2]} expected=${expectedFirstBarY}`);
+}
 sandbox.calcVariance(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
 check(elements.waterfallChart.innerHTML.includes("<svg"), "calcVariance() renders an actual <svg> bridge chart, not just text outputs");
 check((elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length === 6, "exactly 6 dashed connector lines link the 7 bars -- one between each consecutive pair, the defining visual feature of a bridge chart vs. a grouped bar chart", (elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length);
@@ -565,6 +581,23 @@ sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel pa
 check(elements.capSpcWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the SPC chart on every recalculation, not just at page load");
 check(html.includes('cadence-badge operational') && html.includes('cadence-badge financial'), "both cadence badges (operational on Capacity, financial on Variance) exist, making the two-tier real-time-vs-period-close distinction visible, not just an internal design note");
 
+console.log("--- Stress-test round (2026-09-05) fix: Variance tab's copy no longer uses \"live\" for two different meanings in one paragraph ---");
+// A stress-test found "the bridge recalculates live" sitting right next to "not a real-time feed" --
+// two different senses of "live" (this demo tool's instant UI feedback vs. the real accounting
+// process's period-close cadence) collapsed into one word, reading as self-contradictory on a fast
+// read even though the underlying distinction is real and defensible.
+check(!html.includes("Change any input; the bridge recalculates live."), "the old, ambiguous \"recalculates live\" phrasing (right next to a \"not real-time\" badge) is gone");
+check(html.includes("This calculator updates instantly as you type, for exploration"), "the reworded copy separates this demo tool's instant UI feedback from the real accounting process's period-close cadence explicitly, instead of using \"live\"/\"real-time\" for both");
+
+console.log("--- Stress-test round (2026-09-05) fix: no SVG chart text renders below a legible minimum font-size ---");
+// A stress-test measured rendered SVG text at a 375px viewport across all 5 charts on this page
+// (the pre-existing Q* chart plus the 4 new ones) and found font-size attributes as small as 9,
+// rendering at ~4-5px once the viewBox scales down -- illegible on a phone. Bumped every chart's
+// smallest text to at least 10-11 (matching or exceeding the pre-existing Q* baseline); a full
+// viewport-aware font-scaling redesign is out of scope this round and is stated as an accepted
+// limitation on the Methodology tab instead of silently left unaddressed.
+check(!html.includes('font-size="9"') && !html.includes('font-size="9.5"'), "no chart on this page still uses a 9 or 9.5 SVG font-size attribute (the smallest, least legible sizes found)");
+
 console.log("--- Tooling Amortization: golden values ---");
 check(elements.tlPerUnit.textContent === "$7.50", "per-unit amortized cost matches golden value ($18,000 / 2,400 units)", elements.tlPerUnit.textContent);
 check(elements.tlNaive.textContent === "$750.00/unit", "naive first-batch-only cost matches golden value ($18,000 / 24 units)", elements.tlNaive.textContent);
@@ -653,6 +686,7 @@ if (buyToFlyEntry) {
   check(buyToFlyEntry.green === "≤10.0:1", "Buy-to-Fly green threshold corrected to bracket the real ~11:1 industry average, not the original (too-strict) 4.0:1", buyToFlyEntry.green);
   check(buyToFlyEntry.amber === "10.1–16.0:1", "Buy-to-Fly amber threshold corrected", buyToFlyEntry.amber);
   check(buyToFlyEntry.red === ">16.0:1", "Buy-to-Fly red threshold corrected", buyToFlyEntry.red);
+  check(buyToFlyEntry.root.includes("engineering release limit (4:1) is deliberately tighter than the general fleet-wide band"), "a stress-test found the widened GREEN <=10.0:1 fleet band contradicted this scenario's own 4:1/8.1:1 worked example (8.1:1 now reads GREEN yet the card narrates it as a real, corrective-action-worthy failure) -- fixed with a clarifying sentence distinguishing the part's own release limit from the fleet-wide band, not by silently leaving the contradiction", buyToFlyEntry.root);
 }
 check(!html.includes(".pb-thresholds"), "the old three-separate-badge .pb-thresholds display was fully replaced, not left as dead CSS alongside the new one");
 check(html.includes(".pb-scale{"), "the new consolidated banded-scale CSS exists");
@@ -701,6 +735,32 @@ tradeoffCodes.forEach((code) => {
 // same class of stub limitation as the Command Palette's arrow-key re-highlighting). Verified live in
 // a real browser instead: clicking a node activates the Playbook tab, resets the filter, and scrolls
 // the target scenario into view.
+
+console.log("--- Stress-test round (2026-09-05) fix: KPI Interaction Map's outer <svg> uses role=\"group\", not role=\"img\" ---");
+// A stress-test found the map's outer <svg role="img"> wrapped real interactive role="button"
+// children -- role="img" tells assistive tech to treat the whole subtree as one flat, non-interactive
+// image, hiding those nested buttons from the accessibility tree entirely. No other chart on this
+// page nests interactive content inside role="img", so this checks the map specifically.
+check(html.includes('role="group" aria-label="Two confirmed cross-KPI tradeoffs'), "the KPI Interaction Map's outer <svg> uses role=\"group\" (not role=\"img\"), so its nested role=\"button\" nodes are exposed to assistive tech instead of being pruned from the tree");
+check(!html.includes('role="img" aria-label="Two confirmed cross-KPI tradeoffs'), "the old role=\"img\" wrapping is gone, not left alongside the fix");
+
+console.log("--- Stress-test round (2026-09-05) fix: KPI Interaction Map jump() moves focus onto the target card, not just the sidenav tab ---");
+// A stress-test found jump() called activateTab('playbook') with no opts, which defaults
+// focusToo=true and focuses the sidenav tab button while scrollIntoView moves the *visual* viewport
+// to the target card -- decoupling keyboard focus from what's on screen. Can't exercise this live in
+// the stub (the click/keydown listeners are never attached -- see the accepted limitation above), so
+// this checks the fix is actually present in source, and the live-browser behavior is verified
+// separately.
+const jumpFnMatch = html.match(/var jump = function\(\)\{[\s\S]*?\n\s*\};/);
+check(!!jumpFnMatch, "found the jump() function body to check");
+if (jumpFnMatch) {
+  check(jumpFnMatch[0].includes("activateTab('playbook', { focus: false })"), "jump() passes {focus:false} to activateTab, so it no longer silently focuses the sidenav tab out from under the intended scroll target", jumpFnMatch[0]);
+  check(jumpFnMatch[0].includes("target.focus({ preventScroll: true })"), "jump() moves focus onto the target card itself after scrolling (preventScroll avoids fighting the smooth scrollIntoView already in flight)", jumpFnMatch[0]);
+}
+
+console.log("--- Stress-test round (2026-09-05) fix: new factual claims (Pareto/ASQ, I-MR/SPC) added to the canonical sourced list ---");
+check(html.includes('Pareto charts as the standard root-cause-prioritization tool'), "the Pareto-chart claim is now in the Methodology tab's sourced REAL-tag list, consistent with how every other factual claim on this page is documented");
+check(html.includes('The Individuals (I-MR) control chart method'), "the SPC/I-MR claim is now in the Methodology tab's sourced REAL-tag list");
 
 console.log("--- Learning Curve Forecaster: golden values (pre-registered via Python/Node, matching a corrected recompute of the source document's own worked example) ---");
 // The source document's own worked example ($3,345.75) has a real ~0.4% arithmetic slip -- this

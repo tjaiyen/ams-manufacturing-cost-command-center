@@ -415,7 +415,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 462 checks, all passing as of this writing.
+Run: `node stress.cjs` — 475 checks, all passing as of this writing.
 
 ## Status
 
@@ -516,5 +516,29 @@ Playbook KPI to pair against, so it's a caption, not a forced third box. Checks:
 pre-registered before being written and live-browser verified (the bridge chart's cascading bar
 boundaries genuinely align edge-to-edge; the SPC chart's rendered UCL/mean/LCL match the
 hand-calculated golden values; both KPI Interaction Map tradeoff pairs jump and scroll correctly via
-both mouse and keyboard). Committed locally — pending push with explicit confirmation, same
-discipline as every prior round.
+both mouse and keyboard). Pushed live.
+
+**2026-09-05, thirteenth round (stress-test of Pathways A/B/C):** independent self-review plus a
+fresh-context reviewer, every finding reproduced (grep line numbers, re-derived math) before being
+accepted. The most serious catch: the Buy-to-Fly scenario's own worked example (a part's 4:1
+engineering release limit, exceeded at 8.1:1) now sat inside the eleventh round's own widened
+"GREEN ≤10.0:1" fleet-wide band — a real, reproduced self-contradiction between two numbers on the
+same card, not a stylistic nit — fixed with a clarifying sentence distinguishing a part's own
+release limit from the general industry-average-anchored band. Also fixed: the KPI Interaction
+Map's outer `<svg role="img">` wrapped real interactive `role="button"` children, a documented ARIA
+anti-pattern that hides nested controls from the accessibility tree — changed to `role="group"`;
+clicking a map node moved keyboard focus to the sidenav tab button while the page visually scrolled
+to a card far below, decoupling focus from what's on screen — fixed by moving focus onto the target
+card itself after scrolling; the Variance tab's copy used "live" for two different meanings in one
+paragraph (this calculator's instant recalculation vs. real standard-cost variance's period-close
+cadence) — reworded to separate them explicitly; a grammar typo in the SPC chart's own
+screen-reader label; and two `stress.cjs` checks that asserted a hardcoded constant equaled itself,
+passing regardless of whether the underlying cascade math actually worked — replaced with a check
+on the rendered SVG's own geometry, a different code path than the data model the existing checks
+already covered. Two items documented as accepted limitations rather than fixed: SVG chart text
+(pre-existing on the Q* chart, now on 4 more charts) renders small — roughly 5-7px — at a ~375px
+phone width; bumped every chart's smallest font size for a modest improvement, but a full
+viewport-aware redesign is out of scope. And a minor UX side-effect where clicking a map node while
+already on the Playbook tab with an active filter silently resets that filter (necessary so the
+target card is guaranteed to exist before scrolling to it). Checks: 462 → 475. Committed locally —
+pending push with explicit confirmation, same discipline as every prior round.
