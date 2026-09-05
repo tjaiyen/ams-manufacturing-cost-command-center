@@ -53,7 +53,19 @@ invented dollar figures from either source document. The Methodology tab names t
 explicitly, once, specifically to reject it — `stress.cjs` enforces that these fabricated specifics
 never leak in anywhere else on the page.
 
-## The six modules
+**A second, deeper verification pass (2026-09-04)** checked four of the source documents' smaller
+technical claims that hadn't been individually fact-checked before — and all four turned out to be
+real, legitimate industry terminology, not fabricated: SMED (Single-Minute Exchange of Die, Shigeo
+Shingo's real 1950s Toyota/Mazda changeover methodology), MTConnect/OPC-UA (genuine, actively-used
+CNC telemetry protocols), aerospace titanium buy-to-fly ratios of 6:1+ (the real range is 6:1–16:1+,
+so the document's figure is conservative, not inflated), and SAP Movement Type 551 (the actual SAP
+transaction code for goods-issue-for-scrap). This is a more accurate picture than "the documents are
+entirely fake": the generic manufacturing/SAP/lean-methodology vocabulary is legitimate public-domain
+knowledge; what's fabricated is narrower and specific to *claims about AMS* — the client-program
+claim, the RACI table, the copied test-count figure, and every dollar/percentage threshold, all of
+which remain excluded. The Methodology tab now cites these four newly-verified real terms directly.
+
+## The nine modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
    job posting's own stated scope; the site labels ("Site A/B/C"), locations beyond the two the
@@ -70,10 +82,20 @@ never leak in anywhere else on the page.
 4. **Build-vs-Buy / CapEx** — an NPV/payback analyzer generalizing the same methodology used in
    [`ams-narrative.html`](https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html)'s
    worked example, with a year-by-year discounted cash-flow table.
-5. **Operating Framework** — a dashboard-native condensation of
+5. **Capacity & Absorption Forecast** — a 6-week rolling capacity plan (from Issue 11's "predict
+   unabsorbed overhead 30-60 days in advance" idea) — fully editable available/booked hours per week,
+   live unabsorbed-hours/dollars/utilization, green/amber/red banding distinct from the Executive
+   tab's OEE bands (this measures hours booked vs. available, not performance/quality losses).
+6. **Tooling Amortization Tracker** — from Issue 17: makes visible the exact distortion of expensing
+   a reusable fixture against only the first prototype batch (a naive/amortized comparison, with an
+   overstatement multiple).
+7. **Design-for-Cost Sensitivity** — from Issue 19's DFM/DFC feedback-loop idea, as a live slider-driven
+   heuristic (wall thickness, pocket depth:diameter ratio, additive build height) — explicitly labeled
+   an illustrative heuristic, not a physics-based cost simulation.
+8. **Operating Framework** — a dashboard-native condensation of
    [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
-6. **Methodology & Sourcing** — the source ledger described above.
+9. **Methodology & Sourcing** — the source ledger described above.
 
 ## Verification (`stress.cjs`)
 
@@ -94,8 +116,16 @@ against exact numbers **independently verified live in a real browser before thi
   version flagged as a false positive — fixed by excluding that one card by its unique heading before
   scanning the rest of the page for leakage, confirmed the exclusion is real (not a no-op) by
   asserting the excluded card actually contains at least one of the banned strings.
+- Capacity Forecast defaults (6 weeks x 160 available hrs, booked 150/140/100/90/155/120, $28/hr OH)
+  → Week 3: 60 unabsorbed hrs / $1,680 / 62.5% utilization / **RED**; 6-week total: $5,740 unabsorbed /
+  78.65% overall utilization / **AMBER**. The harness's seeded inputs are cross-checked against the
+  page's own `CAP_WEEKS` array so they can't silently drift apart.
+- Tooling Amortization defaults ($18,000 tooling, 2,400-unit run, 24-unit first batch) → $7.50/unit
+  amortized vs. $750.00/unit naive-first-batch-only → **100.0× overstatement**.
+- DFM/DFC defaults (1.5mm wall, 5:1 pocket ratio, 80mm build height) → wall +24.0% / pocket +5.0% /
+  height +24.0% / **total +53.0%** / estimated cost **$153.00** on a $100 reference part.
 
-Run: `node stress.cjs` — 72 checks, all passing as of this writing.
+Run: `node stress.cjs` — 107 checks, all passing as of this writing.
 
 ## Status
 

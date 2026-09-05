@@ -129,6 +129,14 @@
   .srctag.real{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
   .srctag.illustrative{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
 
+  .status-pill{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:99px;font-weight:700}
+  .status-pill.green{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
+  .status-pill.amber{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
+  .status-pill.red{background:rgb(var(--c-danger)/.15);color:rgb(var(--c-danger))}
+  .slider-row{margin-bottom:16px}
+  .slider-row label{display:flex;justify-content:space-between;font-size:12px;color:rgb(var(--c-text-secondary));margin-bottom:6px}
+  .slider-row label b{color:rgb(var(--c-text-primary));font-family:ui-monospace,Menlo,monospace}
+  .slider-row input[type=range]{width:100%;accent-color:rgb(var(--c-accent))}
   footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--c-line);color:rgb(var(--c-text-secondary));font-size:12px}
   @media (max-width:640px){.field-row{grid-template-columns:1fr}.cadence-row{grid-template-columns:1fr}}
 </style>
@@ -148,6 +156,9 @@
     <button class="tabbtn" data-tab="shouldcost" role="tab" aria-selected="false">Should-Cost &amp; MHR</button>
     <button class="tabbtn" data-tab="variance" role="tab" aria-selected="false">Variance Waterfall</button>
     <button class="tabbtn" data-tab="buildbuy" role="tab" aria-selected="false">Build-vs-Buy / CapEx</button>
+    <button class="tabbtn" data-tab="capacity" role="tab" aria-selected="false">Capacity Forecast</button>
+    <button class="tabbtn" data-tab="tooling" role="tab" aria-selected="false">Tooling Amortization</button>
+    <button class="tabbtn" data-tab="dfm" role="tab" aria-selected="false">DFM/DFC Sensitivity</button>
     <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
     <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
   </div>
@@ -273,7 +284,9 @@
           Running = power + consumables while actively cutting/building. Same standing-vs-running
           split documented in public machine-hour-rate guides (Methodology tab) — invented dollar
           values, real structure. A 5-axis mill and a manual press brake never share one blended rate
-          here, by design.</p>
+          here, by design. Real-world CNC controllers in this class are commonly Fanuc, Heidenhain,
+          or Siemens — named here as illustrative examples of what a real rate card would specify,
+          not a claim about which controllers AMS actually runs.</p>
       </div>
     </div>
   </section>
@@ -375,6 +388,101 @@
     </div>
   </section>
 
+  <!-- ============ TAB: CAPACITY & ABSORPTION FORECAST ============ -->
+  <section class="tabpanel" id="tab-capacity">
+    <h1>Capacity &amp; Absorption Forecast</h1>
+    <p class="lede">A forward-looking view, not a rear-view mirror — the JD's "identify cost
+      reduction opportunities" and capacity-planning responsibilities need unabsorbed overhead
+      flagged 30-60 days ahead, not discovered at month-end close. Edit any week's hours.</p>
+
+    <div class="card">
+      <div class="card-head"><h2>6-Week Rolling Capacity Plan</h2><span class="tag">ILLUSTRATIVE — EDIT ANY CELL</span></div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Week</th><th>Available Hrs</th><th>Booked Hrs</th><th>Unabsorbed Hrs</th><th>Unabsorbed $</th><th>Utilization</th><th>Status</th></tr></thead>
+          <tbody id="capTableBody"></tbody>
+          <tfoot><tr class="total" id="capTotalRow"></tr></tfoot>
+        </table>
+      </div>
+      <div class="field" style="max-width:260px;margin-top:14px"><label>Fixed overhead rate ($/hr)</label><input type="number" id="capOhRate" value="28.00" step="1"></div>
+      <p style="font-size:11.5px;color:rgb(var(--c-text-secondary))">Status bands: green ≥85% utilization,
+        amber 70–85%, red &lt;70% — a utilization-specific band, distinct from the OEE bands on the
+        Executive tab (utilization measures hours booked vs. available; OEE also factors in
+        performance and quality losses within those hours).</p>
+    </div>
+  </section>
+
+  <!-- ============ TAB: TOOLING AMORTIZATION ============ -->
+  <section class="tabpanel" id="tab-tooling">
+    <h1>Tooling Amortization Tracker</h1>
+    <p class="lede">Reusable fixtures and build plates expensed against a single prototype job
+      overstate that job's unit cost and leave every re-order silently unburdened — the distortion
+      this tab makes visible.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Tooling Inputs</h2></div>
+        <div class="field"><label>Tooling / fixture cost ($)</label><input type="number" id="tlCost" value="18000" step="500"></div>
+        <div class="field-row">
+          <div class="field"><label>Expected total production run (units)</label><input type="number" id="tlRun" value="2400" step="10"></div>
+          <div class="field"><label>First batch size (units)</label><input type="number" id="tlBatch" value="24" step="1"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Naive vs. Amortized</h2></div>
+        <div class="outline">
+          <div class="line"><span>Per-unit amortized cost (correct)</span><span class="mono" id="tlPerUnit">$0.00</span></div>
+          <div class="line"><span>Naive: tooling expensed to first batch only</span><span class="mono" id="tlNaive">$0.00/unit</span></div>
+          <div class="line total"><span>First-batch unit cost overstated by</span><span class="mono" id="tlOverstate">0.0×</span></div>
+        </div>
+        <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">Expensing the
+          full tooling cost against only the first batch makes that batch look this many times more
+          expensive per unit than it actually is on a fully-amortized basis — the exact distortion
+          Issue 17 in the source document describes, made visible instead of asserted.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: DFM/DFC COST SENSITIVITY ============ -->
+  <section class="tabpanel" id="tab-dfm">
+    <h1>Design-for-Cost Sensitivity</h1>
+    <p class="lede">The JD's "inform manufacturing footprint and equipment decisions" and the source
+      document's DFM/DFC feedback-loop idea, as a live heuristic — adjust a design parameter, see
+      the estimated cost impact immediately, the way a real CAD-integrated cost-feedback tool would.
+      <strong>An illustrative heuristic, not a physics-based simulation</strong> — see the
+      Methodology tab.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Design Parameters</h2></div>
+        <div class="slider-row">
+          <label>Minimum wall thickness <b id="dfmThicknessLabel">1.5mm</b></label>
+          <input type="range" id="dfmThickness" min="0.5" max="5" step="0.1" value="1.5">
+        </div>
+        <div class="slider-row">
+          <label>Pocket depth : diameter ratio <b id="dfmPocketLabel">5.0</b></label>
+          <input type="range" id="dfmPocket" min="1" max="8" step="0.5" value="5">
+        </div>
+        <div class="slider-row">
+          <label>Additive build height <b id="dfmHeightLabel">80mm</b></label>
+          <input type="range" id="dfmHeight" min="0" max="200" step="5" value="80">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Estimated Cost Impact</h2></div>
+        <div class="outline">
+          <div class="line"><span>Wall-thickness penalty (below 3.0mm reference)</span><span class="mono" id="dfmWallOut">+0.0%</span></div>
+          <div class="line"><span>Pocket-depth penalty (above 4:1 reference)</span><span class="mono" id="dfmPocketOut">+0.0%</span></div>
+          <div class="line"><span>Build-height penalty (additive only)</span><span class="mono" id="dfmHeightOut">+0.0%</span></div>
+          <div class="line total"><span>Total cost uplift vs. reference design</span><span class="mono" id="dfmTotalOut">+0.0%</span></div>
+        </div>
+        <div class="outline" style="margin-top:10px">
+          <div class="line"><span>$100 reference should-cost, as designed</span><span class="mono" id="dfmCostOut">$100.00</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
   <section class="tabpanel" id="tab-framework">
     <h1>Operating Framework — A 90-Day Thesis</h1>
@@ -423,6 +531,11 @@
         <li><span class="srctag real">REAL</span> OEE benchmark bands (55–70% typical / 70–80% advanced / &gt;80% world-class) — <a href="https://www.fabrico.io/blog/oee-benchmarks-by-industry-manufacturing-2026/">Fabrico (2026)</a>, <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>.</li>
         <li><span class="srctag real">REAL</span> Should-cost and machine-hour-rate methodology (bottom-up decomposition, standing vs. running cost) — standard, publicly documented cost-accounting practice.</li>
         <li><span class="srctag real">REAL</span> Standard-cost variance formulas (MPV/MQV/DLRV/DLEV/VOSV/FOHV) — textbook cost-accounting definitions, not AMS-specific.</li>
+        <li><span class="srctag real">REAL</span> SMED (Single-Minute Exchange of Die) — Shigeo Shingo's 1950s Toyota/Mazda changeover-reduction methodology, typically cuts changeover time 50–80% (<a href="https://en.wikipedia.org/wiki/Single-minute_exchange_of_die">Wikipedia</a>, <a href="https://tractian.com/en/glossary/single-minute-exchange-of-dies-smed">Tractian</a>).</li>
+        <li><span class="srctag real">REAL</span> MTConnect and OPC-UA — genuine, actively-used CNC machine telemetry protocols (<a href="https://www.ptc.com/en/technologies/iiot/industrial-automation/mtconnect">PTC</a>, <a href="https://www.mmsonline.com/columns/the-difference-between-mtconnect-and-opc-ua">Modern Machine Shop</a>) — real terminology, not a claim about AMS's specific telemetry stack.</li>
+        <li><span class="srctag real">REAL</span> Aerospace titanium buy-to-fly ratios of 6:1+ — the real reported range is 6:1 to 16:1+ (average ~11:1), so this figure is on the conservative end of real industry norms, not inflated.</li>
+        <li><span class="srctag real">REAL</span> SAP Movement Type 551 — the actual SAP transaction code for goods-issue-for-scrap (<a href="https://community.sap.com/t5/enterprise-resource-planning-q-a/movement-type-551/qaq-p/3552926">SAP Community</a>).</li>
+        <li><span class="srctag illustrative">ILLUSTRATIVE</span> The Design-for-Cost sensitivity model (wall thickness / pocket depth / build height penalties) — an illustrative heuristic built for this exercise, not a physics-based cost simulation or a claim about how AMS's actual DFM feedback works.</li>
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> Every dollar figure on the Executive, Should-Cost, Variance, and Build-vs-Buy tabs — invented worked-example numbers, editable by design. Not AMS's real costs.</li>
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> Site names ("Site A/B/C") — the count of three sites is real (JD-stated); the labels, locations beyond Seattle/Bellevue, and per-site figures are not.</li>
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> The Operating Framework tab's 4-pillar taxonomy — my own structural thesis for how I'd approach the role, not a description of AMS's actual current problems or org chart.</li>
@@ -640,10 +753,104 @@
     document.getElementById(id).addEventListener('input', calcBuildBuy);
   });
 
+  // ---------- Capacity & Absorption Forecast ----------
+  var CAP_WEEKS = [
+    { avail: 160, booked: 150 }, { avail: 160, booked: 140 }, { avail: 160, booked: 100 },
+    { avail: 160, booked: 90 }, { avail: 160, booked: 155 }, { avail: 160, booked: 120 }
+  ];
+  window.CAP_WEEKS = CAP_WEEKS;
+  function utilStatus(pct){ return pct >= 85 ? 'green' : (pct >= 70 ? 'amber' : 'red'); }
+  function renderCapacityInputs(){
+    var body = document.getElementById('capTableBody');
+    var rows = '';
+    CAP_WEEKS.forEach(function(w, i){
+      rows += '<tr><td>Week ' + (i + 1) + '</td>' +
+        '<td><input type="number" id="capAvail' + i + '" value="' + w.avail + '" style="width:80px;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);color:inherit;border-radius:4px;padding:4px 6px;font-family:inherit"></td>' +
+        '<td><input type="number" id="capBooked' + i + '" value="' + w.booked + '" style="width:80px;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);color:inherit;border-radius:4px;padding:4px 6px;font-family:inherit"></td>' +
+        '<td class="mono" id="capUnabHrs' + i + '"></td><td class="mono" id="capUnabDollars' + i + '"></td>' +
+        '<td class="mono" id="capUtil' + i + '"></td><td id="capStatus' + i + '"></td></tr>';
+    });
+    body.innerHTML = rows;
+    CAP_WEEKS.forEach(function(w, i){
+      document.getElementById('capAvail' + i).addEventListener('input', calcCapacity);
+      document.getElementById('capBooked' + i).addEventListener('input', calcCapacity);
+    });
+  }
+  function calcCapacity(){
+    var ohRate = parseFloat(document.getElementById('capOhRate').value) || 0;
+    var totalAvail = 0, totalBooked = 0, totalUnabHrs = 0, totalUnabDollars = 0;
+    CAP_WEEKS.forEach(function(w, i){
+      var avail = parseFloat(document.getElementById('capAvail' + i).value) || 0;
+      var booked = parseFloat(document.getElementById('capBooked' + i).value) || 0;
+      var unabHrs = Math.max(0, avail - booked);
+      var unabDollars = unabHrs * ohRate;
+      var util = avail > 0 ? (booked / avail) * 100 : 0;
+      var status = utilStatus(util);
+      document.getElementById('capUnabHrs' + i).textContent = unabHrs.toFixed(1);
+      document.getElementById('capUnabDollars' + i).textContent = '$' + Math.round(unabDollars).toLocaleString();
+      document.getElementById('capUtil' + i).textContent = util.toFixed(2) + '%';
+      document.getElementById('capStatus' + i).innerHTML = '<span class="status-pill ' + status + '">' + status.toUpperCase() + '</span>';
+      totalAvail += avail; totalBooked += booked; totalUnabHrs += unabHrs; totalUnabDollars += unabDollars;
+    });
+    var overallUtil = totalAvail > 0 ? (totalBooked / totalAvail) * 100 : 0;
+    document.getElementById('capTotalRow').innerHTML = '<td>6-Week Total</td><td class="mono">' + totalAvail + '</td><td class="mono">' + totalBooked + '</td>' +
+      '<td class="mono">' + totalUnabHrs.toFixed(1) + '</td><td class="mono">$' + Math.round(totalUnabDollars).toLocaleString() + '</td>' +
+      '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
+    return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
+  }
+  window.calcCapacity = calcCapacity;
+  document.getElementById('capOhRate').addEventListener('input', calcCapacity);
+
+  // ---------- Tooling Amortization ----------
+  function calcTooling(){
+    var cost = parseFloat(document.getElementById('tlCost').value) || 0;
+    var run = parseFloat(document.getElementById('tlRun').value) || 1;
+    var batch = parseFloat(document.getElementById('tlBatch').value) || 1;
+    var perUnit = cost / run;
+    var naive = cost / batch;
+    var overstate = perUnit > 0 ? naive / perUnit : 0;
+    document.getElementById('tlPerUnit').textContent = '$' + perUnit.toFixed(2);
+    document.getElementById('tlNaive').textContent = '$' + naive.toFixed(2) + '/unit';
+    document.getElementById('tlOverstate').textContent = overstate.toFixed(1) + '×';
+    return { perUnit: perUnit, naive: naive, overstate: overstate };
+  }
+  window.calcTooling = calcTooling;
+  ['tlCost', 'tlRun', 'tlBatch'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcTooling); });
+
+  // ---------- DFM/DFC Cost Sensitivity ----------
+  var DFM_REF_THICKNESS = 3.0, DFM_REF_POCKET = 4, DFM_BASELINE = 100.0;
+  function calcDfm(){
+    var thickness = parseFloat(document.getElementById('dfmThickness').value) || 0;
+    var pocket = parseFloat(document.getElementById('dfmPocket').value) || 0;
+    var height = parseFloat(document.getElementById('dfmHeight').value) || 0;
+    document.getElementById('dfmThicknessLabel').textContent = thickness.toFixed(1) + 'mm';
+    document.getElementById('dfmPocketLabel').textContent = pocket.toFixed(1);
+    document.getElementById('dfmHeightLabel').textContent = height.toFixed(0) + 'mm';
+
+    var wallFactor = thickness < DFM_REF_THICKNESS ? ((DFM_REF_THICKNESS - thickness) / 2.5) * 0.40 : 0;
+    var pocketFactor = pocket > DFM_REF_POCKET ? (pocket - DFM_REF_POCKET) * 0.05 : 0;
+    var heightFactor = height * 0.003;
+    var total = wallFactor + pocketFactor + heightFactor;
+    var estCost = DFM_BASELINE * (1 + total);
+
+    document.getElementById('dfmWallOut').textContent = '+' + (wallFactor * 100).toFixed(1) + '%';
+    document.getElementById('dfmPocketOut').textContent = '+' + (pocketFactor * 100).toFixed(1) + '%';
+    document.getElementById('dfmHeightOut').textContent = '+' + (heightFactor * 100).toFixed(1) + '%';
+    document.getElementById('dfmTotalOut').textContent = '+' + (total * 100).toFixed(1) + '%';
+    document.getElementById('dfmCostOut').textContent = '$' + estCost.toFixed(2);
+    return { wallFactor: wallFactor, pocketFactor: pocketFactor, heightFactor: heightFactor, total: total, estCost: estCost };
+  }
+  window.calcDfm = calcDfm;
+  ['dfmThickness', 'dfmPocket', 'dfmHeight'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcDfm); });
+
   // ---------- Initial render ----------
   calcShouldCost();
   calcVariance();
   calcBuildBuy();
+  renderCapacityInputs();
+  calcCapacity();
+  calcTooling();
+  calcDfm();
 })();
 </script>
 </body>
