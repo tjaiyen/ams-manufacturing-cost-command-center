@@ -59,16 +59,20 @@ check(!!fifthDocCardMatch, "found the one card allowed to name the fifth documen
 // specifically to reject them (same discipline, fifth exclusion).
 const sixthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>Sixth &amp; seventh documents — real quantitative methods, one formula-sign nuance<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
 check(!!sixthDocCardMatch, "found the one card allowed to name the sixth/seventh documents' repeated fabricated claims (in order to reject them)");
+const eighthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>Eighth document — a repeat of an already-declined narrative, one broken worked example, one real gap it pointed at<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
+check(!!eighthDocCardMatch, "found the one card allowed to name the eighth document's repeated fabricated claims (in order to reject them)");
 let htmlOutsideDebunkCards = html;
 if (debunkCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(debunkCardMatch[0], "");
 if (errorsCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(errorsCardMatch[0], "");
 if (fifthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(fifthDocCardMatch[0], "");
 if (sixthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(sixthDocCardMatch[0], "");
+if (eighthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(eighthDocCardMatch[0], "");
 const foundBanned = bannedStrings.filter((s) => htmlOutsideDebunkCards.includes(s));
 check(foundBanned.length === 0, "none of the downloaded documents' fabricated specifics (client claims, copied test count, their own invented dollar figures, invented facility names) appear anywhere OUTSIDE the cards that name them specifically to debunk them", JSON.stringify(foundBanned));
 check(debunkCardMatch && bannedStrings.some((s) => debunkCardMatch[0].includes(s)), "the debunk card itself actually names at least one of the fabricated claims (confirms the exclusion above is excluding real content, not a no-op)");
 check(fifthDocCardMatch && bannedStrings.some((s) => fifthDocCardMatch[0].includes(s)), "the fifth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 check(sixthDocCardMatch && bannedStrings.some((s) => sixthDocCardMatch[0].includes(s)), "the sixth/seventh-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
+check(eighthDocCardMatch && bannedStrings.some((s) => eighthDocCardMatch[0].includes(s)), "the eighth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 
 console.log("--- Executive Overview P&L rollup table: arithmetic + fabrication-proximity check (2026-09-04) ---");
 // This table's numbers are hand-typed static HTML, not JS-computed -- a stress-test found NO check
@@ -119,6 +123,7 @@ const DEFAULTS = {
   vLSR: "42.00", vLAR: "44.50", vVOSR: "8.00", vVOAct: "4750", vBudHrs: "500", vFOHR: "24.00",
   bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000",
   bbRate: "10", bbYears: "3",
+  qsInternalMc: "180.00", qsVendorP0: "420.00", qsGamma: "0.12",
   cpFrozen: "26.00", cpSpot: "29.50", cpVolume: "2200",
   tlCost: "18000", tlRun: "2400", tlBatch: "24",
   dfmThickness: "1.5", dfmPocket: "5", dfmHeight: "80",
@@ -223,6 +228,10 @@ check(elements.bbAnnualSave.textContent === "$162,396", "annual saving matches g
 check(elements.bbPayback.textContent === "0.23 years", "simple payback matches golden value", elements.bbPayback.textContent);
 check(elements.bbNpv.textContent === "$365,855", "3-year NPV @ 10% matches golden value", elements.bbNpv.textContent);
 check(elements.bbCashflowBody.innerHTML.split("<tr>").length - 1 === 4, "cash-flow table has exactly 4 rows (Year 0 + 3 years, matching the default horizon)", elements.bbCashflowBody.innerHTML.split("<tr>").length - 1);
+
+console.log("--- Volume Crossover Point (Q*): golden values (pre-registered via Python, confirms the closed-form model — NOT the source document's own broken total-cost script) ---");
+check(elements.qsOut.textContent === "1,165 units", "crossover volume matches golden value ((420/180)^(1/0.12))", elements.qsOut.textContent);
+check(elements.qsVendorAtStar.textContent === "$180.00", "vendor price at Q* matches golden value and equals the internal marginal cost input exactly (confirms this IS the crossover)", elements.qsVendorAtStar.textContent);
 
 console.log("--- Capacity & Absorption Forecast: golden values ---");
 check(JSON.stringify(sandbox.CAP_WEEKS) === JSON.stringify([{avail:160,booked:150},{avail:160,booked:140},{avail:160,booked:100},{avail:160,booked:90},{avail:160,booked:155},{avail:160,booked:120}]), "this harness's seeded default inputs (capAvailN/capBookedN) match the page's own CAP_WEEKS array, not a stale copy", JSON.stringify(sandbox.CAP_WEEKS));
@@ -355,12 +364,12 @@ check(foundBannedInRisk.length === 0, "none of the banned/wrong-claim strings le
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 15, "exactly 15 explain buttons are wired in the HTML (11 from before + Learning Curve, CRPN, M-VaR, and the OU forward band)", explainButtonCount);
+check(explainButtonCount === 16, "exactly 16 explain buttons are wired in the HTML (15 from before + the Volume Crossover Point)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");

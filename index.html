@@ -495,6 +495,31 @@
           discounted savings minus the Year-0 transition cost.</p>
       </div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Volume Crossover Point (Q*) <button class="explain-btn" data-explain="qstar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">POWER-LAW VENDOR PRICING</span></div>
+      <p class="lede" style="margin-bottom:12px">The NPV analyzer above assumes flat per-unit prices
+        at one stated volume. This asks a different question: a commercial vendor's per-unit price
+        typically falls as order volume grows — at what volume does that falling vendor price drop
+        below your own flat internal marginal cost?</p>
+      <div class="grid cols-2">
+        <div>
+          <div class="field"><label>Internal marginal cost ($/unit)</label><input type="number" id="qsInternalMc" value="180.00" step="1"></div>
+          <div class="field"><label>Vendor price at Q=1 ($/unit)</label><input type="number" id="qsVendorP0" value="420.00" step="1"></div>
+          <div class="field"><label>Vendor scale elasticity γ</label><input type="number" id="qsGamma" value="0.12" step="0.01" min="0.01"></div>
+        </div>
+        <div class="outline">
+          <div class="line total"><span>Crossover volume (Q*)</span><span class="mono" id="qsOut">0</span></div>
+          <div class="line"><span>Vendor price at Q*</span><span class="mono" id="qsVendorAtStar">$0.00</span></div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Below Q*, the
+        vendor's per-unit price is still above your internal cost — build in-house. Above Q*, the
+        vendor's bulk-scale price has fallen below what it costs you internally — outsource. A
+        downloaded document's own worked example for a similar solver (different formulation —
+        integrating a fixed tooling investment into total cost, not marginal cost) doesn't actually
+        find a crossover when run with its own stated numbers; see the Methodology tab.</p>
+    </div>
   </section>
 
   <!-- ============ TAB: CAPACITY & ABSORPTION FORECAST ============ -->
@@ -945,6 +970,32 @@
         relationship both appear again — same exclusion treatment, and all such references were
         genericized in the built modules below.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Eighth document — a repeat of an already-declined narrative, one broken worked example, one real gap it pointed at</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">An eighth downloaded document
+        proposed "Claude Code deployed inside AMS with live SAP RFC/BAPI write access" — the same
+        theme that's now appeared five times (partially in documents three and four, as a tab-shaped
+        proposal in five and seven, now as a full standalone treatment). That call stands for the
+        same reason each time: it describes an AI agent with live write access to a real company's
+        ERP system, which isn't something to demo as an interactive calculator on a public dashboard
+        — it would read as a claim about system access that doesn't exist, not as a demonstration of
+        domain fluency. Two new SAP BAPI names were checked and are both real and correctly
+        described: <code>BAPI_ROUTING_CREATE</code> and <code>BAPI_MATERIAL_BOM_GROUP_CREATE</code>.
+        The "1,520 tests" figure and the Project Kuiper/Amazon Robotics/AWS client claim both
+        reappear, unchanged. One thing worth catching: the document's own build-vs-buy solver script
+        — a total-cost model integrating a fixed tooling investment against a power-law vendor
+        price — was run with its own stated example numbers (a titanium bracket, $215/unit internal,
+        $12,000 tooling, $545 vendor price at Q=1, γ=0.18) extended out to <b>one million units, and
+        never finds a crossover</b>: internal stays more expensive at every volume in that entire
+        range. The document presents this as a working example that would print a specific "Q*
+        units" answer; it wouldn't. What the document did surface, independently of its own broken
+        example, is a real and still-open gap: the existing Build-vs-Buy tab evaluated NPV/payback
+        at one assumed volume, but never asked at what volume the recommendation itself would flip.
+        The <b>Volume Crossover Point (Q*)</b> calculator, now added to that tab, answers that with
+        the cleaner, closed-form marginal-cost-equality model from the sixth document's "Model 6"
+        instead — a single, monotonic, verifiable crossover, not the broken total-cost integral.</p>
+    </div>
   </section>
 
   <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
@@ -1001,7 +1052,8 @@
     learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
-    ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above.' }
+    ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above.' },
+    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab).' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1262,6 +1314,25 @@
   window.calcBuildBuy = calcBuildBuy;
   ['bbInternal','bbExternal','bbVolume','bbTransition','bbRate','bbYears'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcBuildBuy);
+  });
+
+  // ---------- Volume Crossover Point (Q*) ----------
+  // Q* solves P0 * Q^(-gamma) = MC_internal -- the volume where the vendor's declining per-unit
+  // price falls to equal your own constant internal marginal cost. Closed-form, single, monotonic
+  // crossover (vendor price is strictly decreasing in Q; internal marginal cost is constant).
+  function calcQStar(){
+    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
+    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
+    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
+    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
+    var vendorAtStar = gamma > 0 ? p0 * Math.pow(qStar, -gamma) : 0;
+    document.getElementById('qsOut').textContent = Math.round(qStar).toLocaleString() + ' units';
+    document.getElementById('qsVendorAtStar').textContent = '$' + vendorAtStar.toFixed(2);
+    return { qStar: qStar, vendorAtStar: vendorAtStar };
+  }
+  window.calcQStar = calcQStar;
+  ['qsInternalMc', 'qsVendorP0', 'qsGamma'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcQStar);
   });
 
   // ---------- Capacity & Absorption Forecast ----------
@@ -1840,6 +1911,7 @@
   calcShouldCost();
   calcVariance();
   calcBuildBuy();
+  calcQStar();
   renderCapacityInputs();
   calcCapacity();
   calcTooling();

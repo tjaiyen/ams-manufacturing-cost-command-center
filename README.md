@@ -6,11 +6,12 @@ not a general-purpose portfolio piece. Twelve live, interactive modules covering
 own responsibility areas: should-cost modeling, machine-hour-rate formalization (including a
 first-principles MHR build-up calculator), standard-cost variance decomposition (plus a
 forward-looking commodity price-exposure warning and an Ornstein-Uhlenbeck mean-reversion band),
-build-vs-buy/NPV, capacity/absorption forecasting, tooling amortization, design-for-cost sensitivity,
-data governance, a 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve
-forecaster, cost-adapted FMEA risk register, Manufacturing Value at Risk), a multi-site executive
-rollup, and an honest operating framework. Click-to-open "Explain the Math" modals (15 of them) cover
-the highest-traffic KPIs throughout.
+build-vs-buy/NPV (plus a closed-form volume-crossover solver), capacity/absorption forecasting,
+tooling amortization, design-for-cost sensitivity, data governance, a 30-scenario cost diagnostic
+playbook, a predictive/risk-modeling suite (learning-curve forecaster, cost-adapted FMEA risk
+register, Manufacturing Value at Risk), a multi-site executive rollup, and an honest operating
+framework. Click-to-open "Explain the Math" modals (16 of them) cover the highest-traffic KPIs
+throughout.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -161,6 +162,21 @@ worked example (a learning-curve labor-cost forecast) had a genuine, if small, a
 relationship both appeared again — same exclusion treatment, and every reference was genericized in
 the built modules.
 
+**An eighth verification round (2026-09-04)** reviewed a document proposing "Claude Code deployed
+inside AMS with live SAP RFC/BAPI write access" — the same theme that had already appeared, in
+whole or in part, four times before. Same call as every prior time: that's a claim about live system
+access, not a calculator, and it stays out of the dashboard. Two new SAP BAPI names checked out real
+(`BAPI_ROUTING_CREATE`, `BAPI_MATERIAL_BOM_GROUP_CREATE`). One concrete finding: the document's own
+build-vs-buy solver script, run with its own stated example numbers extended to one million units,
+**never finds a crossover** — internal stays more expensive at every volume the model was run
+against, despite the document presenting it as a working example. What the document did point at,
+independently of its broken example, was real: the existing Build-vs-Buy tab evaluated NPV/payback
+at one assumed volume but never asked at what volume the recommendation itself would flip. The new
+**Volume Crossover Point (Q\*)** calculator answers that using the cleaner, closed-form
+marginal-cost-equality model from the sixth document's "Model 6" instead of the eighth document's
+broken total-cost integral. Same recurring pattern reconfirmed: "1,520 tests" and the Kuiper/
+Robotics/AWS client claim both appear again.
+
 ## The twelve modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
@@ -185,7 +201,11 @@ the built modules.
    to drift back to, and a two-sided 95% confidence band around that forecast.
 4. **Build-vs-Buy / CapEx** — an NPV/payback analyzer generalizing the same methodology used in
    [`ams-narrative.html`](https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html)'s
-   worked example, with a year-by-year discounted cash-flow table.
+   worked example, with a year-by-year discounted cash-flow table. Plus a **Volume Crossover Point
+   (Q\*)** solver — the NPV analyzer answers "is this a good deal at my assumed volume"; this answers
+   "at what volume does the vendor's falling per-unit price actually beat my own cost," a closed-form
+   marginal-cost-equality model, not a copy of the eighth downloaded document's broken total-cost
+   script (see Methodology tab).
 5. **Capacity & Absorption Forecast** — a 6-week rolling capacity plan (from Issue 11's "predict
    unabsorbed overhead 30-60 days in advance" idea) — fully editable available/booked hours per week,
    live unabsorbed-hours/dollars/utilization, green/amber/red banding distinct from the Executive
@@ -303,8 +323,13 @@ against exact numbers **independently verified live in a real browser before thi
   **$22.78 – $35.53**.
 - Fabrication guard extended to the Risk Register data (same seam the fifth document's copied MHR
   figures would have leaked through if the recompute had been missed) — clean.
+- Volume Crossover Point defaults ($180.00 internal marginal cost, $420.00 vendor price at Q=1,
+  γ=0.12) → **Q\* = 1,165 units**, with the vendor price at Q\* independently confirmed to equal the
+  internal marginal cost input exactly ($180.00) — proof the crossover is real, not a copy of the
+  eighth downloaded document's own worked example, which was independently re-run (extended to one
+  million units) and never finds a crossover at all.
 
-Run: `node stress.cjs` — 252 checks, all passing as of this writing.
+Run: `node stress.cjs` — 260 checks, all passing as of this writing.
 
 ## Status
 
@@ -326,5 +351,8 @@ and the Explain-the-Math modal system (11 modules total, up from ten) — pushed
 
 **2026-09-04, sixth round:** added the Predictive & Risk Models tab (Learning Curve Forecaster, Cost
 Risk Register/CRPN, Manufacturing Value at Risk) and a Mean-Reversion Forward Band on the Variance
-tab (12 modules total, up from eleven) — pending push with explicit confirmation, same discipline as
-every prior round.
+tab (12 modules total, up from eleven) — pushed live.
+
+**2026-09-04, seventh round:** added the Volume Crossover Point (Q*) solver to the Build-vs-Buy tab
+(still 12 modules — a new card on an existing tab, not a new tab) — pending push with explicit
+confirmation, same discipline as every prior round.
