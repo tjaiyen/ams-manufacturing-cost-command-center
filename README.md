@@ -2,10 +2,11 @@
 
 A standalone, purpose-built dashboard for one specific role — Senior Manufacturing Cost Engineer,
 Amazon Manufacturing Services ([req 10512991](https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services)) —
-not a general-purpose portfolio piece. Six live, interactive modules covering the job description's
+not a general-purpose portfolio piece. Ten live, interactive modules covering the job description's
 own responsibility areas: should-cost modeling, machine-hour-rate formalization, standard-cost
-variance decomposition, build-vs-buy/NPV, a multi-site executive rollup, and an honest operating
-framework.
+variance decomposition (plus a forward-looking commodity price-exposure warning), build-vs-buy/NPV,
+capacity/absorption forecasting, tooling amortization, design-for-cost sensitivity, data governance,
+a multi-site executive rollup, and an honest operating framework.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -144,8 +145,11 @@ Same discipline as the sibling repos: stub the DOM, execute the page's *real* in
 against exact numbers **independently verified live in a real browser before this file was written**:
 
 - Should-cost defaults (CNC-3-Axis, batch 24, 3.8kg @ $16.50/kg, 1.35× buy-to-fly, 15% reclaim, 35min
-  cycle + 40min/batch setup, $34/hr labor, 14% OH) → material $81.35 / machine $15.89 / labor $10.39 /
-  overhead $15.07 / **total $122.70**.
+  cycle + 40min/batch setup, $34/hr labor, 14% OH, CNC-3-Axis MHR $24.00/hr) → material $81.35 /
+  machine $14.67 / labor $10.39 / overhead $14.90 / **total $121.31**. (CNC-3/5-Axis rate-card MHR
+  nudged from $26.00/$46.00 to $24.00/$42.00 on 2026-09-04 — a stress-test found the originals sat
+  2.2%/3.9% from specific fabricated MHR figures in two of the downloaded documents; every dependent
+  golden value re-derived and re-verified live in-browser after the change.)
 - Variance defaults → MPV +$3,025 / MQV −$1,040 / DLRV +$1,350 / DLEV +$2,520 / VOSV +$430 / FOHV
   −$960 / **net +$5,325**.
 - Build-vs-buy defaults ($95.78 internal vs. $186.00 external, 1,800 units/yr, $38K transition, 10%
@@ -177,11 +181,25 @@ against exact numbers **independently verified live in a real browser before thi
 - Commodity Price Exposure defaults ($26.00 frozen, $29.50 spot, 2,200kg open volume) → **13.46%**
   shift, **+$7,700** projected exposure, correctly flagged **WARNING** (>8% threshold).
 
-Run: `node stress.cjs` — 135 checks, all passing as of this writing.
+- Executive Overview P&L table arithmetic (added 2026-09-04, closing a real gap — no check existed
+  for this table before): rollup std/act COGS are the real sum of all three sites, Site C's own
+  variance equals its own act-minus-std, and Site C's invented standard COGS ($1,150,000, nudged
+  from $1,105,000) is confirmed >2% away from the specific fabricated figure ($1,100,000) it
+  previously sat only 0.45% from.
+
+Run: `node stress.cjs` — 141 checks, all passing as of this writing.
 
 ## Status
 
 Built 2026-09-04 in response to a direct request for a dedicated dashboard for this specific role
 (a prior session had mistakenly added AMS-specific pages to `cost-management-command-center`
-instead — corrected here as its own repo). Local commit only until pushed live with explicit
-confirmation.
+instead — corrected here as its own repo). **Live and public** — pushed to `origin/main` with
+explicit confirmation at each step (initial build, then three follow-on rounds of verification and
+new modules), each push confirmed actually serving the new content before being reported as done.
+
+**Fixed 2026-09-04 (stress-test pass):** this section previously read "Local commit only until
+pushed live with explicit confirmation" — stale from the initial build, left un-updated across three
+subsequent pushes. An independent reviewer caught the resulting self-contradiction against this
+same file's own opening "Live: deployed via GitHub Pages" line. Fixed here, along with the opening
+paragraph's stale "Six... modules" (grew to ten across those same three rounds without the intro
+being updated).

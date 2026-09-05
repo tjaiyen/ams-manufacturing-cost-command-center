@@ -56,6 +56,29 @@ const foundBanned = bannedStrings.filter((s) => htmlOutsideDebunkCards.includes(
 check(foundBanned.length === 0, "none of the two downloaded documents' fabricated specifics (client claims, copied test count, their own invented dollar figures, invented facility names) appear anywhere OUTSIDE the cards that name them specifically to debunk them", JSON.stringify(foundBanned));
 check(debunkCardMatch && bannedStrings.some((s) => debunkCardMatch[0].includes(s)), "the debunk card itself actually names at least one of the fabricated claims (confirms the exclusion above is excluding real content, not a no-op)");
 
+console.log("--- Executive Overview P&L rollup table: arithmetic + fabrication-proximity check (2026-09-04) ---");
+// This table's numbers are hand-typed static HTML, not JS-computed -- a stress-test found NO check
+// existed for it at all before this. Also found: Site C's original std COGS ($1,105,000) sat only
+// 0.45% from the explicitly-banned fabricated figure $1,100,000 (see bannedStrings below) -- close
+// enough that a skeptical reader could suspect it wasn't independently invented. Fixed by moving it
+// to $1,150,000 (4.5% away) and recomputing the row + rollup from real arithmetic, not just retyping
+// a plausible-looking total.
+const execTableMatch = html.match(/Site A[\s\S]*?Rollup[\s\S]*?<\/tr>/);
+check(!!execTableMatch, "found the Executive Overview P&L rollup table to check");
+if (execTableMatch) {
+  // Each row (Site A/B/C, Rollup) carries 3 dollar figures in order: std, act, variance -- 4 rows x
+  // 3 = 12 matches total (confirmed by running this exact regex before writing the check, not
+  // assumed -- an earlier draft of this check wrongly assumed 2 figures/row and mis-aligned every
+  // value as a result).
+  const nums = [...execTableMatch[0].matchAll(/\$([\d,]+)/g)].map((m) => parseInt(m[1].replace(/,/g, ""), 10));
+  check(nums.length === 12, "found exactly 12 dollar figures (std/act/variance x 4 rows) -- if this drifts, the positional extraction below is no longer valid", `found ${nums.length}`);
+  const [aStd, , , bStd, , , cStd, cAct, cVar, rollStd, rollAct] = nums;
+  check(cAct - cStd === cVar, "Site C's own printed variance equals its own printed act-minus-std, not a separately-typed number", `act-std=${cAct - cStd} printed=${cVar}`);
+  check(rollStd === aStd + bStd + cStd, "rollup standard COGS is the real sum of all three sites' standard COGS, not a separately-typed number", `rollup=${rollStd} sum=${aStd + bStd + cStd}`);
+  check(rollAct === (nums[1] + nums[4] + cAct), "rollup actual COGS is the real sum of all three sites' actual COGS, not a separately-typed number", `rollup=${rollAct} sum=${nums[1] + nums[4] + cAct}`);
+  check(Math.abs(cStd - 1100000) / 1100000 > 0.02, "Site C's invented standard COGS is safely distinct (>2%) from the specific fabricated figure ($1,100,000) it once sat only 0.45% away from", `cStd=${cStd}, diff=${(Math.abs(cStd - 1100000) / 1100000 * 100).toFixed(2)}%`);
+}
+
 console.log("--- No confirmed-incorrect claims asserted as fact (third document's two real errors) ---");
 // A third downloaded document had two confirmed technical errors (not fabrications, but genuinely
 // wrong claims): "PP02" is not SAP's real rework order type (the closer convention is PP03), and
@@ -143,12 +166,16 @@ try {
 }
 
 console.log("--- Should-Cost calculator: golden values (verified live in-browser before this file existed) ---");
-check(elements.scOutMhr.textContent === "$26.00/hr", "MHR resolves to the CNC-3-Axis rate card value", elements.scOutMhr.textContent);
+// CNC-3-Axis/CNC-5-Axis rate-card values nudged on 2026-09-04 (a stress-test found $26.00/$46.00
+// sat 2.2%/3.9% from specific fabricated MHR figures in two of the downloaded documents) -- every
+// golden value below was re-derived and re-verified live in-browser after the change, not just
+// hand-adjusted to match the new formula.
+check(elements.scOutMhr.textContent === "$24.00/hr", "MHR resolves to the CNC-3-Axis rate card value", elements.scOutMhr.textContent);
 check(elements.scOutMat.textContent === "$81.35", "material cost matches the browser-verified golden value", elements.scOutMat.textContent);
-check(elements.scOutMach.textContent === "$15.89", "machine conversion cost matches the browser-verified golden value", elements.scOutMach.textContent);
+check(elements.scOutMach.textContent === "$14.67", "machine conversion cost matches the browser-verified golden value", elements.scOutMach.textContent);
 check(elements.scOutLabor.textContent === "$10.39", "labor cost matches the browser-verified golden value", elements.scOutLabor.textContent);
-check(elements.scOutOh.textContent === "$15.07", "overhead cost matches the browser-verified golden value", elements.scOutOh.textContent);
-check(elements.scOutTotal.textContent === "$122.70", "should-cost TOTAL matches the browser-verified golden value (and equals the sum of the four lines above)", elements.scOutTotal.textContent);
+check(elements.scOutOh.textContent === "$14.90", "overhead cost matches the browser-verified golden value", elements.scOutOh.textContent);
+check(elements.scOutTotal.textContent === "$121.31", "should-cost TOTAL matches the browser-verified golden value (and equals the sum of the four lines above)", elements.scOutTotal.textContent);
 
 console.log("--- Variance Waterfall: golden values ---");
 check(elements.outMPV.textContent === "+$3,025", "MPV matches golden value", elements.outMPV.textContent);
@@ -207,7 +234,7 @@ console.log("--- Methodology tab: newly-verified real terms are cited, not asser
 check(html.includes("illustrative heuristic, not a physics-based"), "the DFM/DFC model is explicitly labeled a heuristic, not a precise simulation, matching the never-fabricate discipline");
 
 console.log("--- Rate card consistency (table cells must equal the live-computed MHR, not a stale hand-typed number) ---");
-const RATE_CARD_EXPECTED = { cnc3: 26.00, cnc5: 46.00, dmls: 66.00, sheet: 13.50 };
+const RATE_CARD_EXPECTED = { cnc3: 24.00, cnc5: 42.00, dmls: 66.00, sheet: 13.50 };
 Object.keys(RATE_CARD_EXPECTED).forEach((wc) => {
   const m = html.match(new RegExp(`data-wc="${wc}"[\\s\\S]*?data-mhr>\\$([\\d.]+)<`));
   check(!!m, `found the static MHR table cell for ${wc}`);
