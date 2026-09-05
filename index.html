@@ -139,6 +139,34 @@
   .slider-row input[type=range]{width:100%;accent-color:rgb(var(--c-accent))}
   footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--c-line);color:rgb(var(--c-text-secondary));font-size:12px}
   @media (max-width:640px){.field-row{grid-template-columns:1fr}.cadence-row{grid-template-columns:1fr}}
+
+  .explain-btn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1px solid var(--c-line);background:none;color:rgb(var(--c-text-secondary));font-size:10px;cursor:pointer;margin-left:6px;flex:none;font-family:inherit;padding:0;vertical-align:1px}
+  .explain-btn:hover{border-color:rgb(var(--c-accent));color:rgb(var(--c-accent))}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgb(0 0 0/.6);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 20px 50px rgb(0 0 0/.45)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c-line);padding-bottom:10px;margin-bottom:12px}
+  .modal-head h3{margin:0;font-size:14.5px;color:rgb(var(--c-accent))}
+  .modal-close{background:none;border:none;color:rgb(var(--c-text-secondary));font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}
+  .modal-close:hover{color:rgb(var(--c-text-primary))}
+  .formula-box{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:6px;padding:10px 12px;margin:10px 0;font-size:12px;color:rgb(var(--c-accent));word-break:break-word}
+  .modal-body p{font-size:12.5px;color:rgb(var(--c-text-secondary));margin:0}
+
+  .pb-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .pb-controls select,.pb-controls input{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);color:inherit;padding:7px 10px;border-radius:6px;font-family:inherit;font-size:12.5px}
+  .pb-controls select{min-width:260px}
+  .pb-controls input{flex:1;min-width:200px}
+  .pb-count{font-size:11.5px;color:rgb(var(--c-text-secondary));margin-bottom:14px}
+  .pb-card{border:1px solid var(--c-line);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+  .pb-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .pb-code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:rgb(var(--c-text-secondary))}
+  .pb-q{font-size:13.5px;font-weight:700;margin:2px 0 8px}
+  .pb-thresholds{display:flex;gap:6px;font-size:10px;flex-wrap:wrap;margin-bottom:10px}
+  .pb-thresholds span{padding:2px 8px;border-radius:99px;font-family:ui-monospace,Menlo,monospace;font-weight:700}
+  .pb-row{font-size:12.5px;color:rgb(var(--c-text-secondary));margin:5px 0}
+  .pb-row b{color:rgb(var(--c-text-primary))}
+  .pb-formula{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:rgb(var(--c-accent));background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;margin:8px 0}
+  .pb-result{font-weight:700;font-family:ui-monospace,Menlo,monospace}
 </style>
 </head>
 <body>
@@ -160,6 +188,7 @@
     <button class="tabbtn" data-tab="tooling" role="tab" aria-selected="false">Tooling Amortization</button>
     <button class="tabbtn" data-tab="dfm" role="tab" aria-selected="false">DFM/DFC Sensitivity</button>
     <button class="tabbtn" data-tab="governance" role="tab" aria-selected="false">Data Governance</button>
+    <button class="tabbtn" data-tab="playbook" role="tab" aria-selected="false">Diagnostic Playbook</button>
     <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
     <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
   </div>
@@ -184,12 +213,12 @@
 
     <div class="grid cols-4" style="margin-bottom:20px">
       <div class="kpi-tile">
-        <div class="kpi-label">Cost Model Accuracy</div>
+        <div class="kpi-label">Cost Model Accuracy <button class="explain-btn" data-explain="cmar" type="button" aria-label="Explain this formula">?</button></div>
         <div class="kpi-value" id="kpi-cmar">96.8%</div>
         <div class="kpi-foot good" id="kpi-cmar-foot">● Above 95% target</div>
       </div>
       <div class="kpi-tile">
-        <div class="kpi-label">Overhead Absorption</div>
+        <div class="kpi-label">Overhead Absorption <button class="explain-btn" data-explain="oae" type="button" aria-label="Explain this formula">?</button></div>
         <div class="kpi-value" id="kpi-oae">93.1%</div>
         <div class="kpi-foot amber" id="kpi-oae-foot">▲ Amber (target ≥95%)</div>
       </div>
@@ -268,7 +297,7 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><h2>Work-Center Rate Card</h2><span class="tag">STANDING + RUNNING, EDITABLE</span></div>
+        <div class="card-head"><h2>Work-Center Rate Card <button class="explain-btn" data-explain="mhrBuildup" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">STANDING + RUNNING, EDITABLE</span></div>
         <div class="tblwrap">
           <table id="rateCardTable">
             <thead><tr><th>Work Center</th><th>Standing $/hr</th><th>Running $/hr</th><th>MHR $/hr</th></tr></thead>
@@ -288,6 +317,44 @@
           here, by design. Real-world CNC controllers in this class are commonly Fanuc, Heidenhain,
           or Siemens — named here as illustrative examples of what a real rate card would specify,
           not a claim about which controllers AMS actually runs.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>MHR Build-Up Calculator <button class="explain-btn" data-explain="mhrBuildup" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">FIRST-PRINCIPLES DERIVATION</span></div>
+      <p class="lede" style="margin-bottom:14px">Where a work center's standing/running rate actually
+        comes from: capital depreciation, floor allocation, and a service contract, spread over
+        scheduled hours × target OEE, plus power and consumables while running. The Rate Card above
+        states its own numbers directly for simplicity — this is the build-up underneath a real one.
+        Illustrative inputs below, deliberately distinct from any single work center on this page.</p>
+      <div class="grid cols-3">
+        <div>
+          <div class="field"><label>Capital acquisition cost ($)</label><input type="number" id="mhrCapital" value="580000" step="1000"></div>
+          <div class="field"><label>Useful life (years)</label><input type="number" id="mhrLife" value="7" min="1"></div>
+          <div class="field"><label>Floor footprint (sq ft)</label><input type="number" id="mhrFloor" value="320" step="10"></div>
+        </div>
+        <div>
+          <div class="field"><label>Floor rate ($/sq ft/yr)</label><input type="number" id="mhrFloorRate" value="38" step="1"></div>
+          <div class="field"><label>Annual service contract ($)</label><input type="number" id="mhrService" value="22000" step="500"></div>
+          <div class="field"><label>Scheduled hours/year</label><input type="number" id="mhrSchedHrs" value="3800" step="50"></div>
+        </div>
+        <div>
+          <div class="field"><label>Target OEE (%)</label><input type="number" id="mhrOee" value="78" step="1"></div>
+          <div class="field-row">
+            <div class="field"><label>Power draw (kW)</label><input type="number" id="mhrPower" value="20" step="1"></div>
+            <div class="field"><label>Utility rate ($/kWh)</label><input type="number" id="mhrUtilRate" value="0.12" step="0.01"></div>
+          </div>
+          <div class="field"><label>Consumables ($/hr)</label><input type="number" id="mhrConsumables" value="11.75" step="0.25"></div>
+        </div>
+      </div>
+      <div class="outline">
+        <div class="line"><span>Annual depreciation</span><span class="mono" id="mhrDepOut">$0</span></div>
+        <div class="line"><span>Annual floor allocation</span><span class="mono" id="mhrFloorOut">$0</span></div>
+        <div class="line"><span>Standing cost basis (depreciation + floor + service)</span><span class="mono" id="mhrStandingBasisOut">$0</span></div>
+        <div class="line"><span>Productive hours (scheduled × OEE)</span><span class="mono" id="mhrProdHrsOut">0</span></div>
+        <div class="line"><span>Standing rate</span><span class="mono" id="mhrStandingOut">$0.00/hr</span></div>
+        <div class="line"><span>Running rate (power + consumables)</span><span class="mono" id="mhrRunningOut">$0.00/hr</span></div>
+        <div class="line total"><span>Fully burdened MHR</span><span class="mono" id="mhrTotalOut">$0.00/hr</span></div>
       </div>
     </div>
   </section>
@@ -332,12 +399,12 @@
         <div class="card-head"><h2>Variance Waterfall</h2><span class="tag">GREEN = FAVORABLE, RED = UNFAVORABLE</span></div>
         <div class="waterfall" id="waterfallChart"></div>
         <div class="outline" style="margin-top:8px">
-          <div class="line"><span>Material Price Variance (MPV)</span><span class="mono" id="outMPV">$0</span></div>
-          <div class="line"><span>Material Quantity Variance (MQV)</span><span class="mono" id="outMQV">$0</span></div>
-          <div class="line"><span>Labor Rate Variance (DLRV)</span><span class="mono" id="outDLRV">$0</span></div>
-          <div class="line"><span>Labor Efficiency Variance (DLEV)</span><span class="mono" id="outDLEV">$0</span></div>
-          <div class="line"><span>Variable OH Spending (VOSV)</span><span class="mono" id="outVOSV">$0</span></div>
-          <div class="line"><span>Fixed OH Volume (FOHV)</span><span class="mono" id="outFOHV">$0</span></div>
+          <div class="line"><span>Material Price Variance (MPV) <button class="explain-btn" data-explain="mpv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outMPV">$0</span></div>
+          <div class="line"><span>Material Quantity Variance (MQV) <button class="explain-btn" data-explain="mqv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outMQV">$0</span></div>
+          <div class="line"><span>Labor Rate Variance (DLRV) <button class="explain-btn" data-explain="dlrv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outDLRV">$0</span></div>
+          <div class="line"><span>Labor Efficiency Variance (DLEV) <button class="explain-btn" data-explain="dlev" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outDLEV">$0</span></div>
+          <div class="line"><span>Variable OH Spending (VOSV) <button class="explain-btn" data-explain="vosv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outVOSV">$0</span></div>
+          <div class="line"><span>Fixed OH Volume (FOHV) <button class="explain-btn" data-explain="fohv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outFOHV">$0</span></div>
           <div class="line total"><span>Net Total Variance</span><span class="mono" id="outNet">$0</span></div>
         </div>
       </div>
@@ -530,7 +597,7 @@
         </div>
         <div class="outline">
           <div class="line"><span>MDQS = 100% − (30%·routing + 30%·confirmation + 25%·scrap + 15%·stale)</span><span></span></div>
-          <div class="line total"><span>Score</span><span class="mono" id="mdqsScore">0.0%</span> <span id="mdqsBand"></span></div>
+          <div class="line total"><span>Score <button class="explain-btn" data-explain="mdqs" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="mdqsScore">0.0%</span> <span id="mdqsBand"></span></div>
         </div>
         <p style="font-size:11px;color:rgb(var(--c-text-secondary))">Bands as stated in the source
           document: green ≥98%, amber 93–98%, red &lt;93%.</p>
@@ -551,6 +618,32 @@
           logic, it does not claim AMS's real SAP instance enforces exactly these values.</p>
       </div>
     </div>
+  </section>
+
+  <!-- ============ TAB: COST DIAGNOSTIC PLAYBOOK ============ -->
+  <section class="tabpanel" id="tab-playbook">
+    <h1>Cost Diagnostic Playbook</h1>
+    <p class="lede">30 rehearsed diagnostic scenarios — the shape a "walk me through how you'd
+      investigate X" interview question actually wants: operational symptom → the right variance
+      formula → a worked dollar exposure → which GL account it hits → who acts on it. The formulas,
+      KPI thresholds, and GL-account logic are real, well-established cost-accounting practice;
+      every dollar figure is an illustrative worked example, not AMS's real numbers. See the
+      Methodology tab for sourcing and for what changed from the source document.</p>
+
+    <div class="pb-controls">
+      <select id="pbDomain" aria-label="Filter by domain">
+        <option value="all">All domains (30)</option>
+        <option value="material">1 · Material Economics &amp; Buy-to-Fly</option>
+        <option value="cnc">2 · CNC Conversion &amp; Tool Wear</option>
+        <option value="additive">3 · Additive Physics &amp; Consumables</option>
+        <option value="labor">4 · Labor Routing &amp; Manning</option>
+        <option value="overhead">5 · Overhead Absorption &amp; MHR</option>
+        <option value="quoting">6 · Quoting, Build-vs-Buy &amp; Transfer Pricing</option>
+      </select>
+      <input type="text" id="pbSearch" placeholder="Search question, KPI code, or metric…" aria-label="Search the playbook">
+    </div>
+    <p class="pb-count" id="pbCount"></p>
+    <div id="pbList"></div>
   </section>
 
   <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
@@ -662,7 +755,42 @@
         Price Exposure calculator above, uses the document's own real 8% early-warning threshold — a
         well-defined formula, not a claim about AMS's actual commodity contracts.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A fifth document — mostly a verbatim copy, one genuinely new asset</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">A fifth downloaded document
+        (the largest yet) repeats most of what's already been checked here — but cross-referencing
+        it against this page's own fabrication guard surfaced something the earlier rounds didn't:
+        its MHR worked-example table (a 5-axis CNC/DMLS/press-brake cost derivation) and its three
+        named facilities are <b>verbatim identical</b> to the fabricated content in the very first
+        downloaded document — same dollar figures to the penny ($47.88/$74.82/$26.58 per hour,
+        $650,000/$1,100,000/$220,000 in capital costs), same invented facility names. Two documents
+        landing on identical, oddly specific numbers is strong evidence of a shared template, not
+        independent generation each time — the same signature this page has flagged for the
+        "1,520 tests" figure and the Claude Code hooks schema error, both of which also reappear
+        here unchanged. <b>"PP02" as SAP's rework order type is repeated a fourth time</b>, and
+        independent research now traces it more precisely: PP02 tracks to external/subcontract
+        processing in both the control-key and order-type namespaces; PP03 is the closer real
+        convention. The claimed Project Kuiper/Amazon Robotics/AWS-facility relationship is now
+        confirmed fabricated with stronger evidence than before — Amazon Robotics manufacturing is
+        publicly documented in Massachusetts and Texas, not Washington State at all. What <i>is</i>
+        genuinely new: a 30-scenario diagnostic question bank (operational symptom → variance
+        formula → dollar exposure → GL account → leadership action) whose arithmetic independently
+        re-derives cleanly — 29 of 30 to the penny. That bank is now the <b>Cost Diagnostic
+        Playbook</b> tab, with every question that depended on the copied/fabricated MHR figures
+        recomputed against this dashboard's own established rate card instead, and all named-client
+        references genericized. The MHR Build-Up Calculator on the Should-Cost tab keeps the
+        document's real underlying formula (standing = depreciation + floor + service, spread over
+        scheduled hours × OEE) but uses fresh illustrative numbers, not the copied ones.</p>
+    </div>
   </section>
+
+  <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
+    <div class="modal-box">
+      <div class="modal-head"><h3 id="explainTitle">Formula</h3><button class="modal-close" id="explainClose" type="button" aria-label="Close">×</button></div>
+      <div class="modal-body" id="explainBody"></div>
+    </div>
+  </div>
 
   <footer>
     <p>Built as a purpose-specific companion to the <a href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">AMS fit brief</a>,
@@ -696,6 +824,38 @@
   }
   tabBtns.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab')); }); });
 
+  // ---------- Explain-the-Math modal ----------
+  var EXPLAIN = {
+    cmar: { title: 'Cost Model Accuracy Ratio (CMAR)', formula: 'CMAR = (1 − |COGS_actual − COGS_quoted| / COGS_actual) × 100', body: 'Measures how well the quoting engine predicts real shop-floor cost. Target ≥95%; below 90% signals the routing or nesting assumptions behind the quote need re-timing against closed work orders.' },
+    oae: { title: 'Overhead Absorption Efficiency (OAE)', formula: 'OAE = (Absorbed Fixed OH / Budgeted Fixed OH) × 100', body: 'Absorbed Fixed OH = productive machine hours × the standard fixed-overhead rate. When machines sit idle, budgeted overhead outruns what production actually absorbs — the gap is the Fixed Overhead Volume Variance.' },
+    mpv: { title: 'Material Price Variance (MPV)', formula: 'MPV = (Actual Price − Standard Price) × Actual Quantity', body: 'Isolates a pure price effect — usually procurement paying more or less than the standard catalog cost — independent of how much material was actually consumed.' },
+    mqv: { title: 'Material Quantity Variance (MQV)', formula: 'MQV = (Actual Qty − Standard Qty) × Standard Price', body: 'Isolates a pure consumption effect — nesting waste, scrap, or an oversized billet — independent of the price paid per unit.' },
+    dlrv: { title: 'Direct Labor Rate Variance (DLRV)', formula: 'DLRV = (Actual Rate − Standard Rate) × Actual Hours', body: 'Captures wage-rate effects — overtime premiums, a more senior technician reassigned to the job — independent of how long the job actually took.' },
+    dlev: { title: 'Direct Labor Efficiency Variance (DLEV)', formula: 'DLEV = (Actual Hours − Standard Hours) × Standard Rate', body: 'Captures a pure productivity effect — a stale routing standard, work-instruction ambiguity, or a genuinely slower job — independent of the wage rate paid.' },
+    vosv: { title: 'Variable Overhead Spending Variance (VOSV)', formula: 'VOSV = Actual Variable OH − (Actual Hours × Standard Variable OH Rate)', body: 'Isolates whether consumables (coolant, shielding gas, cutting-tool wear) cost more or less per hour than the standard rate assumed, for the hours actually run.' },
+    fohv: { title: 'Fixed Overhead Volume Variance (FOHV)', formula: 'FOHV = (Budgeted Hours − Actual Hours) × Standard Fixed OH Rate', body: 'Not a spending variance at all — it is the P&L cost of running fewer or more hours than the volume the fixed-overhead rate assumed, i.e. unabsorbed (or over-absorbed) capacity.' },
+    mdqs: { title: 'Master Data Quality Scorecard (MDQS)', formula: 'MDQS = 100% − (30%·routing_err_rate + 30%·confirm_var_rate + 25%·unlinked_scrap_rate + 15%·stale_standard_rate)', body: 'A single weighted score across four independent data-quality signals, banded green ≥98% / amber 93–98% / red <93% — the same formula the Governance tab computes live, sourced from a downloaded document’s own real, well-defined SAP data-governance model.' },
+    mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'Standing cost is a capital/facility question, spread over how many hours the machine is actually expected to run. Running cost is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab.' }
+  };
+  var explainModal = document.getElementById('explainModal');
+  var explainTitle = document.getElementById('explainTitle');
+  var explainBody = document.getElementById('explainBody');
+  function openExplain(key){
+    var e = EXPLAIN[key]; if(!e) return;
+    explainTitle.textContent = e.title;
+    explainBody.innerHTML = '<div class="formula-box">' + e.formula + '</div><p>' + e.body + '</p>';
+    explainModal.classList.add('open');
+  }
+  function closeExplain(){ explainModal.classList.remove('open'); }
+  window.EXPLAIN = EXPLAIN;
+  window.openExplain = openExplain;
+  document.getElementById('explainClose').addEventListener('click', closeExplain);
+  explainModal.addEventListener('click', function(ev){ if(ev.target === explainModal) closeExplain(); });
+  document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeExplain(); });
+  Array.prototype.slice.call(document.querySelectorAll('[data-explain]')).forEach(function(btn){
+    btn.addEventListener('click', function(ev){ ev.stopPropagation(); openExplain(btn.getAttribute('data-explain')); });
+  });
+
   // ---------- Rate card (single source of truth for MHR by work center) ----------
   var RATE_CARD = {
     cnc3:  { standing: 18.00, running: 6.00 },
@@ -713,6 +873,41 @@
   Object.keys(RATE_CARD).forEach(function(wc){
     var row = document.querySelector('tr[data-wc="'+wc+'"] [data-mhr]');
     if(row) row.textContent = '$' + mhrFor(wc).toFixed(2);
+  });
+
+  // ---------- MHR Build-Up Calculator (first-principles derivation demo) ----------
+  function calcMhrBuildup(){
+    var capital = parseFloat(document.getElementById('mhrCapital').value) || 0;
+    var life = parseFloat(document.getElementById('mhrLife').value) || 1;
+    var floor = parseFloat(document.getElementById('mhrFloor').value) || 0;
+    var floorRate = parseFloat(document.getElementById('mhrFloorRate').value) || 0;
+    var service = parseFloat(document.getElementById('mhrService').value) || 0;
+    var schedHrs = parseFloat(document.getElementById('mhrSchedHrs').value) || 1;
+    var oee = (parseFloat(document.getElementById('mhrOee').value) || 0) / 100;
+    var power = parseFloat(document.getElementById('mhrPower').value) || 0;
+    var utilRate = parseFloat(document.getElementById('mhrUtilRate').value) || 0;
+    var consumables = parseFloat(document.getElementById('mhrConsumables').value) || 0;
+
+    var depreciation = capital / life;
+    var floorAlloc = floor * floorRate;
+    var standingBasis = depreciation + floorAlloc + service;
+    var productiveHrs = schedHrs * oee;
+    var standingRate = productiveHrs > 0 ? standingBasis / productiveHrs : 0;
+    var runningRate = (power * utilRate) + consumables;
+    var totalMhr = standingRate + runningRate;
+
+    document.getElementById('mhrDepOut').textContent = '$' + Math.round(depreciation).toLocaleString();
+    document.getElementById('mhrFloorOut').textContent = '$' + Math.round(floorAlloc).toLocaleString();
+    document.getElementById('mhrStandingBasisOut').textContent = '$' + Math.round(standingBasis).toLocaleString();
+    document.getElementById('mhrProdHrsOut').textContent = Math.round(productiveHrs).toLocaleString();
+    document.getElementById('mhrStandingOut').textContent = '$' + standingRate.toFixed(2) + '/hr';
+    document.getElementById('mhrRunningOut').textContent = '$' + runningRate.toFixed(2) + '/hr';
+    document.getElementById('mhrTotalOut').textContent = '$' + totalMhr.toFixed(2) + '/hr';
+    return { depreciation: depreciation, floorAlloc: floorAlloc, standingBasis: standingBasis, productiveHrs: productiveHrs, standingRate: standingRate, runningRate: runningRate, totalMhr: totalMhr };
+  }
+  window.calcMhrBuildup = calcMhrBuildup;
+  ['mhrCapital','mhrLife','mhrFloor','mhrFloorRate','mhrService','mhrSchedHrs','mhrOee','mhrPower','mhrUtilRate','mhrConsumables'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcMhrBuildup);
   });
 
   // ---------- Tab 2: Should-Cost calculator ----------
@@ -1010,7 +1205,332 @@
   window.calcGates = calcGates;
   ['gateBom', 'gatePo', 'gateConf'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcGates); });
 
+  // ---------- Cost Diagnostic Playbook ----------
+  // 30 scenarios adapted from the fifth downloaded document's Section 7. Every dollar figure below
+  // is an illustrative worked example, independently re-derived (see stress.cjs) -- NOT the
+  // document's own copy-pasted numbers where those overlapped with figures already excluded via
+  // bannedStrings: those specific questions were recomputed against this dashboard's own
+  // established rate card instead. Unconfirmed named-client references were genericized. See the
+  // Methodology tab's "fifth document" card for the full account -- deliberately not repeated here
+  // since this file is scanned for those same banned strings outside that one card.
+  var PLAYBOOK = [
+    { num: 1, domain: 'material', code: 'MAT-MPV', kpi: 'Material Price Variance Ratio',
+      green: '±2.0%', amber: '2.1–5.0% unfav', red: '>5.0% unfav',
+      q: 'Spot-market alloy buying is pushing Material Price Variance unfavorable — why?',
+      root: 'Procurement bypassed the negotiated mill blanket agreement to expedite an unscheduled internal engineering revision, buying titanium on the spot market instead.',
+      formula: 'MPV = (AP − SP) × AQ',
+      worked: 'SP = $42.00/kg · AP = $58.50/kg · AQ = 1,400 kg',
+      result: '+$23,100 (unfavorable)',
+      gl: 'Purchase Price Variance account',
+      action: 'Debit the variance to the PPV account; sourcing consolidates quarterly alloy demand to expand blanket-agreement coverage.' },
+    { num: 2, domain: 'material', code: 'MAT-02', kpi: 'Buy-to-Fly / Swarf-to-Solid Ratio',
+      green: '≤4.0:1', amber: '4.1–6.0:1', red: '>6.0:1',
+      q: 'Why has the buy-to-fly ratio on a billet-milled part blown past the engineering release limit?',
+      root: 'CAM selected an oversized raw-stock blank after an extrusion stockout, machining most of the billet into chips.',
+      formula: 'Buy-to-Fly = M_gross / M_net · MQV = (AQ − SQ) × SP',
+      worked: 'M_net = 1.80 kg · SQ = 7.20 kg (4:1) · AQ = 14.58 kg (8.1:1) · SP = $6.20/kg · batch = 250',
+      result: '+$11,439 (unfavorable)',
+      gl: 'Material Quantity Variance account',
+      action: 'Reclassify the variance; CAM mandates bounding-box volumetric checks before stock is issued.' },
+    { num: 3, domain: 'material', code: 'MAT-03', kpi: 'Powder Reuse Ratio (Additive)',
+      green: '85–90% recycled', amber: '75–84.9%', red: '<75%',
+      q: 'Why is virgin-powder top-up on the DMLS line exceeding budgeted allowances?',
+      root: 'A torn ultrasonic sieving mesh let particulate contamination through, forcing technicians to condemn a powder lot.',
+      formula: 'Feedstock loss = M_condemned × (P_virgin − P_scrap_reclaim)',
+      worked: 'M_condemned = 320 kg · P_virgin = $115.00/kg · P_scrap = $8.50/kg',
+      result: '+$34,080 (unfavorable)',
+      gl: 'Additive Inventory Scrap account',
+      action: 'Write down the loss; maintenance installs mesh-pressure sensors on the sieving unit.' },
+    { num: 4, domain: 'material', code: 'MAT-01', kpi: 'First-Pass Sheet Nesting Yield',
+      green: '≥85%', amber: '75–84.9%', red: '<75%',
+      q: 'Why is sheet-metal laser cutting yielding more skeleton scrap than the quote assumed?',
+      root: 'Schedulers nested single-part orders independently instead of running dynamic multi-order batch nesting.',
+      formula: 'Scrap Loss = A_sheet × (1 − Yield) × t × ρ × (P_raw − P_scrap)',
+      worked: '25.27 kg sheet mass · target 15% scrap, actual 36.2% (≈5.36 kg excess/sheet) · 120 sheets · $4.80/kg spread',
+      result: '+$3,087 (unfavorable)',
+      gl: 'Sheet Metal Off-Cut Scrap account',
+      action: 'Audit vendor scrap buy-back weights; CAM configures dynamic multi-part nesting queues.' },
+    { num: 5, domain: 'material', code: 'QLT-01', kpi: 'Defect Sunk Scrap Cost Drag',
+      green: '≤1.0%', amber: '1.1–2.5%', red: '>2.5%',
+      q: 'Why are finished CNC housings being scrapped at final inspection for sub-surface porosity?',
+      root: 'Bar stock was purchased without ultrasonic-inspection certification, hiding internal voids that surfaced during finish milling.',
+      formula: 'C_sunk = C_raw_stock + (T_spindle × MHR) + (T_touch × R_labor)',
+      worked: '$240 billet · 5.5 CNC hrs @ $42.00/hr · 1.2 touch hrs @ $45.00/hr · 14 units scrapped',
+      result: '+$7,350 (unfavorable)',
+      gl: 'WIP Defect Scrap Loss account',
+      action: 'Issue a supplier quality debit-recovery memo; quality places a receipt hold on batches lacking NDT mill certs.' },
+    { num: 6, domain: 'cnc', code: 'PRC-01', kpi: 'Machine Hour Rate Deviation (ΔMHR)',
+      green: '±3.0%', amber: '3.1–7.0%', red: '>7.0%',
+      q: 'Why is the actual operating rate for a CNC cell running hotter than the SAP-standard MHR?',
+      root: 'High-pressure coolant pumps and spindle chillers had unmeasured auxiliary power draw, plus accelerated seal maintenance.',
+      formula: 'ΔMHR = MHR_actual − MHR_standard',
+      worked: 'Standard MHR = $42.00/hr · actual standing = $10,800/240 hrs · actual running = $2,420/240 hrs',
+      result: 'ΔMHR = +$13.08/hr (+31.15%); +$15,700 across 1,200 spindle hrs (unfavorable)',
+      gl: 'Machine Center Cost Variance account',
+      action: 'Update the cost-center activity price table for next period; facilities audits chiller thermal efficiency.' },
+    { num: 7, domain: 'cnc', code: 'PRC-02', kpi: 'Effective Spindle Utilization (ESBU)',
+      green: '≥75%', amber: '65–74.9%', red: '<65%',
+      q: 'Why is spindle utilization on a high-capital multi-axis mill falling below target absorption?',
+      root: 'Machines sat idle in unprogrammed pause states waiting for on-shift quality inspectors to clear First Article Inspections.',
+      formula: 'Unabsorbed Standing Cost = (Scheduled × Target% − Actual In-Cut) × Standing Rate',
+      worked: 'Target = 360 × 75% = 270 hrs · actual = 230 hrs · standing rate = $32.00/hr · 6-machine cell',
+      result: '63.89% ESBU (red); +$7,680/month unabsorbed drag across the cell (unfavorable)',
+      gl: 'Idle Capacity Drag Expense account',
+      action: 'Deploy on-machine probing macros to automate First Article checks instead of waiting on a human inspector.' },
+    { num: 8, domain: 'cnc', code: 'MAT-04', kpi: 'Consumable Cost Burn Variance (CCBV)',
+      green: '≤0.0%', amber: '0.1–10.0%', red: '>10.0%',
+      q: 'Why is carbide tooling spend running well over budget in hard-metal milling?',
+      root: 'Operators ran aggressive feed-rate overrides without radial chip-thinning compensation, fracturing insert edges.',
+      formula: 'ΔTooling = (C_tool_actual − C_tool_standard) × Units',
+      worked: 'Standard $18.50/unit · actual $31.20/unit · 400 units',
+      result: '+$5,080 (unfavorable); CCBV = 68.65% over budget',
+      gl: 'Tooling Wear & Consumables account',
+      action: 'Audit tooling disbursement logs against BOM allowances; lock spindle overrides above 100% for high-temp alloys.' },
+    { num: 9, domain: 'cnc', code: 'PRC-03', kpi: 'Changeover Cost Index (CCI)',
+      green: '≤8.0%', amber: '8.1–14.0%', red: '>14.0%',
+      q: 'Why are small-batch prototype runs absorbing disproportionate changeover cost?',
+      root: 'Technicians hand-aligned vise jaws with dial indicators every batch switch instead of using zero-point receiver plates.',
+      formula: 'CCI = Setup Cost / (Setup Cost + Run Cost) × 100',
+      worked: 'Setup 3.5 hrs, run 3.0 hrs total, combined MHR+labor rate $87.00/hr',
+      result: 'CCI = 53.85% (red) — setup cost $304.50 vs. run cost $261.00',
+      gl: 'Setup Conversion Expense account',
+      action: 'Book setup hours as Non-Recurring Engineering rather than unit cost; kick off a SMED changeover-reduction project.' },
+    { num: 10, domain: 'cnc', code: 'QLT-02', kpi: 'Rework Conversion Surcharge (RCS)',
+      green: '≤2.0%', amber: '2.1–4.5%', red: '>4.5%',
+      q: 'Why are precision bores needing secondary manual honing after machining?',
+      root: 'Spindle thermal growth during roughing wasn’t given enough dwell-cooling before semi-finish boring, so bores contracted undersized on cooling.',
+      formula: 'RCS = Σ(Rework Hrs × Labor Rate + Secondary Cost) / Standard Absorbed Cost × 100',
+      worked: '1.8 hrs honing/unit @ $48.00/hr + $4.50 consumables · 45 out-of-spec units · $9,450 standard absorbed cost',
+      result: '+$4,090.50 rework expense (unfavorable); RCS = 43.29% surcharge',
+      gl: 'Internal Quality Rework account',
+      action: 'Update post-roughing coolant dwell macros in the CAM master library.' },
+    { num: 11, domain: 'additive', code: 'PRC-Z', kpi: 'Recoater Non-Productive Time Ratio',
+      green: '≤15%', amber: '15.1–25%', red: '>25%',
+      q: 'Why do low-aspect-ratio metal-additive parts cost more when built tall instead of flat?',
+      root: 'Additive engineers oriented an aerospace housing vertically to minimize support contact area, triggering thousands of extra recoater sweeps.',
+      formula: 'T_recoat = (Z_max / Δz) × t_recoat_arm · C_recoat = T_recoat × MHR_DMLS',
+      worked: 'Vertical: 280mm height ÷ 0.040mm layers = 7,000 layers × 12s = 23.33 hrs @ $66.00/hr DMLS rate. Horizontal: 65mm = 1,625 layers = 5.42 hrs @ same rate.',
+      result: 'Vertical $1,539.78 vs. horizontal $357.72 — $1,182.06 saved per build by re-nesting flat',
+      gl: 'Additive Machine Execution account',
+      action: 'Update DMLS quoting to price per-layer recoater sweeps; enforce horizontal nesting for low-mass brackets.' },
+    { num: 12, domain: 'additive', code: 'MAT-GAS', kpi: 'Inert Shielding Gas Consumption',
+      green: '±5.0%', amber: '5.1–12.0%', red: '>12.0%',
+      q: 'Why are argon/nitrogen gas costs exceeding standard engineering build allowances?',
+      root: 'Worn door gaskets on a DMLS machine let inert-atmosphere pressure leak, triggering continuous purge to hold oxygen below spec.',
+      formula: 'Gas Variance = (V_actual − V_standard) × P_gas',
+      worked: 'Standard 800 m³/build vs. actual 1,550 m³ · $4.20/m³ · 18 builds',
+      result: '+$56,700 (unfavorable)',
+      gl: 'Process Shielding Gas account',
+      action: 'Replace chamber perimeter seals; run helium mass-spectrometer leak checks.' },
+    { num: 13, domain: 'additive', code: 'LBR-04', kpi: 'Post-Processing Labor Burden (PPLB)',
+      green: '≤12.0%', amber: '12.1–20.0%', red: '>20.0%',
+      q: 'Why is manual DMLS support-removal labor blowing past the standard routing?',
+      root: 'Pre-flight software used solid block supports on internal overhangs instead of self-supporting lattice geometry, forcing manual chisel excavation.',
+      formula: 'ΔDLEV = N_parts × (Actual Hrs − Standard Hrs) × Standard Rate',
+      worked: 'Standard 0.75 hrs/unit vs. actual 4.2 hrs/unit @ $45.00/hr · 80-unit batch · $620 unit cost',
+      result: '+$12,420 (unfavorable); PPLB = 30.48% of unit cost (target ≤12%)',
+      gl: 'Direct Labor Finishing WIP account',
+      action: 'Update standard touch times in the routing master; redesign supports as perforated/lattice interfaces.' },
+    { num: 14, domain: 'additive', code: 'QLT-04', kpi: 'Build Failure Amortization Factor (BFAF)',
+      green: '≤4.0%', amber: '4.1–8.0%', red: '>8.0%',
+      q: 'What does a recoater-blade collision on an unmonitored overnight build actually cost?',
+      root: 'Residual thermal stress curled a thin-walled part edge into the recoater blade path, jamming the mechanism and scrapping the build.',
+      formula: 'C_crash = C_substrate + (M_powder × P_powder) + (H_elapsed × MHR) + C_blade',
+      worked: '$450 build plate + 48 kg titanium powder @ $88.00/kg + 38 hrs @ $66.00/hr DMLS rate + $680 blade',
+      result: '+$7,862 sunk loss (unfavorable)',
+      gl: 'Additive Build Failure Loss account',
+      action: 'Require finite-element thermal simulation checks before queueing thin-wall geometry overnight.' },
+    { num: 15, domain: 'additive', code: 'EXT-HIP', kpi: 'Thermal Retort Load Density',
+      green: '≥80%', amber: '60–79.9%', red: '<60%',
+      q: 'Why are outsourced hot-isostatic-pressing (HIP) runs showing high per-unit cost?',
+      root: 'Schedulers dispatched a partial furnace charge to meet an expedited turnaround instead of batching into a full retort run.',
+      formula: 'C_unit_HIP = Lot Flat Rate / Parts Loaded',
+      worked: '$4,800 flat lot charge · capacity 48 parts ($100.00/unit standard) · actual load 12 parts',
+      result: '+$3,600 (unfavorable) — actual $400.00/unit vs. $100.00/unit standard',
+      gl: 'Outside Processing Variance account',
+      action: 'Bill the expedite surcharge to the requesting program; sync additive completion schedules with HIP dispatch cycles.' },
+    { num: 16, domain: 'labor', code: 'LBR-02', kpi: 'Labor Blended Rate Index (LBRI)',
+      green: '0.98–1.02', amber: '1.03–1.08', red: '>1.08',
+      q: 'Why is the blended direct-labor rate exceeding the planned baseline?',
+      root: 'Late upstream CAD releases pushed machining into mandatory weekend overtime at a 1.5× wage premium.',
+      formula: 'DLRV = (Actual Rate − Standard Rate) × Actual Hours',
+      worked: 'Standard $42.00/hr · weekend OT $63.00/hr (1.5×) · 320 hrs',
+      result: '+$6,720 (unfavorable); LBRI = 1.50 (target ≤1.02)',
+      gl: 'Direct Labor Rate Variance account',
+      action: 'Require written program-director authorization before dispatching weekend overtime.' },
+    { num: 17, domain: 'labor', code: 'LBR-01', kpi: 'Standard-to-Actual Routing Delta (ΔSRD)',
+      green: '±5.0%', amber: '5.1–12.0%', red: '>12.0%',
+      q: 'Why are actual CNC setup times running well past the SAP routing standard?',
+      root: 'Work instructions lacked fixture setup sheets and tool gauge lengths, forcing operators to hand touch-off every tool at every changeover.',
+      formula: 'ΔDLEV = (Actual Hrs − Standard Hrs) × Standard Rate × Orders',
+      worked: 'Standard 1.50 hrs/order vs. actual 3.25 hrs/order @ $45.00/hr · 40 orders',
+      result: '+$3,150 (unfavorable); ΔSRD = +116.67%',
+      gl: 'Labor Efficiency Variance account',
+      action: 'Equip machines with RFID-chipped preset tool holders to automate offset loading.' },
+    { num: 18, domain: 'labor', code: 'LBR-03', kpi: 'Touch-to-Takt Synchronization Ratio (TTSR)',
+      green: '≤0.15', amber: '0.16–0.25', red: '>0.25',
+      q: 'Why is manual deburring labor driving variance on precision-machined parts?',
+      root: 'CAM programs omitted automated chamfering/deburring toolpaths, delegating micro-burr removal to hand-blades.',
+      formula: 'TTSR = Manual Touch Time / Machine Cycle Time',
+      worked: 'Standard 4.0 min vs. actual 22.0 min deburr time · 45-min machine cycle · 300-unit run @ $40.00/hr',
+      result: 'TTSR = 0.49 (red, target ≤0.15); +$3,600 labor exposure (unfavorable)',
+      gl: 'Manual Deburring Variance account',
+      action: 'Add automated tumbling and deburr toolpaths to the standard CAM program.' },
+    { num: 19, domain: 'labor', code: 'LBR-MAN', kpi: 'Manning Ratio Execution Accuracy (μ_man)',
+      green: '±0.05', amber: '0.06–0.15', red: '>0.15',
+      q: 'Why is direct labor over-allocated on cells built for multi-machine operation?',
+      root: 'Operations assigned one full-time machinist per mill (μ=1.0) instead of the one-operator-to-three-machines staffing the cell design assumed (μ=0.33).',
+      formula: 'Manning Variance = Run Hrs × Labor Rate × (Actual μ − Target μ)',
+      worked: '540 spindle hrs (3-machine cell) @ $45.00/hr · target μ=0.333 vs. actual μ=1.0',
+      result: '+$16,207 (unfavorable) — actual labor $24,300 vs. target $8,093',
+      gl: 'Cell Manning Variance account',
+      action: 'Cross-train technicians on multi-machine pallet-pool supervision; correct the work-center cost assignment rule.' },
+    { num: 20, domain: 'labor', code: 'LBR-AGE', kpi: 'Standard Routing Age & Integrity Index',
+      green: '≤180 days', amber: '181–365 days', red: '>365 days or persistent variance >10%',
+      q: 'Why do legacy parts show large, persistent favorable labor-efficiency variances?',
+      root: 'Standard cycle times were never updated after continuous-improvement toolpath work landed 14 months earlier, masking real performance behind a stale benchmark.',
+      formula: 'ΔDLEV = (Actual Hrs − Standard Hrs) × Standard Rate × Units',
+      worked: 'Standard 4.5 hrs/unit vs. actual 2.8 hrs/unit @ $44.00/hr · 600 units/yr',
+      result: '−$44,880 (nominally favorable — but a red flag, not real performance: inventory is overvalued and pricing is stale)',
+      gl: 'WIP Inventory Revaluation account',
+      action: 'Re-run the standard cost roll on any routing older than 180 days; a suspiciously large favorable variance gets audited, not celebrated.' },
+    { num: 21, domain: 'overhead', code: 'FIN-02', kpi: 'Overhead Absorption Efficiency (OAE)',
+      green: '≥98%', amber: '92–97.9%', red: '<92%',
+      q: 'Why did the plant post an unfavorable Fixed Overhead Volume Variance last month?',
+      root: 'A demand pullback on internal program submissions left machine centers idle, leaving standing depreciation and rent unabsorbed.',
+      formula: 'FOHV = Budgeted Fixed OH − Absorbed Fixed OH',
+      worked: 'Budgeted $180,000 @ 4,000 hrs ($45.00/hr rate) · actual 3,300 hrs',
+      result: '+$31,500 unabsorbed drag (unfavorable); OAE = 82.5% (target ≥98%)',
+      gl: 'Period Idle Capacity Loss Expense account',
+      action: 'Coordinate with internal client engineering leads to pull forward baseline qualification orders and fill open capacity.' },
+    { num: 22, domain: 'overhead', code: 'PRC-DEP', kpi: 'Asset Capital Burden Index',
+      green: '±5.0%', amber: '5.1–10.0%', red: '>10.0%',
+      q: 'Why are simple manual finishing stations carrying high facility overhead rates?',
+      root: 'Finance allocated total facility depreciation uniformly by headcount instead of tracking individual machine capital records — the exact uniform-overhead distortion this dashboard is built to demonstrate.',
+      formula: 'Depreciation $/hr = (Capital Cost − Salvage) / (Useful Life × Annual Productive Hrs)',
+      worked: '3-axis router $65,000 (7-yr, 2,000 hrs/yr) = $4.64/hr · 5-axis mill $750,000 (same life/hrs) = $53.57/hr · uniform rate assumed = $29.10/hr',
+      result: '3-axis overburdened by $24.46/hr → +$44,028/yr artificial burden across 1,800 annual hours',
+      gl: 'Depreciation Recovery Variance account',
+      action: 'Assign discrete capital depreciation directly to the work center that owns the asset, not a blended plant-wide rate.' },
+    { num: 23, domain: 'overhead', code: 'PRC-PWR', kpi: 'Energy Consumption Variance (ECV)',
+      green: '≤0.0%', amber: '0.1–8.0%', red: '>8.0%',
+      q: 'Why did utility spend spike on a bank of additive machines?',
+      root: 'Clogged condenser heat exchangers forced chiller compressors to max load continuously, doubling power draw.',
+      formula: 'ECV = (Actual kW − Baseline kW) × Hours × Utility Rate',
+      worked: 'Baseline 12kW vs. actual 24kW · 2,200 hrs across 5 units · $0.11/kWh',
+      result: '+$2,904 (unfavorable)',
+      gl: 'Utility Power Variance account',
+      action: 'Flush chiller cooling loops; schedule monthly condenser cleaning.' },
+    { num: 24, domain: 'overhead', code: 'CAP-03', kpi: 'Footprint Cost Density (FCD)',
+      green: '≥$1,200/sq ft', amber: '$800–$1,199/sq ft', red: '<$800/sq ft',
+      q: 'Why is one site delivering lower cost avoidance per square foot than another?',
+      root: 'A site allocated large floor areas to long-term staging and disorganized raw-material storage, compressing its active production envelope.',
+      formula: 'FCD = Net Cost Avoidance / Facility Footprint (sq ft)',
+      worked: 'Site 1: 24,000 sq ft, $14.4M avoidance → $600/sq ft. Site 2: 15,000 sq ft, $19.5M avoidance → $1,300/sq ft.',
+      result: 'Site 1 at $600/sq ft (red, target ≥$1,200)',
+      gl: 'Internal Asset Allocation Memo',
+      action: 'Reorganize the floor plan, clear idle staging zones, deploy vertical storage racking.' },
+    { num: 25, domain: 'overhead', code: 'PRC-MNT', kpi: 'Maintenance Budget Consumption Velocity',
+      green: 'on plan pacing', amber: '+1–15% over', red: '>15% over',
+      q: 'Why did an emergency spindle rebuild blow through the annual maintenance reserve?',
+      root: 'Contaminated cutting coolant corroded spindle bearing seals, causing a sudden mechanical seizure.',
+      formula: 'Maintenance Variance = Emergency Repair + (Downtime × Standing Rate) − Budget',
+      worked: '$28,500 emergency invoice + 72 hrs downtime @ $32.00/hr standing rate − $3,500 budgeted',
+      result: '+$27,304 (unfavorable)',
+      gl: 'Unplanned Maintenance Drag account',
+      action: 'Institute mandatory daily coolant refractometer and biocidal pH testing.' },
+    { num: 26, domain: 'quoting', code: 'FIN-01', kpi: 'Cost Model Accuracy Ratio (CMAR)',
+      green: '≥95%', amber: '90–94.9%', red: '<90%',
+      q: 'Why are completed work orders showing margin compression against the original customer quote?',
+      root: 'The quoting engine relied on theoretical CAD slicing that omitted real secondary deburring, inspection cycles, and realistic setup time.',
+      formula: 'CMAR = (1 − |Actual − Quoted| / Actual) × 100',
+      worked: 'Quoted $314.00/unit vs. actual $382.50/unit · 150 units',
+      result: 'CMAR = 82.09% (red, target ≥95%); +$10,275 margin shortfall',
+      gl: 'Quoting Margin Variance account',
+      action: 'Audit quoting routing assumptions against closed work-order actuals; update parametric cycle-time algorithms.' },
+    { num: 27, domain: 'quoting', code: 'FIN-03', kpi: 'Internal Cost Avoidance Velocity (ICAV)',
+      green: '≥$1.2M/site/mo', amber: '$0.9–1.19M', red: '<$0.9M',
+      q: 'Why do cost-avoidance figures get challenged in finance business reviews?',
+      root: 'Savings were benchmarked against non-binding initial supplier estimates instead of audited historical purchase orders for equivalent batches.',
+      formula: 'Defensible Avoidance = Σ[(Audited Market Price − Actual COGS) × Units] − Unabsorbed Fixed Drag',
+      worked: 'Audited tier-1 benchmark $545.00 vs. internal COGS $327.00 · 200 units · $4,200 unabsorbed drag',
+      result: 'Net defensible avoidance = $39,400',
+      gl: 'Executive Cost Avoidance Audit',
+      action: 'Build the market-basket benchmark from audited purchasing history, not vendor quotes, before presenting it to finance.' },
+    { num: 28, domain: 'quoting', code: 'CAP-04', kpi: 'Build-vs-Buy Parity Ratio (BPR)',
+      green: '≤0.70 (retain in-house)', amber: '0.71–0.85', red: '>0.85 (outsource)',
+      q: 'When should a mature, high-volume part move from internal production to an external supplier?',
+      root: 'As an aerospace bracket matured from prototype iterations into a steady 5,000-unit annual run, a tier-1 vendor with dedicated multi-spindle equipment underpriced the internal job-shop cell.',
+      formula: 'BPR = Internal Marginal Unit COGS / External Quote',
+      worked: 'Internal $215.00/unit ($85 material + $130 conversion) vs. external quote $180.00/unit',
+      result: 'BPR = 1.194 (red, outsource); $175,000/yr sunk premium of staying in-house at 5,000 units',
+      gl: 'Strategic Sourcing Transition Plan',
+      action: 'Author a build-vs-buy memo recommending transition to an approved external supplier; reassign internal capacity to quick-turn prototype work.' },
+    { num: 29, domain: 'quoting', code: 'CAP-02', kpi: 'Tooling Amortization Decay Rate (TADR)',
+      green: '≥1.00', amber: '0.80–0.99', red: '<0.80',
+      q: 'Why did a custom soft-jaw fixture get written off before its planned amortization life?',
+      root: 'A design change to the mounting geometry rendered a dedicated $12,000 fixture obsolete after only 120 of the planned 1,000 units.',
+      formula: 'Write-Off = Fixture Cost × (1 − Actual Units / Design-Life Units)',
+      worked: '$12,000 fixture · 120 of 1,000 planned units produced',
+      result: '+$10,560 sunk capital write-off (unfavorable)',
+      gl: 'Tooling Obsolescence Write-Off account',
+      action: 'Shift fixture architecture to modular, zero-point pin-locating bases that survive a design revision.' },
+    { num: 30, domain: 'quoting', code: 'FIN-TRF', kpi: 'Transfer Price Dispute Frequency',
+      green: '0 disputes', amber: '1–2/mo', red: '>2/mo or >$20,000 disputed',
+      q: 'Why are internal client engineering programs disputing monthly shared manufacturing allocations?',
+      root: 'Programs were billed via an aggregate labor-hour markup that rolled unrelated plant setup waste and scrap from other programs into the shared cost pool.',
+      formula: 'Billed Charge = Material + (Spindle Hrs × MHR) + (Labor Hrs × Rate) + Approved Fee',
+      worked: 'Disputed invoice $84,200 vs. audited: $24,100 material + 320 hrs @ $42.00/hr spindle + 110 hrs @ $45.00/hr labor + 10% fee',
+      result: 'Audited correct transfer = $46,739; overcharge of +$37,461 reversed',
+      gl: 'Inter-Company Clearing Reconciliation',
+      action: 'Issue a credit memo to the disputing internal program; automate activity-based billing exports straight from SAP master data.' },
+  ];
+  var PB_DOMAIN_LABELS = { material: '1 · Material Economics & Buy-to-Fly', cnc: '2 · CNC Conversion & Tool Wear',
+    additive: '3 · Additive Physics & Consumables', labor: '4 · Labor Routing & Manning',
+    overhead: '5 · Overhead Absorption & MHR', quoting: '6 · Quoting, Build-vs-Buy & Transfer Pricing' };
+  function pbResultClass(result){
+    if(result.indexOf('unfavorable') > -1) return 'color:rgb(var(--c-danger))';
+    if(result.indexOf('favorable') > -1) return 'color:rgb(var(--c-success))';
+    return 'color:rgb(var(--c-accent))';
+  }
+  function renderPlaybook(){
+    var domain = document.getElementById('pbDomain').value;
+    var search = document.getElementById('pbSearch').value.toLowerCase();
+    var filtered = PLAYBOOK.filter(function(item){
+      var matchesDomain = domain === 'all' || item.domain === domain;
+      var haystack = (item.code + ' ' + item.kpi + ' ' + item.q).toLowerCase();
+      var matchesSearch = search === '' || haystack.indexOf(search) > -1;
+      return matchesDomain && matchesSearch;
+    });
+    document.getElementById('pbCount').textContent = 'Showing ' + filtered.length + ' of 30 scenarios';
+    var html = filtered.map(function(item){
+      return '<div class="pb-card">' +
+        '<div class="pb-card-head"><span class="pb-code">Q' + item.num + ' · ' + item.code + ' · ' + (PB_DOMAIN_LABELS[item.domain] || item.domain) + '</span></div>' +
+        '<div class="pb-q">' + item.kpi + '</div>' +
+        '<div class="pb-thresholds">' +
+          '<span style="background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))">GREEN ' + item.green + '</span>' +
+          '<span style="background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))">AMBER ' + item.amber + '</span>' +
+          '<span style="background:rgb(var(--c-danger)/.15);color:rgb(var(--c-danger))">RED ' + item.red + '</span>' +
+        '</div>' +
+        '<p class="pb-row"><b>Question: </b>' + item.q + '</p>' +
+        '<p class="pb-row"><b>Root cause pattern: </b>' + item.root + '</p>' +
+        '<div class="pb-formula">' + item.formula + '</div>' +
+        '<p class="pb-row"><b>Worked example: </b>' + item.worked + '</p>' +
+        '<p class="pb-row pb-result" style="' + pbResultClass(item.result) + '">' + item.result + '</p>' +
+        '<p class="pb-row"><b>GL account: </b>' + item.gl + '</p>' +
+        '<p class="pb-row"><b>Leadership action: </b>' + item.action + '</p>' +
+      '</div>';
+    }).join('');
+    document.getElementById('pbList').innerHTML = html || '<p class="lede">No scenarios match that filter.</p>';
+    return { count: filtered.length };
+  }
+  window.PLAYBOOK = PLAYBOOK;
+  window.renderPlaybook = renderPlaybook;
+  document.getElementById('pbDomain').addEventListener('change', renderPlaybook);
+  document.getElementById('pbSearch').addEventListener('input', renderPlaybook);
+
   // ---------- Initial render ----------
+  calcMhrBuildup();
   calcShouldCost();
   calcVariance();
   calcBuildBuy();
@@ -1021,6 +1541,7 @@
   calcMdqs();
   calcGates();
   calcCommodityExposure();
+  renderPlaybook();
 })();
 </script>
 </body>

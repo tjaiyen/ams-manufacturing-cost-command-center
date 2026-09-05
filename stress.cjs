@@ -20,7 +20,7 @@ function check(cond, msg, detail) {
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 
 console.log("--- Structural checks ---");
-const TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "framework", "methodology"];
+const TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "framework", "methodology"];
 TABS.forEach((t) => {
   check(html.includes(`data-tab="${t}"`), `tab button for "${t}" exists`);
   check(html.includes(`id="tab-${t}"`), `panel for "${t}" exists`);
@@ -49,12 +49,20 @@ check(!!debunkCardMatch, "found the one card allowed to name the fabricated clai
 // before this fix).
 const errorsCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>A third document, verified far more thoroughly<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
 check(!!errorsCardMatch, "found the one card allowed to name the two confirmed-wrong claims (in order to correct them)");
+// A fifth downloaded document's MHR worked-example table turned out to be a VERBATIM copy of the
+// first document's already-fabricated numbers ($47.88/$74.82/$26.58, $650,000/$1,100,000/$220,000,
+// the three facility names) -- the Methodology tab names this discovery, once, specifically to
+// call it out. A fourth exclusion, same pattern as the other two.
+const fifthDocCardMatch = html.match(/<div class="card">\s*<div class="card-head"><h2>A fifth document — mostly a verbatim copy, one genuinely new asset<\/h2><\/div>[\s\S]*?<\/p>\s*<\/div>/);
+check(!!fifthDocCardMatch, "found the one card allowed to name the fifth document's verbatim-copy discovery and repeated wrong claims (in order to correct them)");
 let htmlOutsideDebunkCards = html;
 if (debunkCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(debunkCardMatch[0], "");
 if (errorsCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(errorsCardMatch[0], "");
+if (fifthDocCardMatch) htmlOutsideDebunkCards = htmlOutsideDebunkCards.replace(fifthDocCardMatch[0], "");
 const foundBanned = bannedStrings.filter((s) => htmlOutsideDebunkCards.includes(s));
-check(foundBanned.length === 0, "none of the two downloaded documents' fabricated specifics (client claims, copied test count, their own invented dollar figures, invented facility names) appear anywhere OUTSIDE the cards that name them specifically to debunk them", JSON.stringify(foundBanned));
+check(foundBanned.length === 0, "none of the downloaded documents' fabricated specifics (client claims, copied test count, their own invented dollar figures, invented facility names) appear anywhere OUTSIDE the cards that name them specifically to debunk them", JSON.stringify(foundBanned));
 check(debunkCardMatch && bannedStrings.some((s) => debunkCardMatch[0].includes(s)), "the debunk card itself actually names at least one of the fabricated claims (confirms the exclusion above is excluding real content, not a no-op)");
+check(fifthDocCardMatch && bannedStrings.some((s) => fifthDocCardMatch[0].includes(s)), "the fifth-document card actually names at least one banned figure (confirms its exclusion isn't a no-op)");
 
 console.log("--- Executive Overview P&L rollup table: arithmetic + fabrication-proximity check (2026-09-04) ---");
 // This table's numbers are hand-typed static HTML, not JS-computed -- a stress-test found NO check
@@ -87,7 +95,7 @@ console.log("--- No confirmed-incorrect claims asserted as fact (third document'
 // to correct them -- excluded by that card's own unique heading before scanning for the rest.
 const wrongClaimStrings = ["PP02", "pre_tool_call"];
 const foundWrongClaims = wrongClaimStrings.filter((s) => htmlOutsideDebunkCards.includes(s));
-check(foundWrongClaims.length === 0, "neither confirmed-wrong claim (\"PP02\" as rework, \"pre_tool_call\" as a hook key) is asserted as fact anywhere OUTSIDE the one card that corrects them", JSON.stringify(foundWrongClaims));
+check(foundWrongClaims.length === 0, "neither confirmed-wrong claim (\"PP02\" as rework, \"pre_tool_call\" as a hook key) is asserted as fact anywhere OUTSIDE the cards that correct them", JSON.stringify(foundWrongClaims));
 check(errorsCardMatch && wrongClaimStrings.every((s) => errorsCardMatch[0].includes(s)), "the corrections card actually names both confirmed-wrong claims (confirms the exclusion is excluding real content, not a no-op)");
 
 console.log("--- Executing the real inline script in a stubbed DOM ---");
@@ -112,6 +120,13 @@ const DEFAULTS = {
   mdqsRoutingErr: "6", mdqsTotalRoutings: "300", mdqsConfVar: "15", mdqsTotalConf: "500",
   mdqsUnlinkedScrap: "4", mdqsScrapEvents: "80", mdqsStaleStandards: "10", mdqsActiveParts: "400",
   gateBom: "8", gatePo: "7", gateConf: "12",
+  mhrCapital: "580000", mhrLife: "7", mhrFloor: "320", mhrFloorRate: "38", mhrService: "22000",
+  mhrSchedHrs: "3800", mhrOee: "78", mhrPower: "20", mhrUtilRate: "0.12", mhrConsumables: "11.75",
+  // pbDomain/pbSearch aren't static value= attributes (pbDomain is a <select> whose default comes
+  // from its first, un-"selected"-marked <option>; pbSearch is an empty text input) -- seeded here
+  // to replay the real "page just loaded" state; the cross-check loop below skips them harmlessly
+  // since neither has a matching value="..." attribute in the HTML to compare against.
+  pbDomain: "all", pbSearch: "",
   // capAvailN/capBookedN are generated by renderCapacityInputs() as a JS template string, not a
   // static HTML value= attribute -- seeded here to match CAP_WEEKS's own real defaults in the page
   // script (checked against CAP_WEEKS below, not just asserted) so this harness replays the real
@@ -153,6 +168,10 @@ const documentStub = {
   querySelector: () => makeElement("__q_" + Math.random()),
   documentElement: { getAttribute: () => null, setAttribute: () => {} },
   createElement: () => makeElement("__created_" + Math.random()),
+  // The Escape-to-close modal handler binds a document-level keydown listener -- a real browser
+  // has document.addEventListener; this stub only needs to accept the call without throwing (the
+  // actual Escape-key behavior is verified live in-browser, not re-implemented here).
+  addEventListener() {},
 };
 const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } }, console, Math, Object, Array, parseFloat, isFinite };
 sandbox.window = sandbox;
@@ -226,6 +245,64 @@ check(elements.mdqsBand.innerHTML.includes(">AMBER<"), "96.875% is correctly ban
 check(elements.gateBomOut.innerHTML.includes(">PASS<"), "BOM gate (8% vs 15% threshold) correctly PASSES", elements.gateBomOut.innerHTML);
 check(elements.gatePoOut.innerHTML.includes(">BLOCKED<"), "PO gate (7% vs 5% threshold) correctly BLOCKS", elements.gatePoOut.innerHTML);
 check(elements.gateConfOut.innerHTML.includes(">PASS<"), "Confirmation gate (12% vs 15% threshold) correctly PASSES", elements.gateConfOut.innerHTML);
+
+console.log("--- MHR Build-Up Calculator: golden values (pre-registered via Python, verified before this file was written) ---");
+check(elements.mhrDepOut.textContent === "$82,857", "annual depreciation matches golden value ($580,000 / 7 yrs)", elements.mhrDepOut.textContent);
+check(elements.mhrFloorOut.textContent === "$12,160", "annual floor allocation matches golden value (320 sq ft x $38/sq ft)", elements.mhrFloorOut.textContent);
+check(elements.mhrStandingBasisOut.textContent === "$117,017", "standing cost basis matches golden value (depreciation + floor + service)", elements.mhrStandingBasisOut.textContent);
+check(elements.mhrProdHrsOut.textContent === "2,964", "productive hours matches golden value (3,800 scheduled x 78% OEE)", elements.mhrProdHrsOut.textContent);
+check(elements.mhrStandingOut.textContent === "$39.48/hr", "standing rate matches golden value (standing basis / productive hours)", elements.mhrStandingOut.textContent);
+check(elements.mhrRunningOut.textContent === "$14.15/hr", "running rate matches golden value (20kW x $0.12/kWh + $11.75 consumables)", elements.mhrRunningOut.textContent);
+check(elements.mhrTotalOut.textContent === "$53.63/hr", "fully burdened MHR matches golden value (standing + running, and equals the sum of the two lines above)", elements.mhrTotalOut.textContent);
+check(!bannedStrings.some((s) => elements.mhrCapital && [elements.mhrDepOut, elements.mhrStandingOut, elements.mhrTotalOut].some((el) => el.textContent.includes(s))), "the MHR Build-Up Calculator's own outputs don't happen to reproduce any of the banned fabricated figures");
+
+console.log("--- Cost Diagnostic Playbook: structural + golden-value checks ---");
+check(Array.isArray(sandbox.PLAYBOOK), "window.PLAYBOOK is exposed as an array");
+check(sandbox.PLAYBOOK.length === 30, "exactly 30 playbook scenarios", sandbox.PLAYBOOK.length);
+check(new Set(sandbox.PLAYBOOK.map((p) => p.code)).size === 30, "all 30 playbook KPI codes are unique");
+check(new Set(sandbox.PLAYBOOK.map((p) => p.num)).size === 30, "all 30 playbook question numbers are unique");
+const PB_DOMAINS = ["material", "cnc", "additive", "labor", "overhead", "quoting"];
+PB_DOMAINS.forEach((d) => {
+  const count = sandbox.PLAYBOOK.filter((p) => p.domain === d).length;
+  check(count === 5, `domain "${d}" has exactly 5 scenarios (30 / 6 domains)`, count);
+});
+["q", "root", "formula", "worked", "result", "gl", "action", "green", "amber", "red"].forEach((field) => {
+  const allNonEmpty = sandbox.PLAYBOOK.every((p) => typeof p[field] === "string" && p[field].length > 0);
+  check(allNonEmpty, `every playbook scenario has a non-empty "${field}" field`);
+});
+// Same fabrication-guard discipline as the rest of the page, applied to the playbook data
+// specifically -- this is where the fifth document's copied-from-document-one MHR figures would
+// leak in if the recompute (done by hand via Python before this file was written) had been missed.
+const playbookBlob = JSON.stringify(sandbox.PLAYBOOK);
+const foundBannedInPlaybook = bannedStrings.concat(wrongClaimStrings).filter((s) => playbookBlob.includes(s));
+check(foundBannedInPlaybook.length === 0, "none of the banned/wrong-claim strings leaked into the playbook data itself", JSON.stringify(foundBannedInPlaybook));
+
+check(!!elements.pbCount, "found the playbook count element to check");
+check(elements.pbCount.textContent === "Showing 30 of 30 scenarios", "default (all domains, empty search) shows all 30 scenarios", elements.pbCount.textContent);
+check(elements.pbList.innerHTML.split('class="pb-card"').length - 1 === 30, "rendered exactly 30 pb-card divs by default", elements.pbList.innerHTML.split('class="pb-card"').length - 1);
+
+// Exercise the live filter/search the same way a user would -- mutate the stub's own element
+// value, then re-invoke the real render function (not a parallel reimplementation).
+elements.pbDomain.value = "additive";
+sandbox.renderPlaybook();
+check(elements.pbCount.textContent === "Showing 5 of 30 scenarios", "filtering to the \"additive\" domain shows exactly 5 scenarios", elements.pbCount.textContent);
+elements.pbDomain.value = "all";
+elements.pbSearch.value = "buy-to-fly";
+sandbox.renderPlaybook();
+check(elements.pbCount.textContent === "Showing 1 of 30 scenarios", "searching \"buy-to-fly\" narrows to exactly the one scenario naming it in its KPI title", elements.pbCount.textContent);
+elements.pbSearch.value = "";
+sandbox.renderPlaybook();
+check(elements.pbCount.textContent === "Showing 30 of 30 scenarios", "clearing the search restores all 30 scenarios (filter state isn't sticky/broken)", elements.pbCount.textContent);
+
+console.log("--- Explain-the-Math modal: data + wiring ---");
+check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup"].forEach((key) => {
+  const e = sandbox.EXPLAIN[key];
+  check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
+});
+const explainButtonCount = (html.match(/data-explain="/g) || []).length;
+check(explainButtonCount === 11, "exactly 11 explain buttons are wired in the HTML (2 exec KPIs + 6 variance lines + MDQS score + 2 MHR-related headers)", explainButtonCount);
+check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");
 ["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551", "Medallion Architecture"].forEach((term) => {

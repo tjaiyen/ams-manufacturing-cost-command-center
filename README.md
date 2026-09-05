@@ -2,11 +2,13 @@
 
 A standalone, purpose-built dashboard for one specific role — Senior Manufacturing Cost Engineer,
 Amazon Manufacturing Services ([req 10512991](https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services)) —
-not a general-purpose portfolio piece. Ten live, interactive modules covering the job description's
-own responsibility areas: should-cost modeling, machine-hour-rate formalization, standard-cost
-variance decomposition (plus a forward-looking commodity price-exposure warning), build-vs-buy/NPV,
-capacity/absorption forecasting, tooling amortization, design-for-cost sensitivity, data governance,
-a multi-site executive rollup, and an honest operating framework.
+not a general-purpose portfolio piece. Eleven live, interactive modules covering the job description's
+own responsibility areas: should-cost modeling, machine-hour-rate formalization (including a
+first-principles MHR build-up calculator), standard-cost variance decomposition (plus a
+forward-looking commodity price-exposure warning), build-vs-buy/NPV, capacity/absorption
+forecasting, tooling amortization, design-for-cost sensitivity, data governance, a 30-scenario cost
+diagnostic playbook, a multi-site executive rollup, and an honest operating framework. Click-to-open
+"Explain the Math" modals cover the highest-traffic KPIs throughout.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -97,7 +99,38 @@ One genuinely new addition: a **Commodity Price Exposure Early Warning** calcula
 Variance Waterfall tab — the forward-looking cousin of the MPV line, using the document's own real
 8% early-warning threshold on a spot-price shift against open purchasing volume.
 
-## The ten modules
+**A fifth verification round (2026-09-04, on the largest document yet — a merged should-cost theory
++ 20-issue governance framework + SAP guardrail architecture + a 30-scenario diagnostic question
+bank + a full alternative dashboard mockup)** found something the previous four rounds didn't:
+cross-referencing its "MHR worked-example table" (a 5-axis CNC/DMLS/press-brake cost derivation)
+against this repo's own `bannedStrings` fabrication guard showed it is **verbatim identical** to the
+already-fabricated content in the *first* downloaded document — the same dollar figures to the
+penny and the same three invented facility names. Two documents landing on identical, oddly specific
+numbers is strong evidence of a shared template, not independent generation each time — the same
+signature already seen in the "1,520 tests" figure and the Claude Code hooks schema error, both of
+which reappear here unchanged. **"PP02" as SAP's rework order type is repeated a fourth time**, and
+a deeper check now traces it more precisely: PP02 maps to external/subcontract processing in *both*
+the control-key and order-type SAP namespaces; PP03 is the closer real convention. The claimed
+Project Kuiper/Amazon Robotics/AWS-facility relationship is now confirmed fabricated with stronger
+evidence — Amazon Robotics manufacturing is publicly documented in Massachusetts and Texas, not
+Washington State at all. Eight other, narrower technical claims (new to this document) were checked
+independently and came back mostly real: SAP field `MBEW-STPRS` (real), transaction `KP26` (real),
+movement type `551` (real), `CO02`→TECO (real), `AMS-STD-2154` (real spec, slightly broader scope
+than claimed), `ASTM F3049` (real, but a *Guide* not a *Test Method*), the DMG Mori "NMV5000" (real
+machine, actual name is "NMV 5000 DCG"), and the EOS M400-4 (real, exact match). What *is* genuinely
+new and worth keeping: a 30-scenario diagnostic question bank (operational symptom → variance
+formula → dollar exposure → GL account → leadership action) whose arithmetic independently re-derives
+cleanly — 29 of 30 to the penny, the cleanest math of any of the five documents. That bank is now the
+**Cost Diagnostic Playbook** tab, with every question that depended on the copied/fabricated MHR
+figures recomputed against this dashboard's own established rate card instead, and all named-client
+references genericized. The document's own real MHR-derivation *formula* (not its copied numbers)
+became the **MHR Build-Up Calculator** on the Should-Cost tab, and its "click a KPI for the formula"
+mockup UX pattern became the **Explain-the-Math modal system** used across the dashboard. The
+document's own full alternative dashboard mockup was not adopted — it duplicates what's already
+live, in a different visual style, and bakes the fabricated "1,520 tests"/"SAP CONNECTED" claims
+directly into static markup.
+
+## The eleven modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
    job posting's own stated scope; the site labels ("Site A/B/C"), locations beyond the two the
@@ -108,7 +141,11 @@ Variance Waterfall tab — the forward-looking cousin of the MPV line, using the
 2. **Should-Cost & MHR Simulator** — a fully live bottom-up should-cost calculator (material with
    buy-to-fly/scrap-reclaim, machine conversion, labor, overhead) driven by an editable four-work-center
    rate card (CNC 3-Axis, CNC 5-Axis, Additive/DMLS, Sheet Metal), each with its own standing/running
-   cost split — deliberately different invented numbers from either source document, not a copy.
+   cost split — deliberately different invented numbers from either source document, not a copy. Also
+   includes an **MHR Build-Up Calculator**: the same standing/running rate card, derived live from
+   first principles (capital depreciation + floor allocation + service contract, spread over
+   scheduled hours × OEE, plus power + consumables) — fresh illustrative inputs, not the fifth
+   document's copied-from-document-one figures.
 3. **Variance Waterfall** — the real six-way standard-cost decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOHV),
    fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
    Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
@@ -133,10 +170,16 @@ Variance Waterfall tab — the forward-looking cousin of the MPV line, using the
    and confirmation-hours-variance gates against the document's own stated thresholds, showing live
    PASS/BLOCKED status). Real, well-defined formulas — not a claim that AMS's actual SAP instance
    enforces exactly these numbers.
-9. **Operating Framework** — a dashboard-native condensation of
+9. **Cost Diagnostic Playbook** — 30 rehearsed diagnostic scenarios across 6 domains (material
+   economics, CNC conversion, additive physics, labor routing, overhead absorption, quoting/build-
+   vs-buy/transfer pricing), each showing an operational symptom, the root-cause pattern, the real
+   variance formula, a worked illustrative dollar exposure, a GL-account mapping, and the leadership
+   action — filterable by domain and searchable. Ported from the fifth downloaded document's
+   Section 7 (independently re-derived arithmetic; see Verification below).
+10. **Operating Framework** — a dashboard-native condensation of
    [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
-10. **Methodology & Sourcing** — the source ledger described above.
+11. **Methodology & Sourcing** — the source ledger described above.
 
 ## Verification (`stress.cjs`)
 
@@ -186,8 +229,22 @@ against exact numbers **independently verified live in a real browser before thi
   variance equals its own act-minus-std, and Site C's invented standard COGS ($1,150,000, nudged
   from $1,105,000) is confirmed >2% away from the specific fabricated figure ($1,100,000) it
   previously sat only 0.45% from.
+- MHR Build-Up Calculator defaults ($580,000 capital, 7yr life, 320 sq ft @ $38/sq ft, $22,000
+  service, 3,800 scheduled hrs @ 78% OEE, 20kW @ $0.12/kWh, $11.75 consumables) — pre-registered by
+  hand/Python before being written, then confirmed live in-browser — → depreciation $82,857 / floor
+  allocation $12,160 / standing basis $117,017 / 2,964 productive hrs / standing rate $39.48/hr /
+  running rate $14.15/hr / **fully burdened MHR $53.63/hr**.
+- Cost Diagnostic Playbook: structural checks (exactly 30 scenarios, unique codes/numbers, 5 per
+  domain across all 6 domains, every field non-empty) plus a fabrication-guard sweep of the playbook
+  data itself — the exact seam where the fifth document's copied MHR figures would have leaked in
+  if the by-hand recompute had been missed. Filter/search behavior exercised by mutating the
+  harness's own stub elements and re-invoking the real `renderPlaybook()`: all-domains shows 30,
+  filtering to "additive" shows exactly 5, searching "buy-to-fly" narrows to exactly 1, clearing the
+  search restores 30.
+- Explain-the-Math modal: `EXPLAIN` data object has a title/formula/body for all 10 keyed formulas,
+  exactly 11 explain buttons are wired in the HTML, `openExplain` is exposed for the harness to call.
 
-Run: `node stress.cjs` — 141 checks, all passing as of this writing.
+Run: `node stress.cjs` — 203 checks, all passing as of this writing.
 
 ## Status
 
@@ -203,3 +260,7 @@ subsequent pushes. An independent reviewer caught the resulting self-contradicti
 same file's own opening "Live: deployed via GitHub Pages" line. Fixed here, along with the opening
 paragraph's stale "Six... modules" (grew to ten across those same three rounds without the intro
 being updated).
+
+**2026-09-04, fifth round:** added the Cost Diagnostic Playbook tab, the MHR Build-Up Calculator,
+and the Explain-the-Math modal system (11 modules total, up from ten) — pending push with explicit
+confirmation, same discipline as every prior round.
