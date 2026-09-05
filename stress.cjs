@@ -81,7 +81,10 @@ if (reducedMotionBlockMatch) {
   const body = reducedMotionBlockMatch[1];
   check(body.includes(".sidenav,") || body.includes(".sidenav{") || body.includes(".sidenav "), "the block disables the side-nav's own width transition (the collapse/expand animation)", body);
   check(body.includes(".sidenav-item::after"), "the block disables the collapsed-mode tooltip's fade-in transition", body);
-  check(body.includes(".wf-bar"), "the block disables the Variance Waterfall bar-height transition", body);
+  // .wf-bar was removed 2026-09-05 when the Variance Waterfall was rewritten from animated CSS-height
+  // divs into a static SVG bridge chart (no transition property at all now, same as the Q*/Pareto/
+  // Monte Carlo charts) -- there is nothing left for prefers-reduced-motion to disable here, so this
+  // is a genuine removal, not a regression. See "the old .wf-bar system was fully removed" below.
   check(body.includes("transition:none"), "the block actually sets transition:none, not just re-declaring the selectors with no effect", body);
 }
 
@@ -436,6 +439,32 @@ check(elements.outVOSV.textContent === "+$430", "VOSV matches golden value", ele
 check(elements.outFOHV.textContent === "-$960", "FOHV matches golden value", elements.outFOHV.textContent);
 check(elements.outNet.textContent === "+$5,325", "net total variance matches golden value (and equals the sum of the six lines above)", elements.outNet.textContent);
 
+console.log("--- Pathway B (2026-09-05): Variance Waterfall rewritten as a true cascading bridge chart ---");
+// Pre-registered by hand before writing this check: cumulative running total after MPV(+3025),
+// MQV(-1040), DLRV(+1350), DLEV(+2520), VOSV(+430), FOHV(-960) = 3025, 1985, 3335, 5855, 6285, 5325 --
+// the final cumulative total must equal the calculator's own separately-computed net (+5325) exactly,
+// or the "bridge" wouldn't actually bridge to the same number the rest of the page reports.
+check(typeof sandbox.renderWaterfall === "function", "window.renderWaterfall is exposed as a function");
+const bridgeResult = sandbox.renderWaterfall(
+  [
+    { label: "MPV", value: 3025 }, { label: "MQV", value: -1040 }, { label: "DLRV", value: 1350 },
+    { label: "DLEV", value: 2520 }, { label: "VOSV", value: 430 }, { label: "FOHV", value: -960 },
+  ],
+  5325
+);
+check(bridgeResult.steps.length === 7, "bridge has exactly 7 steps (6 cascading variances + the full NET total bar)", bridgeResult.steps.length);
+const expectedCum = [3025, 1985, 3335, 5855, 6285, 5325];
+bridgeResult.steps.slice(0, 6).forEach((s, i) => {
+  check(Math.abs(s.to - expectedCum[i]) < 0.01, `step ${i} ("${s.label}") cascades to the pre-registered running cumulative total`, `to=${s.to} expected=${expectedCum[i]}`);
+});
+check(bridgeResult.steps[0].from === 0, "the first bar starts its cascade at zero, not floating in isolation like the old grouped-bar chart");
+check(bridgeResult.steps[5].to === bridgeResult.steps[6].to && bridgeResult.steps[6].to === 5325, "the running cumulative total after all 6 variances exactly equals the NET bar's own total (internal consistency -- the bridge really bridges to the number the calculator reports separately)", bridgeResult.steps[6].to);
+check(bridgeResult.steps[6].isTotal === true && bridgeResult.steps[6].from === 0, "the final NET bar is a full bar from zero, correctly distinguished from the cascading variance deltas", JSON.stringify(bridgeResult.steps[6]));
+sandbox.calcVariance(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.waterfallChart.innerHTML.includes("<svg"), "calcVariance() renders an actual <svg> bridge chart, not just text outputs");
+check((elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length === 6, "exactly 6 dashed connector lines link the 7 bars -- one between each consecutive pair, the defining visual feature of a bridge chart vs. a grouped bar chart", (elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length);
+check(!html.includes(".wf-col") && !html.includes(".wf-value") && !html.includes(".wf-label") && !html.includes(".wf-bar"), "the old grouped-bar-chart CSS (.wf-col/.wf-value/.wf-label/.wf-bar) was fully removed, not left as dead CSS alongside the new SVG chart");
+
 console.log("--- Build-vs-Buy / NPV: golden values ---");
 check(elements.bbUnitSave.textContent === "$90.22", "unit saving matches golden value", elements.bbUnitSave.textContent);
 check(elements.bbAnnualSave.textContent === "$162,396", "annual saving matches golden value", elements.bbAnnualSave.textContent);
@@ -513,6 +542,28 @@ check(elements.capStatus2.innerHTML.includes(">RED<"), "Week 3 (62.5% utilizatio
 check(elements.capTotalRow.innerHTML.includes("$5,740"), "6-week total unabsorbed dollars matches golden value", elements.capTotalRow.innerHTML);
 check(elements.capTotalRow.innerHTML.includes("78.65%"), "6-week overall utilization matches golden value", elements.capTotalRow.innerHTML);
 check(elements.capTotalRow.innerHTML.includes(">AMBER<"), "78.65% overall utilization is correctly banded AMBER (70-85%)", elements.capTotalRow.innerHTML);
+
+console.log("--- Pathway B (2026-09-05): weekly-utilization SPC control chart (I-MR method, built from the same CAP_WEEKS data above) ---");
+// Pre-registered via Node before this check was written: weekly utilization = [93.75, 87.5, 62.5,
+// 56.25, 96.875, 75]; mean = 78.64583333333333; moving ranges = [6.25, 25, 6.25, 40.625, 21.875],
+// MRbar = 20; UCL/LCL = mean +/- 2.66*MRbar = 131.84583333333333 / 25.445833333333326. With only 6
+// points and this much week-to-week swing, no point falls outside the limits (expected, and itself
+// a real finding: the fixed "RED <70%" policy band flags Week 3/4 as bad, but neither is actually
+// outside this shop's own statistically-derived control limits -- exactly the specification-limit-
+// vs-control-limit distinction the KPI research flagged as a real, cross-cutting risk).
+check(typeof sandbox.renderCapacitySPC === "function", "window.renderCapacitySPC is exposed as a function");
+const spc = sandbox.renderCapacitySPC();
+check(JSON.stringify(spc.util) === JSON.stringify([93.75, 87.5, 62.5, 56.25, 96.875, 75]), "weekly utilization series matches the pre-registered golden values (derived from the same booked/avail inputs the table above uses)", JSON.stringify(spc.util));
+check(Math.abs(spc.mean - 78.64583333333333) < 1e-9, "mean (center line) matches the pre-registered golden value", spc.mean);
+check(Math.abs(spc.mrBar - 20) < 1e-9, "mean moving range matches the pre-registered golden value", spc.mrBar);
+check(Math.abs(spc.ucl - 131.84583333333333) < 1e-9, "upper control limit (mean + 2.66*MRbar, the standard I-MR constant) matches the pre-registered golden value", spc.ucl);
+check(Math.abs(spc.lcl - 25.445833333333326) < 1e-9, "lower control limit matches the pre-registered golden value", spc.lcl);
+check(spc.outOfControl.every((v) => v === false), "with this specific 6-week history, no week is flagged out-of-control -- even Week 3/4's fixed-band RED reading is normal process variation by the shop's own control limits, not a special-cause signal", JSON.stringify(spc.outOfControl));
+check(elements.capSpcWrap.innerHTML.includes("<svg"), "the SPC chart actually rendered an <svg> element, not just returned numbers");
+check((elements.capSpcWrap.innerHTML.match(/<circle/g) || []).length === 6, "exactly 6 data points are plotted, one per week", (elements.capSpcWrap.innerHTML.match(/<circle/g) || []).length);
+sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.capSpcWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the SPC chart on every recalculation, not just at page load");
+check(html.includes('cadence-badge operational') && html.includes('cadence-badge financial'), "both cadence badges (operational on Capacity, financial on Variance) exist, making the two-tier real-time-vs-period-close distinction visible, not just an internal design note");
 
 console.log("--- Tooling Amortization: golden values ---");
 check(elements.tlPerUnit.textContent === "$7.50", "per-unit amortized cost matches golden value ($18,000 / 2,400 units)", elements.tlPerUnit.textContent);
@@ -624,6 +675,32 @@ check(Math.abs(paretoData.cumPoints[1].pct - 78.80844450200752) < 0.0001, "secon
 check(Math.abs(paretoData.cumPoints[2].pct - 100) < 0.0001, "final cumulative-% point reaches exactly 100%", paretoData.cumPoints[2].pct);
 check(elements.qualityParetoWrap.innerHTML.includes("<svg"), "the Pareto chart actually rendered an <svg> element into the page, not just returned numbers");
 check(elements.qualityParetoWrap.innerHTML.includes("$7,862") && elements.qualityParetoWrap.innerHTML.includes("$7,350") && elements.qualityParetoWrap.innerHTML.includes("$4,091"), "the rendered SVG labels all 3 bars with their real dollar values", elements.qualityParetoWrap.innerHTML.match(/\$[\d,]+/g));
+
+console.log("--- Pathway C (2026-09-05): KPI Interaction Map -- confirmed cross-KPI tradeoffs, each side clickable to a real Playbook scenario ---");
+check(Array.isArray(sandbox.KPI_TRADEOFFS), "window.KPI_TRADEOFFS is exposed as an array");
+check(sandbox.KPI_TRADEOFFS.length === 2, "exactly 2 tradeoff pairs are modeled (the two with a clean KPI-to-KPI pairing; the third -- nesting yield vs. cycle time -- is documented as a caption, not forced into a pair it doesn't have)", sandbox.KPI_TRADEOFFS.length);
+const tradeoffCodes = sandbox.KPI_TRADEOFFS.flatMap((t) => [t.aCode, t.bCode]);
+check(new Set(tradeoffCodes).size === 4, "all 4 referenced KPI codes across the 2 tradeoff pairs are unique (no scenario appears twice)", JSON.stringify(tradeoffCodes));
+tradeoffCodes.forEach((code) => {
+  const found = sandbox.PLAYBOOK.some((p) => p.code === code);
+  check(found, `tradeoff-map code "${code}" refers to a real Playbook scenario that actually exists (not a stale/typo\'d reference)`, code);
+});
+check(typeof sandbox.renderKpiInteractionMap === "function", "window.renderKpiInteractionMap is exposed as a function");
+check(elements.kpiInteractionMapWrap.innerHTML.includes("<svg"), "the KPI Interaction Map actually rendered an <svg> element");
+check((elements.kpiInteractionMapWrap.innerHTML.match(/class="kim-node"/g) || []).length === 4, "exactly 4 clickable nodes are rendered (2 tradeoff pairs x 2 endpoints each)", (elements.kpiInteractionMapWrap.innerHTML.match(/class="kim-node"/g) || []).length);
+tradeoffCodes.forEach((code) => {
+  check(elements.kpiInteractionMapWrap.innerHTML.includes('data-target="pbcard-' + code + '"'), `a node targets the real pbcard-${code} element id (not a mismatched or stale target)`, code);
+});
+sandbox.renderPlaybook(); // ensure the default (all-domains) render has produced every pbcard-* id
+tradeoffCodes.forEach((code) => {
+  check(elements.pbList.innerHTML.includes('id="pbcard-' + code + '"'), `renderPlaybook() actually emits id="pbcard-${code}" into the rendered markup for this tradeoff's scroll target to find`, code);
+});
+// Accepted limitation: click/keyboard activation on the map's nodes calls document.querySelectorAll
+// ('.kim-node') to attach listeners -- a real DOM method every browser has, but this stub only
+// implements querySelectorAll on documentStub itself (degrading safely to [] on individual elements,
+// same class of stub limitation as the Command Palette's arrow-key re-highlighting). Verified live in
+// a real browser instead: clicking a node activates the Playbook tab, resets the filter, and scrolls
+// the target scenario into view.
 
 console.log("--- Learning Curve Forecaster: golden values (pre-registered via Python/Node, matching a corrected recompute of the source document's own worked example) ---");
 // The source document's own worked example ($3,345.75) has a real ~0.4% arithmetic slip -- this

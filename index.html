@@ -164,15 +164,11 @@
   .line{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
   .line.total{border-top:1px solid var(--c-line);margin-top:6px;padding-top:10px;font-weight:700;color:rgb(var(--c-accent));font-size:14.5px}
 
-  .waterfall{display:flex;align-items:flex-end;gap:8px;height:180px;margin:16px 0 8px;padding:0 4px}
-  .wf-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
-  .wf-bar{width:100%;border-radius:4px 4px 0 0;transition:height .2s}
-  .wf-bar.base{background:rgb(var(--c-text-secondary)/.5)}
-  .wf-bar.fav{background:rgb(var(--c-success)/.75)}
-  .wf-bar.unfav{background:rgb(var(--c-danger)/.75)}
-  .wf-bar.result{background:rgb(var(--c-accent)/.85)}
-  .wf-label{font-size:10px;color:rgb(var(--c-text-secondary));margin-top:6px;text-align:center;line-height:1.25}
-  .wf-value{font-size:11px;font-family:ui-monospace,Menlo,monospace;font-weight:700;margin-bottom:4px}
+  .waterfall{margin:16px 0 8px}
+  .cadence-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;
+    font-family:ui-monospace,Menlo,monospace;margin-bottom:10px}
+  .cadence-badge.operational{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
+  .cadence-badge.financial{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
 
   .pillcard{border:1px solid var(--c-line);border-radius:10px;padding:14px 16px}
   .pillcard h3{margin:0 0 8px;font-size:13.5px}
@@ -240,7 +236,7 @@
   .palette-item.selected{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
 
   @media (prefers-reduced-motion:reduce){
-    .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,.wf-bar{transition:none}
+    .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after{transition:none}
   }
 </style>
 </head>
@@ -294,7 +290,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 420/420 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 462/462 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
@@ -495,9 +491,13 @@
   <!-- ============ TAB 3: VARIANCE WATERFALL ============ -->
   <section class="tabpanel" id="tab-variance" role="tabpanel" aria-labelledby="navtab-variance">
     <h1>Standard-Cost Variance Waterfall</h1>
+    <span class="cadence-badge financial">FINANCIAL CADENCE — a period-close event, not a real-time feed</span>
     <p class="lede">The six-way decomposition the JD's "variance analysis" and "activity-based
       actual COGS" responsibilities point at — material price/quantity, labor rate/efficiency,
-      overhead spending/volume. Change any input; the bridge recalculates live.</p>
+      overhead spending/volume. Change any input; the bridge recalculates live. True standard-cost
+      variance requires posted, settled transactions — a "real-time cost variance" claim (even from
+      an ERP vendor's own marketing) should be treated skeptically; this bridge is a period-close
+      artifact, deliberately distinct from the Capacity tab's live operational-cadence chart.</p>
 
     <div class="grid cols-2">
       <div class="card">
@@ -658,6 +658,7 @@
   <!-- ============ TAB: CAPACITY & ABSORPTION FORECAST ============ -->
   <section class="tabpanel" id="tab-capacity" role="tabpanel" aria-labelledby="navtab-capacity">
     <h1>Capacity &amp; Absorption Forecast</h1>
+    <span class="cadence-badge operational">OPERATIONAL CADENCE — track batch/week-over-week, not just at period close</span>
     <p class="lede">A forward-looking view, not a rear-view mirror — the JD's "identify cost
       reduction opportunities" and capacity-planning responsibilities need unabsorbed overhead
       flagged 30-60 days ahead, not discovered at month-end close. Edit any week's hours.</p>
@@ -676,6 +677,17 @@
         amber 70–85%, red &lt;70% — a utilization-specific band, distinct from the OEE bands on the
         Executive tab (utilization measures hours booked vs. available; OEE also factors in
         performance and quality losses within those hours).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Utilization Control Chart (SPC)</h2><span class="tag">SAME 6-WEEK DATA ABOVE</span></div>
+      <p class="lede" style="margin-bottom:10px">A genuine Individuals control chart, not another
+        fixed-band gauge — the center line and control limits are computed from this shop's own
+        six-week variation (standard I-MR method), separate from the green/amber/red policy bands
+        above. A point outside the dashed control limits signals a real process shift; a point inside
+        them, even if it reads "red" on the policy band, is normal variation. With only 6 points the
+        limits are wide (a known small-sample artifact — more history would tighten them).</p>
+      <div id="capSpcWrap"></div>
     </div>
   </section>
 
@@ -818,6 +830,19 @@
         established ASQ/Juran root-cause-prioritization tool for exactly this question. Built from
         real figures already on this page; nothing new invented for this view.</p>
       <div id="qualityParetoWrap"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><h2>KPI Interaction Map — where these 30 questions pull against each other</h2></div>
+      <p class="lede" style="margin-bottom:10px">The 30 scenarios below read as independent
+        questions, but a few of them causally interact. Two confirmed tradeoffs, each box clickable
+        to jump straight to that scenario:</p>
+      <div id="kpiInteractionMapWrap"></div>
+      <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:8px">A third tradeoff
+        (Q4's nesting yield vs. machine cycle time — squeezing extra sheet-metal yield out of a nest
+        can add cycle time that costs more than the material saved) has no second Playbook KPI to
+        pair against, so it's noted here rather than forced into a third box pair it doesn't
+        honestly have.</p>
     </div>
 
     <div class="pb-controls">
@@ -1250,6 +1275,33 @@
         across sources rather than settled — metal-powder reuse rates and metal-AM build-failure
         rates — reported as unresolved rather than forced to a single number. Full findings,
         source-by-source, are filed in the vault dated 2026-09-05.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Pathways B and C — a structural rebuild and a novel view, from the same research</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">The research above also
+        surfaced a structural finding: SPC/control-chart literature is explicit that a
+        <b>specification-limit band</b> (a fixed policy threshold, like the green/amber/red bands
+        throughout the Playbook) and a <b>statistically-derived control-limit band</b> (this shop's
+        own actual historical variation) are two different things, and conflating them is a
+        documented anti-pattern. Real standard-cost variance also requires posted, settled
+        transactions — a "real-time cost variance" claim should be treated skeptically, even from an
+        ERP vendor's own marketing. Both findings are now visible, not just documented: the
+        <b>Variance Waterfall</b> was rewritten from a grouped bar chart (every bar floating from a
+        shared zero) into a genuine cascading bridge chart, and carries a new "financial cadence —
+        period-close, not real-time" badge. The <b>Capacity tab</b> gained a real Individuals (I)
+        control chart on its existing 6-week utilization data — center line and control limits
+        computed from this shop's own variation via the standard I-MR method, not fabricated
+        history — and carries an "operational cadence" badge. With only 6 points the control limits
+        are wide (a real small-sample artifact, stated on the card, not hidden), and neither Week 3
+        nor Week 4's fixed-band "RED" reading is actually outside those limits — a concrete
+        illustration of exactly the distinction the research flagged. Separately, the research
+        surfaced three real cross-KPI tradeoffs the Playbook's 30 independent scenario cards don't
+        otherwise surface (recoater time vs. post-processing labor; powder reuse vs. build-failure
+        risk; nesting yield vs. cycle time) — the first two, both ends real Playbook scenarios, are
+        now a small <b>KPI Interaction Map</b> on the Playbook tab, each box clickable straight to
+        that scenario; the third has no second Playbook KPI to pair against, so it's a caption, not
+        a forced third box. Checks: 420 → 462.</p>
     </div>
   </section>
 
@@ -1740,23 +1792,62 @@
     return { MPV: MPV, MQV: MQV, DLRV: DLRV, DLEV: DLEV, VOSV: VOSV, FOHV: FOHV, net: net };
   }
   window.calcVariance = calcVariance;
+  window.renderWaterfall = renderWaterfall;
 
+  // Rewritten 2026-09-05 (Pathway B of the KPI research pass) from a grouped bar chart -- every bar
+  // floating from a shared zero baseline -- into a genuine cascading bridge/waterfall chart: each
+  // variance bar now starts where the running cumulative total left off, visually bridging from zero
+  // through all six variances to the net total. This is the actual named "waterfall/bridge chart"
+  // pattern the research verified as standard FP&A practice for exactly this variance-to-actual
+  // story (Domo, Storytelling with Data); the prior grouped-bar version showed magnitude but not the
+  // running total a reader would need to see "how did we get here."
   function renderWaterfall(items, net){
-    var el = document.getElementById('waterfallChart');
-    el.innerHTML = '';
-    var maxAbs = Math.max.apply(null, items.map(function(i){ return Math.abs(i.value); }).concat([Math.abs(net), 1]));
-    items.concat([{ label: 'NET', value: net, isTotal: true }]).forEach(function(item){
-      var col = document.createElement('div'); col.className = 'wf-col';
-      var barWrap = document.createElement('div'); barWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:100%';
-      var valEl = document.createElement('div'); valEl.className = 'wf-value'; valEl.textContent = fmtMoney(item.value);
-      var bar = document.createElement('div'); bar.className = 'wf-bar ' + (item.isTotal ? 'result' : (item.value > 0 ? 'unfav' : (item.value < 0 ? 'fav' : 'base')));
-      var heightPct = Math.max(4, Math.round((Math.abs(item.value) / maxAbs) * 100));
-      bar.style.height = heightPct + '%';
-      var lbl = document.createElement('div'); lbl.className = 'wf-label'; lbl.textContent = item.label;
-      barWrap.appendChild(valEl); barWrap.appendChild(bar);
-      col.appendChild(barWrap); col.appendChild(lbl);
-      el.appendChild(col);
+    var cum = 0;
+    var steps = items.map(function(item){
+      var from = cum;
+      cum += item.value;
+      return { label: item.label, value: item.value, from: from, to: cum, isTotal: false };
     });
+    steps.push({ label: 'NET', value: net, from: 0, to: net, isTotal: true });
+
+    var allYs = [0];
+    steps.forEach(function(s){ allYs.push(s.from, s.to); });
+    var yMin = Math.min.apply(null, allYs), yMax = Math.max.apply(null, allYs);
+    if (yMin === yMax){ yMin -= 1; yMax += 1; }
+    var pad = (yMax - yMin) * 0.14;
+    yMin -= pad; yMax += pad;
+
+    var W = 640, H = 240, marginLeft = 62, marginRight = 16, marginTop = 16, marginBottom = 54;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var n = steps.length, gap = 12;
+    var barW = (plotW - gap * (n - 1)) / n;
+    function xAt(i){ return marginLeft + i * (barW + gap); }
+    function yAt(v){ return marginTop + (1 - (v - yMin) / (yMax - yMin)) * plotH; }
+    var zeroY = yAt(0);
+
+    var bars = '', connectors = '';
+    steps.forEach(function(s, i){
+      var x = xAt(i);
+      var yTop = yAt(Math.max(s.from, s.to));
+      var yBot = yAt(Math.min(s.from, s.to));
+      var h = Math.max(1.5, yBot - yTop);
+      var fill = s.isTotal ? 'rgb(var(--c-accent)/.85)' : (s.value > 0 ? 'rgb(var(--c-danger)/.75)' : (s.value < 0 ? 'rgb(var(--c-success)/.75)' : 'rgb(var(--c-text-secondary)/.5)'));
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + fill + '"/>';
+      bars += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (yTop - 6).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + fmtMoney(s.value) + '</text>';
+      bars += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + plotH + 16) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + s.label + '</text>';
+      if (i > 0){
+        var prevX = xAt(i - 1);
+        var connY = yAt(s.from);
+        connectors += '<line x1="' + (prevX + barW).toFixed(1) + '" y1="' + connY.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + connY.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1" stroke-dasharray="3,2"/>';
+      }
+    });
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:640px" role="img" aria-label="Standard-cost variance bridge, cascading from zero through each of the six variances to the net total">' +
+      '<line x1="' + marginLeft + '" y1="' + zeroY.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + zeroY.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      connectors + bars +
+      '</svg>';
+    document.getElementById('waterfallChart').innerHTML = svg;
+    return { steps: steps, yMin: yMin, yMax: yMax };
   }
 
   ['vMSQ','vMAQ','vMSP','vMAP','vLSH','vLAH','vLSR','vLAR','vVOSR','vVOAct','vBudHrs','vFOHR'].forEach(function(id){
@@ -1949,10 +2040,66 @@
     document.getElementById('capTotalRow').innerHTML = '<td>6-Week Total</td><td class="mono">' + totalAvail + '</td><td class="mono">' + totalBooked + '</td>' +
       '<td class="mono">' + totalUnabHrs.toFixed(1) + '</td><td class="mono">$' + Math.round(totalUnabDollars).toLocaleString() + '</td>' +
       '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
+    renderCapacitySPC();
     return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
   }
   window.calcCapacity = calcCapacity;
   document.getElementById('capOhRate').addEventListener('input', calcCapacity);
+
+  // ---------- SPC control chart for weekly utilization (Pathway B "operational cadence" tier,
+  // 2026-09-05 KPI research pass) ----------
+  // A genuine Individuals (I) control chart -- standard Shewhart/Deming SPC methodology, one of
+  // ASQ's seven basic quality tools -- built from the SAME 6-week CAP_WEEKS data already on this
+  // page, not a new fabricated time series. Center line = mean; control limits = mean +/- 2.66 x mean
+  // moving range (the standard I-MR constant for a subgroup size of 2). This is deliberately NOT the
+  // same as the fixed 85%/70% status-pill bands above: a specification-limit band (fixed policy) and
+  // a statistically-derived control-limit band (this shop's own actual variation) are two different
+  // things, and conflating them was the specific SPC anti-pattern this round's research flagged.
+  function renderCapacitySPC(){
+    var util = CAP_WEEKS.map(function(w, i){
+      var avail = parseFloat(document.getElementById('capAvail' + i).value) || 0;
+      var booked = parseFloat(document.getElementById('capBooked' + i).value) || 0;
+      return avail > 0 ? (booked / avail) * 100 : 0;
+    });
+    var n = util.length;
+    var mean = util.reduce(function(a, b){ return a + b; }, 0) / n;
+    var mrs = [];
+    for (var i = 1; i < n; i++) mrs.push(Math.abs(util[i] - util[i - 1]));
+    var mrBar = mrs.length ? mrs.reduce(function(a, b){ return a + b; }, 0) / mrs.length : 0;
+    var ucl = mean + 2.66 * mrBar;
+    var lcl = mean - 2.66 * mrBar;
+    var outOfControl = util.map(function(v){ return v > ucl || v < lcl; });
+
+    var W = 600, H = 220, marginLeft = 50, marginRight = 20, marginTop = 20, marginBottom = 34;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var yMin = Math.min(lcl, Math.min.apply(null, util)) - 8;
+    var yMax = Math.max(ucl, Math.max.apply(null, util)) + 8;
+    function xAt(i){ return marginLeft + (n === 1 ? 0 : (i / (n - 1)) * plotW); }
+    function yAt(v){ return marginTop + (1 - (v - yMin) / (yMax - yMin)) * plotH; }
+
+    var linePoints = util.map(function(v, i){ return (i === 0 ? 'M' : 'L') + xAt(i).toFixed(1) + ',' + yAt(v).toFixed(1); }).join(' ');
+    var dots = util.map(function(v, i){
+      var fill = outOfControl[i] ? 'rgb(var(--c-danger))' : 'rgb(var(--c-accent))';
+      return '<circle cx="' + xAt(i).toFixed(1) + '" cy="' + yAt(v).toFixed(1) + '" r="4" fill="' + fill + '"/>';
+    }).join('');
+    var labels = util.map(function(v, i){
+      return '<text x="' + xAt(i).toFixed(1) + '" y="' + (marginTop + plotH + 16) + '" font-size="9.5" fill="rgb(var(--c-text-secondary))" text-anchor="middle">W' + (i + 1) + '</text>';
+    }).join('');
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Statistical process control chart of weekly utilization, with a center line and control limits derived from this shop own six-week history">' +
+      '<line x1="' + marginLeft + '" y1="' + yAt(ucl).toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + yAt(ucl).toFixed(1) + '" stroke="rgb(var(--c-warning))" stroke-width="1" stroke-dasharray="4,3"/>' +
+      '<line x1="' + marginLeft + '" y1="' + yAt(mean).toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + yAt(mean).toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + yAt(lcl).toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + yAt(lcl).toFixed(1) + '" stroke="rgb(var(--c-warning))" stroke-width="1" stroke-dasharray="4,3"/>' +
+      '<path d="' + linePoints + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="1.5"/>' +
+      dots + labels +
+      '<text x="' + (W - marginRight) + '" y="' + (yAt(ucl) - 5).toFixed(1) + '" font-size="9.5" fill="rgb(var(--c-warning))" text-anchor="end">UCL ' + ucl.toFixed(1) + '%</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (yAt(mean) - 5).toFixed(1) + '" font-size="9.5" fill="rgb(var(--c-text-secondary))" text-anchor="end">x̄ ' + mean.toFixed(1) + '%</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (yAt(lcl) - 5).toFixed(1) + '" font-size="9.5" fill="rgb(var(--c-warning))" text-anchor="end">LCL ' + lcl.toFixed(1) + '%</text>' +
+      '</svg>';
+    document.getElementById('capSpcWrap').innerHTML = svg;
+    return { util: util, mean: mean, mrBar: mrBar, ucl: ucl, lcl: lcl, outOfControl: outOfControl };
+  }
+  window.renderCapacitySPC = renderCapacitySPC;
 
   // ---------- Tooling Amortization ----------
   function calcTooling(){
@@ -2344,7 +2491,7 @@
     });
     document.getElementById('pbCount').textContent = 'Showing ' + filtered.length + ' of 30 scenarios';
     var html = filtered.map(function(item){
-      return '<div class="pb-card">' +
+      return '<div class="pb-card" id="pbcard-' + item.code + '">' +
         '<div class="pb-card-head"><span class="pb-code">Q' + item.num + ' · ' + item.code + ' · ' + (PB_DOMAIN_LABELS[item.domain] || item.domain) + '</span></div>' +
         '<div class="pb-q">' + item.kpi + '</div>' +
         '<div class="pb-scale" title="A qualitative three-zone scale, not a measured gauge — segment widths are equal by design, not proportional to the underlying units (units vary by KPI: %, ratio, $, or count). See the Methodology tab on why these bands are internal calibrations, not external industry benchmarks.">' +
@@ -2424,6 +2571,57 @@
     return { items: items, total: total, cumPoints: cumPoints };
   }
   window.renderQualityParetoChart = renderQualityParetoChart;
+
+  // ---------- KPI Interaction Map (Pathway C of the 2026-09-05 KPI research pass) ----------
+  // Three real, literature-confirmed cross-KPI tradeoffs the Playbook's 30 independent scenario
+  // cards don't otherwise surface -- these scenarios read as 30 separate diagnostic questions, but
+  // some of them pull against each other in practice. Two tradeoffs pair cleanly onto two existing
+  // Playbook scenarios each (both endpoints clickable, jumping straight to that card); a third
+  // (nesting yield vs. cycle time) has no second Playbook KPI to pair against, so it's documented as
+  // a caption below the map, not forced into a third node pair it doesn't honestly have.
+  var KPI_TRADEOFFS = [
+    { aCode: 'PRC-Z', aLabel: 'Q11 · Recoater Time', bCode: 'LBR-04', bLabel: 'Q13 · Post-Processing Labor',
+      note: 'Flattening a build to cut recoater sweeps often changes the support strategy -- cutting one cost can raise the other.' },
+    { aCode: 'MAT-03', aLabel: 'Q3 · Powder Reuse Ratio', bCode: 'QLT-04', bLabel: 'Q14 · Build Failure Amortization',
+      note: 'Maximizing recycled powder % without characterization testing risks feeding degraded powder into a future porosity/build failure.' }
+  ];
+  function renderKpiInteractionMap(){
+    var W = 640, H = 190, rowH = 90, boxW = 210, boxH = 44;
+    var leftX = 40, rightX = W - 40 - boxW;
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:640px" role="img" aria-label="Two confirmed cross-KPI tradeoffs; each box is clickable and jumps to that scenario">';
+    KPI_TRADEOFFS.forEach(function(t, i){
+      var y = 10 + i * rowH;
+      var midY = y + boxH / 2;
+      svg += '<line x1="' + (leftX + boxW) + '" y1="' + midY + '" x2="' + rightX + '" y2="' + midY + '" stroke="rgb(var(--c-warning))" stroke-width="1.5" stroke-dasharray="4,3"/>';
+      svg += '<text x="' + (W / 2) + '" y="' + (midY - 6) + '" font-size="9" fill="rgb(var(--c-warning))" text-anchor="middle">trades against</text>';
+      [{ x: leftX, code: t.aCode, label: t.aLabel }, { x: rightX, code: t.bCode, label: t.bLabel }].forEach(function(node){
+        svg += '<g class="kim-node" data-target="pbcard-' + node.code + '" tabindex="0" role="button" aria-label="Jump to ' + node.label + '" style="cursor:pointer">' +
+          '<rect x="' + node.x + '" y="' + y + '" width="' + boxW + '" height="' + boxH + '" rx="8" fill="rgb(var(--c-accent)/.12)" stroke="rgb(var(--c-accent)/.5)"/>' +
+          '<text x="' + (node.x + boxW / 2) + '" y="' + (y + boxH / 2 + 4) + '" font-size="11" font-weight="700" fill="rgb(var(--c-accent))" text-anchor="middle">' + node.label + '</text>' +
+          '</g>';
+      });
+    });
+    svg += '</svg>';
+    document.getElementById('kpiInteractionMapWrap').innerHTML = svg;
+    // Document-level query (not the wrap container's own querySelectorAll) -- matches the existing
+    // [data-explain] button-wiring pattern elsewhere on this page, and degrades safely rather than
+    // throwing in a DOM stub that only implements querySelectorAll on document itself.
+    Array.prototype.slice.call(document.querySelectorAll('.kim-node')).forEach(function(node){
+      var targetId = node.getAttribute('data-target');
+      var jump = function(){
+        activateTab('playbook');
+        document.getElementById('pbDomain').value = 'all';
+        document.getElementById('pbSearch').value = '';
+        renderPlaybook();
+        var target = document.getElementById(targetId);
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      node.addEventListener('click', jump);
+      node.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); jump(); } });
+    });
+  }
+  window.KPI_TRADEOFFS = KPI_TRADEOFFS;
+  window.renderKpiInteractionMap = renderKpiInteractionMap;
 
   // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
   function calcLearningCurve(){
@@ -2556,6 +2754,7 @@
   calcOuForward();
   renderPlaybook();
   renderQualityParetoChart();
+  renderKpiInteractionMap();
   calcLearningCurve();
   renderRiskRegister();
   calcRiskScorer();

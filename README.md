@@ -67,8 +67,10 @@ never leak in anywhere else on the page.
 technical claims that hadn't been individually fact-checked before — and all four turned out to be
 real, legitimate industry terminology, not fabricated: SMED (Single-Minute Exchange of Die, Shigeo
 Shingo's real 1950s Toyota/Mazda changeover methodology), MTConnect/OPC-UA (genuine, actively-used
-CNC telemetry protocols), aerospace titanium buy-to-fly ratios of 6:1+ (the real range is 6:1–16:1+,
-so the document's figure is conservative, not inflated), and SAP Movement Type 551 (the actual SAP
+CNC telemetry protocols), aerospace titanium buy-to-fly ratios of 6:1+ (the real range is 6:1–20:1+,
+average ~11:1, widened 2026-09-05 from an earlier 16:1+ estimate after a second independent research
+pass — see the eleventh-round entry below), so the document's figure is conservative, not inflated,
+and SAP Movement Type 551 (the actual SAP
 transaction code for goods-issue-for-scrap). This is a more accurate picture than "the documents are
 entirely fake": the generic manufacturing/SAP/lean-methodology vocabulary is legitimate public-domain
 knowledge; what's fabricated is narrower and specific to *claims about AMS* — the client-program
@@ -413,7 +415,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 420 checks, all passing as of this writing.
+Run: `node stress.cjs` — 462 checks, all passing as of this writing.
 
 ## Status
 
@@ -488,5 +490,31 @@ added for the three scrap/quality-adjacent scenarios (Defect Sunk Scrap Cost Dra
 Amortization Factor, Rework Conversion Surcharge), built entirely from real, already-computed
 dollar figures already on the page — Pareto charts are the established ASQ/Juran tool for exactly
 this root-cause-prioritization question. Full findings filed in the vault, dated 2026-09-05. Checks:
-400 → 420. Committed locally — pending push with explicit confirmation, same discipline as every
-prior round.
+400 → 420. Pushed live.
+
+**2026-09-05, twelfth round (Pathways B and C from the same research):** the research above also
+found that SPC/control-chart literature treats a fixed specification-limit band (policy) and a
+statistically-derived control-limit band (this shop's own historical variation) as two different
+things — conflating them is a documented anti-pattern — and that real standard-cost variance
+requires posted, settled transactions, so a "real-time cost variance" claim should be treated
+skeptically even from an ERP vendor. Both findings are now visible on the page, not just documented.
+**Pathway B:** the Variance Waterfall was rewritten from a grouped bar chart (every bar floating
+from a shared zero) into a genuine cascading bridge chart — each bar now starts where the running
+cumulative total left off, the defining visual feature of a bridge vs. a bar chart — and carries a
+new "financial cadence" badge. The Capacity tab gained a real Individuals (I) control chart on its
+existing 6-week utilization data (center line + control limits via the standard I-MR method, no
+fabricated history) and an "operational cadence" badge; with only 6 points the limits are wide (a
+real small-sample artifact, stated on the card), and neither Week 3 nor Week 4's fixed-band "RED"
+reading is actually outside those limits — a concrete illustration of the distinction the research
+flagged. The old `.wf-col`/`.wf-value`/`.wf-label`/`.wf-bar` grouped-bar-chart CSS was removed, not
+left as dead code alongside the new SVG chart. **Pathway C:** a small KPI Interaction Map was added
+to the Playbook tab, visualizing the two (of three) confirmed cross-KPI tradeoffs from the research
+that pair cleanly onto two existing Playbook scenarios each (recoater time vs. post-processing
+labor; powder reuse vs. build-failure risk) — each box is clickable/keyboard-activatable and jumps
+straight to that scenario's card. The third tradeoff (nesting yield vs. cycle time) has no second
+Playbook KPI to pair against, so it's a caption, not a forced third box. Checks: 420 → 462, all
+pre-registered before being written and live-browser verified (the bridge chart's cascading bar
+boundaries genuinely align edge-to-edge; the SPC chart's rendered UCL/mean/LCL match the
+hand-calculated golden values; both KPI Interaction Map tradeoff pairs jump and scroll correctly via
+both mouse and keyboard). Committed locally — pending push with explicit confirmation, same
+discipline as every prior round.
