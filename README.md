@@ -65,7 +65,26 @@ knowledge; what's fabricated is narrower and specific to *claims about AMS* — 
 claim, the RACI table, the copied test-count figure, and every dollar/percentage threshold, all of
 which remain excluded. The Methodology tab now cites these four newly-verified real terms directly.
 
-## The nine modules
+**A third verification round (2026-09-04, on a third downloaded document — a "SAP Automated
+Guardrail Engine" proposal)** checked 34 specific SAP technical identifiers via a parallel-agent
+workflow against live sources — transaction codes, tables, BAdIs, a user exit, and a BAPI. **32 of
+34 checked out as real and correctly described**, including narrow, easy-to-invent identifiers like
+BAdI `WORKORDER_CONFIRM` and User Exit `PPCO0007` (which even has a documented SAP bug report
+against it — strong evidence it's a real, in-use enhancement spot, not fabricated). Two confirmed
+real errors, not just imprecision: **"PP02" is not SAP's real rework order type** (the closer
+convention is PP03, and order types are entirely client-configurable via OPJH/OPL8 regardless — no
+code has SAP-enforced meaning), and **"tolerance key" blocking PO release conflates two distinct
+real mechanisms** (invoice-blocking tolerance keys vs. the separate PO release-strategy price-
+tolerance setting). Separately, the same document's Claude Code hook configuration invents a
+`pre_tool_call` key — the real event name is `PreToolUse`, blocking via
+`hookSpecificOutput.permissionDecision`, matching what this project's own sibling-repo tooling
+already documents correctly. The "1,520 tests" figure and a satellite-program callback both appear
+again, unchanged — same exclusion treatment as before. Net read: this document's generic SAP
+scaffolding is meaningfully more accurate than the first two documents' invented specifics — the
+fabrication remains narrow and specific to claims about AMS, not the underlying technical
+vocabulary.
+
+## The ten modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
    job posting's own stated scope; the site labels ("Site A/B/C"), locations beyond the two the
@@ -92,10 +111,17 @@ which remain excluded. The Methodology tab now cites these four newly-verified r
 7. **Design-for-Cost Sensitivity** — from Issue 19's DFM/DFC feedback-loop idea, as a live slider-driven
    heuristic (wall thickness, pocket depth:diameter ratio, additive build height) — explicitly labeled
    an illustrative heuristic, not a physics-based cost simulation.
-8. **Operating Framework** — a dashboard-native condensation of
+8. **Data Governance** — from a third downloaded document's "SAP Automated Guardrail Engine" concept:
+   a live Master Data Quality Scorecard (the document's own weighted formula — 30% routing errors +
+   30% confirmation variances + 25% unlinked scrap + 15% stale standards, banded green/amber/red at
+   its own stated thresholds) and a Guardrail Gate Simulator (BOM mass-discrepancy, PO price-variance,
+   and confirmation-hours-variance gates against the document's own stated thresholds, showing live
+   PASS/BLOCKED status). Real, well-defined formulas — not a claim that AMS's actual SAP instance
+   enforces exactly these numbers.
+9. **Operating Framework** — a dashboard-native condensation of
    [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
-9. **Methodology & Sourcing** — the source ledger described above.
+10. **Methodology & Sourcing** — the source ledger described above.
 
 ## Verification (`stress.cjs`)
 
@@ -124,8 +150,18 @@ against exact numbers **independently verified live in a real browser before thi
   amortized vs. $750.00/unit naive-first-batch-only → **100.0× overstatement**.
 - DFM/DFC defaults (1.5mm wall, 5:1 pocket ratio, 80mm build height) → wall +24.0% / pocket +5.0% /
   height +24.0% / **total +53.0%** / estimated cost **$153.00** on a $100 reference part.
+- MDQS defaults (6/300 routing errors, 15/500 confirmation variances, 4/80 unlinked scrap, 10/400
+  stale standards) → **96.875%**, correctly banded **AMBER** (93–98%).
+- Guardrail Gate Simulator defaults (8% BOM discrepancy vs. 15% threshold, 7% PO variance vs. 5%,
+  12% confirmation variance vs. 15%) → BOM **PASS**, PO **BLOCKED**, Confirmation **PASS**.
+- A second confirmed-wrong-claims guard ("PP02" as rework, "pre_tool_call" as a hook key) — same
+  exclusion pattern as the fabrication guard above, and same discipline: a genuine bug was found and
+  fixed while adding it (a second debunk card also legitimately mentions "1,520," which the original
+  single-card exclusion didn't cover, false-positiving until both cards were excluded together) —
+  reproduced, fixed, then confirmed the new guard actually fails when "PP02" is reintroduced outside
+  both cards, before confirming it passes clean.
 
-Run: `node stress.cjs` — 107 checks, all passing as of this writing.
+Run: `node stress.cjs` — 128 checks, all passing as of this writing.
 
 ## Status
 

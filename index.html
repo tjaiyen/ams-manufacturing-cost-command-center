@@ -159,6 +159,7 @@
     <button class="tabbtn" data-tab="capacity" role="tab" aria-selected="false">Capacity Forecast</button>
     <button class="tabbtn" data-tab="tooling" role="tab" aria-selected="false">Tooling Amortization</button>
     <button class="tabbtn" data-tab="dfm" role="tab" aria-selected="false">DFM/DFC Sensitivity</button>
+    <button class="tabbtn" data-tab="governance" role="tab" aria-selected="false">Data Governance</button>
     <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
     <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
   </div>
@@ -483,6 +484,57 @@
     </div>
   </section>
 
+  <!-- ============ TAB: DATA GOVERNANCE ============ -->
+  <section class="tabpanel" id="tab-governance">
+    <h1>Data Governance</h1>
+    <p class="lede">"Block bad data at the point of entry, not at month-end close" — a real design
+      principle worth demonstrating live, distinct from a claim about AMS's actual SAP configuration.
+      See the Methodology tab for what's independently verified vs. illustrative here.</p>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><h2>Master Data Quality Scorecard (MDQS)</h2><span class="tag">EDITABLE COUNTS</span></div>
+        <div class="field-row">
+          <div class="field"><label>Routing errors</label><input type="number" id="mdqsRoutingErr" value="6"></div>
+          <div class="field"><label>Total routings</label><input type="number" id="mdqsTotalRoutings" value="300"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Confirmation variances</label><input type="number" id="mdqsConfVar" value="15"></div>
+          <div class="field"><label>Total confirmations</label><input type="number" id="mdqsTotalConf" value="500"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Unlinked scrap events</label><input type="number" id="mdqsUnlinkedScrap" value="4"></div>
+          <div class="field"><label>Total scrap events</label><input type="number" id="mdqsScrapEvents" value="80"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Stale standards (&gt;180 days)</label><input type="number" id="mdqsStaleStandards" value="10"></div>
+          <div class="field"><label>Total active parts</label><input type="number" id="mdqsActiveParts" value="400"></div>
+        </div>
+        <div class="outline">
+          <div class="line"><span>MDQS = 100% − (30%·routing + 30%·confirmation + 25%·scrap + 15%·stale)</span><span></span></div>
+          <div class="line total"><span>Score</span><span class="mono" id="mdqsScore">0.0%</span> <span id="mdqsBand"></span></div>
+        </div>
+        <p style="font-size:11px;color:rgb(var(--c-text-secondary))">Bands as stated in the source
+          document: green ≥98%, amber 93–98%, red &lt;93%.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Guardrail Gate Simulator</h2><span class="tag">PASS / BLOCKED</span></div>
+        <div class="field"><label>BOM: CAD-vs-gross-mass discrepancy (%, threshold 15%)</label><input type="number" id="gateBom" value="8" step="1"></div>
+        <div class="field"><label>Procurement: PO price variance (%, threshold ±5%)</label><input type="number" id="gatePo" value="7" step="1"></div>
+        <div class="field"><label>Shop floor: confirmation-hours variance (%, threshold ±15%)</label><input type="number" id="gateConf" value="12" step="1"></div>
+        <div class="outline">
+          <div class="line"><span>BOM gate</span><span id="gateBomOut"></span></div>
+          <div class="line"><span>PO gate</span><span id="gatePoOut"></span></div>
+          <div class="line"><span>Confirmation gate</span><span id="gateConfOut"></span></div>
+        </div>
+        <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Thresholds are
+          taken directly from the source document's own stated numbers — this simulates the gate
+          logic, it does not claim AMS's real SAP instance enforces exactly these values.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
   <section class="tabpanel" id="tab-framework">
     <h1>Operating Framework — A 90-Day Thesis</h1>
@@ -555,6 +607,27 @@
         generic, well-established cost-engineering practice — the pillar taxonomy, the should-cost/
         MHR/variance mechanics — and drops everything presented as fact about AMS specifically that
         isn't.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A third document, verified far more thoroughly</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">A third downloaded document
+        proposed a "SAP Automated Guardrail Engine" — validation gates on BOMs, routings, POs, and
+        confirmations. 34 of its specific SAP technical identifiers (transaction codes, tables,
+        BAdIs, a BAPI) were independently checked against live sources — <b>32 of 34 checked out as
+        real and correctly described</b>, including narrow, easy-to-fabricate identifiers like BAdI
+        <code>WORKORDER_CONFIRM</code> and User Exit <code>PPCO0007</code> (which even has a real SAP
+        bug report against it). Two confirmed real errors, not just imprecision: <b>"PP02" is not
+        SAP's rework order type</b> (the closer convention is PP03, and order types are entirely
+        client-configurable anyway — never asserted as fact here), and <b>"tolerance key" blocking PO
+        release conflates two distinct real mechanisms</b> (invoice-blocking tolerance keys vs. the
+        separate PO release-strategy price-tolerance setting). Separately, the same document's Claude
+        Code hook configuration invents a <code>pre_tool_call</code> key — <b>the real event name is
+        <code>PreToolUse</code>, blocking via <code>hookSpecificOutput.permissionDecision</code></b>.
+        And the "1,520 tests" figure and a satellite-program callback appear again, unchanged from
+        before — same treatment, excluded. The MDQS formula and guardrail-gate thresholds on this
+        tab are real, well-defined formulas taken directly from that document; they demonstrate the
+        methodology live, not a claim that AMS's actual SAP instance runs these exact numbers.</p>
     </div>
   </section>
 
@@ -843,6 +916,50 @@
   window.calcDfm = calcDfm;
   ['dfmThickness', 'dfmPocket', 'dfmHeight'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcDfm); });
 
+  // ---------- Data Governance: MDQS + Guardrail Gate Simulator ----------
+  var MDQS_WEIGHTS = { routing: 0.30, confirmation: 0.30, scrap: 0.25, stale: 0.15 };
+  function bandFor(pct){ return pct >= 98 ? 'green' : (pct >= 93 ? 'amber' : 'red'); }
+  function calcMdqs(){
+    var routingErr = parseFloat(document.getElementById('mdqsRoutingErr').value) || 0;
+    var totalRoutings = parseFloat(document.getElementById('mdqsTotalRoutings').value) || 1;
+    var confVar = parseFloat(document.getElementById('mdqsConfVar').value) || 0;
+    var totalConf = parseFloat(document.getElementById('mdqsTotalConf').value) || 1;
+    var unlinkedScrap = parseFloat(document.getElementById('mdqsUnlinkedScrap').value) || 0;
+    var scrapEvents = parseFloat(document.getElementById('mdqsScrapEvents').value) || 1;
+    var staleStandards = parseFloat(document.getElementById('mdqsStaleStandards').value) || 0;
+    var activeParts = parseFloat(document.getElementById('mdqsActiveParts').value) || 1;
+
+    var deduction = MDQS_WEIGHTS.routing * (routingErr / totalRoutings) * 100 +
+      MDQS_WEIGHTS.confirmation * (confVar / totalConf) * 100 +
+      MDQS_WEIGHTS.scrap * (unlinkedScrap / scrapEvents) * 100 +
+      MDQS_WEIGHTS.stale * (staleStandards / activeParts) * 100;
+    var score = 100 - deduction;
+    var band = bandFor(score);
+    document.getElementById('mdqsScore').textContent = score.toFixed(3) + '%';
+    document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + band.toUpperCase() + '</span>';
+    return { score: score, band: band };
+  }
+  window.calcMdqs = calcMdqs;
+  ['mdqsRoutingErr', 'mdqsTotalRoutings', 'mdqsConfVar', 'mdqsTotalConf', 'mdqsUnlinkedScrap', 'mdqsScrapEvents', 'mdqsStaleStandards', 'mdqsActiveParts'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcMdqs);
+  });
+
+  function gatePill(pass){ return '<span class="status-pill ' + (pass ? 'green' : 'red') + '">' + (pass ? 'PASS' : 'BLOCKED') + '</span>'; }
+  function calcGates(){
+    var bom = parseFloat(document.getElementById('gateBom').value) || 0;
+    var po = parseFloat(document.getElementById('gatePo').value) || 0;
+    var conf = parseFloat(document.getElementById('gateConf').value) || 0;
+    var bomPass = bom <= 15;
+    var poPass = Math.abs(po) <= 5;
+    var confPass = Math.abs(conf) <= 15;
+    document.getElementById('gateBomOut').innerHTML = gatePill(bomPass);
+    document.getElementById('gatePoOut').innerHTML = gatePill(poPass);
+    document.getElementById('gateConfOut').innerHTML = gatePill(confPass);
+    return { bomPass: bomPass, poPass: poPass, confPass: confPass };
+  }
+  window.calcGates = calcGates;
+  ['gateBom', 'gatePo', 'gateConf'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcGates); });
+
   // ---------- Initial render ----------
   calcShouldCost();
   calcVariance();
@@ -851,6 +968,8 @@
   calcCapacity();
   calcTooling();
   calcDfm();
+  calcMdqs();
+  calcGates();
 })();
 </script>
 </body>
