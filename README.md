@@ -2,13 +2,15 @@
 
 A standalone, purpose-built dashboard for one specific role — Senior Manufacturing Cost Engineer,
 Amazon Manufacturing Services ([req 10512991](https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services)) —
-not a general-purpose portfolio piece. Eleven live, interactive modules covering the job description's
+not a general-purpose portfolio piece. Twelve live, interactive modules covering the job description's
 own responsibility areas: should-cost modeling, machine-hour-rate formalization (including a
 first-principles MHR build-up calculator), standard-cost variance decomposition (plus a
-forward-looking commodity price-exposure warning), build-vs-buy/NPV, capacity/absorption
-forecasting, tooling amortization, design-for-cost sensitivity, data governance, a 30-scenario cost
-diagnostic playbook, a multi-site executive rollup, and an honest operating framework. Click-to-open
-"Explain the Math" modals cover the highest-traffic KPIs throughout.
+forward-looking commodity price-exposure warning and an Ornstein-Uhlenbeck mean-reversion band),
+build-vs-buy/NPV, capacity/absorption forecasting, tooling amortization, design-for-cost sensitivity,
+data governance, a 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve
+forecaster, cost-adapted FMEA risk register, Manufacturing Value at Risk), a multi-site executive
+rollup, and an honest operating framework. Click-to-open "Explain the Math" modals (15 of them) cover
+the highest-traffic KPIs throughout.
 
 **Live:** deployed via GitHub Pages, served directly from `main` — pushing to `main` is the deploy,
 same as this author's other command-center repos.
@@ -130,7 +132,36 @@ document's own full alternative dashboard mockup was not adopted — it duplicat
 live, in a different visual style, and bakes the fabricated "1,520 tests"/"SAP CONNECTED" claims
 directly into static markup.
 
-## The eleven modules
+**A sixth/seventh verification round (2026-09-04, on two more downloaded documents — six predictive
+mathematical models, and a Cost-FMEA/Value-at-Risk risk-management framework)** checked seven
+specific quantitative/statistical claims independently. **Five came back fully correct:**
+Wright's Cumulative-Average and Crawford's Unit learning-curve models (and the b = ln(φ)/ln(2)
+exponent formula); the Ornstein-Uhlenbeck mean-reversion SDE and its conditional mean/variance
+formulas (the same equation underlying the Vasicek interest-rate model); the Wiener-process-
+degradation → Inverse Gaussian remaining-useful-life relationship (confirmed against published
+cutting-tool-wear reliability papers); the Beta-PERT mean/σ approximation formulas; and the
+one-tailed VaR Z-scores (1.645 / 2.326). **Two needed a closer look, not a copy-paste:** the
+document's Manufacturing Value at Risk formula (M-VaRα = μ + Z·σ) looks backwards next to textbook
+portfolio VaR, which subtracts Z·σ — but that convention exists because portfolio VaR works on a
+*returns* distribution where a loss is negative. This document's variance metric is already signed
+the opposite way (positive = unfavorable), so addition is actually the mathematically correct
+operation for *this* metric — not an error to blindly "fix" against the wrong precedent, and not
+something to blindly copy either without working out why. And Theil's Inequality Coefficient (the
+formula given) is real and correctly bounded [0, 1], but the claim that a value of 1 means "as bad
+as a naive forecast" belongs to a different, unrelated formula (Theil's U2); U1 (the one actually
+given) is a documented poor discriminator of forecast quality and wasn't built here as a result.
+Separately, **"Cost-FMEA" and "CRPN" are not established named frameworks** — the underlying
+practice (classic FMEA's Probability × Severity × Detection Risk Priority Number, with dollar-banded
+severity) is real and has precedent under other names (Cost-Based FMEA, ERPN), but that specific
+branding is the source document's own, labeled as such on the dashboard rather than implied as a
+citable standard. The risk register's 10 CRPN scores (P × S × D) all reproduce exactly by hand. One
+worked example (a learning-curve labor-cost forecast) had a genuine, if small, arithmetic slip
+(~0.4%, ~$13 on a $3,346 figure) — recomputed correctly for the dashboard rather than copied. The
+"1,520 test fixtures" figure and the unconfirmed Project Kuiper/Amazon Robotics/AWS client
+relationship both appeared again — same exclusion treatment, and every reference was genericized in
+the built modules.
+
+## The twelve modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
    job posting's own stated scope; the site labels ("Site A/B/C"), locations beyond the two the
@@ -149,7 +180,9 @@ directly into static markup.
 3. **Variance Waterfall** — the real six-way standard-cost decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOHV),
    fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
    Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
-   open purchasing volume → projected dollar exposure, flagged at a real 8% threshold).
+   open purchasing volume → projected dollar exposure, flagged at a real 8% threshold) — and a
+   **Mean-Reversion Forward Band** (Ornstein-Uhlenbeck): where the spot price is actually expected
+   to drift back to, and a two-sided 95% confidence band around that forecast.
 4. **Build-vs-Buy / CapEx** — an NPV/payback analyzer generalizing the same methodology used in
    [`ams-narrative.html`](https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html)'s
    worked example, with a year-by-year discounted cash-flow table.
@@ -176,10 +209,22 @@ directly into static markup.
    variance formula, a worked illustrative dollar exposure, a GL-account mapping, and the leadership
    action — filterable by domain and searchable. Ported from the fifth downloaded document's
    Section 7 (independently re-derived arithmetic; see Verification below).
-10. **Operating Framework** — a dashboard-native condensation of
+10. **Predictive & Risk Models** — three independently-verified quantitative/stochastic models from
+   the sixth/seventh downloaded documents:
+   - **Learning Curve Forecaster** — Wright's/Crawford's power-law model (Y = a·x^b) projecting
+     cumulative direct labor hours/cost as production ramps, and quantifying the exact "fake
+     favorable variance" a stale Unit-1 standard would otherwise generate.
+   - **Cost Risk Register (CRPN)** — 10 illustrative failure modes scored Probability × Severity ×
+     Detection (classic FMEA math, re-labeled — see Methodology tab for the naming caveat), plus an
+     interactive "score your own risk" calculator against the source document's own ≥25 escalation
+     threshold.
+   - **Manufacturing Value at Risk (M-VaR)** — a one-sided upper confidence bound on total
+     unfavorable cost variance at 95%/99% confidence, with the sign-convention nuance worked through
+     explicitly rather than either copied or "corrected" against the wrong precedent.
+11. **Operating Framework** — a dashboard-native condensation of
    [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
-11. **Methodology & Sourcing** — the source ledger described above.
+12. **Methodology & Sourcing** — the source ledger described above.
 
 ## Verification (`stress.cjs`)
 
@@ -241,10 +286,25 @@ against exact numbers **independently verified live in a real browser before thi
   harness's own stub elements and re-invoking the real `renderPlaybook()`: all-domains shows 30,
   filtering to "additive" shows exactly 5, searching "buy-to-fly" narrows to exactly 1, clearing the
   search restores 30.
-- Explain-the-Math modal: `EXPLAIN` data object has a title/formula/body for all 10 keyed formulas,
-  exactly 11 explain buttons are wired in the HTML, `openExplain` is exposed for the harness to call.
+- Explain-the-Math modal: `EXPLAIN` data object has a title/formula/body for all 14 keyed formulas,
+  exactly 15 explain buttons are wired in the HTML, `openExplain` is exposed for the harness to call.
+- Learning Curve Forecaster defaults (6.0hr first article, 80% learning rate, units 21–60, $45.00/hr)
+  → b = **−0.3219** / total hours **74.64** / avg unit time **1.87 hrs** / total cost **$3,358.59**
+  (independently re-derived — NOT the source document's own $3,345.75, a real ~0.4% arithmetic slip
+  in their worked example) / static-standard distortion **−$7,441** correctly labeled fake-favorable.
+- Cost Risk Register: all 10 CRPN scores (P×S×D) cross-checked against hand-verified products;
+  exactly 6 of 10 correctly banded ESCALATE at the source document's own ≥25 threshold. Risk Scorer
+  default (P=3, S=3, D=3) → CRPN **27**, ESCALATE.
+- Manufacturing Value at Risk defaults (μ=$8,500, σ=$6,200) → 95%: Z=1.645, **M-VaR $18,699.00**;
+  switching to 99%: Z=2.326, **M-VaR $22,921.20** — exercised live via the harness's own
+  `calcMVaR()`, not hardcoded.
+- Mean-Reversion Forward Band defaults (P̄=$27.00, θ=0.15/mo, σ=$3.50, Δt=1mo, off the existing
+  $29.50 spot default) → expected **$29.15** / std. dev **$3.25** / 95% two-sided band
+  **$22.78 – $35.53**.
+- Fabrication guard extended to the Risk Register data (same seam the fifth document's copied MHR
+  figures would have leaked through if the recompute had been missed) — clean.
 
-Run: `node stress.cjs` — 203 checks, all passing as of this writing.
+Run: `node stress.cjs` — 252 checks, all passing as of this writing.
 
 ## Status
 
@@ -262,5 +322,9 @@ paragraph's stale "Six... modules" (grew to ten across those same three rounds w
 being updated).
 
 **2026-09-04, fifth round:** added the Cost Diagnostic Playbook tab, the MHR Build-Up Calculator,
-and the Explain-the-Math modal system (11 modules total, up from ten) — pending push with explicit
-confirmation, same discipline as every prior round.
+and the Explain-the-Math modal system (11 modules total, up from ten) — pushed live.
+
+**2026-09-04, sixth round:** added the Predictive & Risk Models tab (Learning Curve Forecaster, Cost
+Risk Register/CRPN, Manufacturing Value at Risk) and a Mean-Reversion Forward Band on the Variance
+tab (12 modules total, up from eleven) — pending push with explicit confirmation, same discipline as
+every prior round.

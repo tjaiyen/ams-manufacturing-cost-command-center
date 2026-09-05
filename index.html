@@ -189,6 +189,7 @@
     <button class="tabbtn" data-tab="dfm" role="tab" aria-selected="false">DFM/DFC Sensitivity</button>
     <button class="tabbtn" data-tab="governance" role="tab" aria-selected="false">Data Governance</button>
     <button class="tabbtn" data-tab="playbook" role="tab" aria-selected="false">Diagnostic Playbook</button>
+    <button class="tabbtn" data-tab="risk" role="tab" aria-selected="false">Predictive &amp; Risk Models</button>
     <button class="tabbtn" data-tab="framework" role="tab" aria-selected="false">Operating Framework</button>
     <button class="tabbtn" data-tab="methodology" role="tab" aria-selected="false">Methodology &amp; Sourcing</button>
   </div>
@@ -426,6 +427,28 @@
       <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Warning threshold
         (&gt;8% above frozen standard) is the source document's own stated number — a real,
         well-defined early-warning pattern, not a claim about AMS's actual commodity contracts.</p>
+
+      <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Mean-Reversion Forward Band <button class="explain-btn" data-explain="ou" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ORNSTEIN-UHLENBECK</span></div>
+      <p class="lede" style="margin-bottom:12px">Where the spot price above is actually expected to
+        drift back to, and how wide the uncertainty band is — a real, independently-verified
+        stochastic model (mean-reversion), not a claim about AMS's actual hedging program.</p>
+      <div class="field-row">
+        <div class="field"><label>Long-run equilibrium price ($/kg)</label><input type="number" id="ouEquilibrium" value="27.00" step="0.5"></div>
+        <div class="field"><label>Mean-reversion rate θ (per month)</label><input type="number" id="ouTheta" value="0.15" step="0.01"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Volatility σ ($/kg per √month)</label><input type="number" id="ouSigma" value="3.50" step="0.1"></div>
+        <div class="field"><label>Forecast horizon (months)</label><input type="number" id="ouHorizon" value="1" step="1" min="1"></div>
+      </div>
+      <div class="outline">
+        <div class="line"><span>Expected price at horizon</span><span class="mono" id="ouExpected">$0.00</span></div>
+        <div class="line"><span>Forecast std. deviation</span><span class="mono" id="ouStdDev">$0.00</span></div>
+        <div class="line total"><span>95% forward band (two-sided)</span><span class="mono" id="ouBand">$0.00 – $0.00</span></div>
+      </div>
+      <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Uses the current
+        spot price above as the starting point. This band widens with the forecast horizon and
+        volatility, and narrows toward the equilibrium price as θ (the reversion speed) increases —
+        the reason blanket purchase agreements are timed off θ, not off the spot price alone.</p>
     </div>
   </section>
 
@@ -646,6 +669,113 @@
     <div id="pbList"></div>
   </section>
 
+  <!-- ============ TAB: PREDICTIVE & RISK MODELS ============ -->
+  <section class="tabpanel" id="tab-risk">
+    <h1>Predictive &amp; Risk Models</h1>
+    <p class="lede">Three independently-verified quantitative/stochastic models from the two newest
+      downloaded documents — a learning-curve labor forecaster, a cost-adapted FMEA risk register,
+      and a Manufacturing Value-at-Risk bound. Real, standard techniques (see the Methodology tab for
+      what was checked and what changed); every input below is illustrative.</p>
+
+    <div class="card">
+      <div class="card-head"><h2>Learning Curve Forecaster <button class="explain-btn" data-explain="learningcurve" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">WRIGHT'S / CRAWFORD'S POWER LAW</span></div>
+      <p class="lede" style="margin-bottom:12px">Forecasts direct labor touch time as cumulative
+        volume ramps — and shows exactly how a static Unit-1 standard turns real learning into a
+        fake "favorable" variance (the same distortion flagged in the Diagnostic Playbook's
+        LBR-AGE scenario).</p>
+      <div class="grid cols-2">
+        <div>
+          <div class="field"><label>First-article time (hrs)</label><input type="number" id="lcFirstArticle" value="6.0" step="0.1"></div>
+          <div class="field"><label>Learning rate φ (%)</label><input type="number" id="lcLearningRate" value="80" step="1"></div>
+          <div class="field-row">
+            <div class="field"><label>Batch start unit (M)</label><input type="number" id="lcBatchStart" value="20" step="1"></div>
+            <div class="field"><label>Batch size (N)</label><input type="number" id="lcBatchSize" value="40" step="1"></div>
+          </div>
+          <div class="field"><label>Loaded labor rate ($/hr)</label><input type="number" id="lcLaborRate" value="45.00" step="0.5"></div>
+        </div>
+        <div class="outline">
+          <div class="line"><span>Learning index (b)</span><span class="mono" id="lcB">0.000</span></div>
+          <div class="line"><span>Total labor hours, units {M+1}–{M+N}</span><span class="mono" id="lcTotalHours">0.0</span></div>
+          <div class="line"><span>Average unit time over batch</span><span class="mono" id="lcAvgUnitTime">0.00 hrs</span></div>
+          <div class="line total"><span>Total labor cost, this batch</span><span class="mono" id="lcTotalCost">$0.00</span></div>
+          <div class="line" style="margin-top:8px"><span>If Unit-1 time were kept as a static standard</span><span class="mono" id="lcDistortion">$0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Cost Risk Register (CRPN) <button class="explain-btn" data-explain="crpn" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ADAPTED FROM CLASSIC FMEA — NOT A CITED FRAMEWORK</span></div>
+      <p class="lede" style="margin-bottom:12px">10 illustrative failure modes scored Probability ×
+        Severity × Detection (1–5 each) — the classic FMEA Risk Priority Number formula, re-labeled
+        "CRPN" by the source document with dollar-banded severity. That specific name isn't an
+        established framework; the underlying scoring practice is real (see Methodology tab).</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Risk</th><th>Event</th><th>P</th><th>S</th><th>D</th><th>CRPN</th><th>Status</th></tr></thead>
+          <tbody id="riskRegisterBody"></tbody>
+        </table>
+      </div>
+      <div class="card-head" style="margin-top:18px"><h3 style="font-size:13px;margin:0">Score Your Own Risk</h3></div>
+      <div class="field-row" style="margin-top:10px">
+        <div class="field"><label>Probability</label>
+          <select id="riskP">
+            <option value="1">1 · Remote (&lt;2%)</option>
+            <option value="2">2 · Low (2–5%)</option>
+            <option value="3" selected>3 · Moderate (6–15%)</option>
+            <option value="4">4 · High (16–30%)</option>
+            <option value="5">5 · Chronic (&gt;30%)</option>
+          </select>
+        </div>
+        <div class="field"><label>Severity ($ impact)</label>
+          <select id="riskS">
+            <option value="1">1 · Negligible (&lt;$1K)</option>
+            <option value="2">2 · Minor ($1K–$5K)</option>
+            <option value="3" selected>3 · Moderate ($5K–$20K)</option>
+            <option value="4">4 · Major ($20K–$50K)</option>
+            <option value="5">5 · Critical (&gt;$50K)</option>
+          </select>
+        </div>
+        <div class="field"><label>Detection Latency</label>
+          <select id="riskD">
+            <option value="1">1 · Immediate (&lt;1hr)</option>
+            <option value="2">2 · Near real-time (&lt;8hr)</option>
+            <option value="3" selected>3 · Weekly (1–7 days)</option>
+            <option value="4">4 · Monthly (8–30 days)</option>
+            <option value="5">5 · Undetected (&gt;30 days)</option>
+          </select>
+        </div>
+      </div>
+      <div class="outline">
+        <div class="line total"><span>CRPN = P × S × D</span><span class="mono" id="riskScoreOut">0</span> <span id="riskScoreBand"></span></div>
+      </div>
+      <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Threshold (CRPN ≥
+        25 requires a formal Root-Cause Corrective Action plan) is the source document's own stated
+        governance rule.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Manufacturing Value at Risk (M-VaR) <button class="explain-btn" data-explain="mvar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ONE-SIDED CONFIDENCE BOUND</span></div>
+      <p class="lede" style="margin-bottom:12px">The upper bound total unfavorable cost variance is
+        not expected to exceed at a given confidence level — a one-sided statistical bound on an
+        already-signed "unfavorable = positive" variance metric, not textbook portfolio-returns VaR
+        (see Methodology tab for the sign-convention nuance this required).</p>
+      <div class="field-row">
+        <div class="field"><label>Mean periodic variance μ (Δ, $)</label><input type="number" id="mvarMu" value="8500" step="100"></div>
+        <div class="field"><label>Composite std. deviation σ (Δ, $)</label><input type="number" id="mvarSigma" value="6200" step="100"></div>
+      </div>
+      <div class="field" style="max-width:220px"><label>Confidence level</label>
+        <select id="mvarConfidence">
+          <option value="95" selected>95%</option>
+          <option value="99">99%</option>
+        </select>
+      </div>
+      <div class="outline">
+        <div class="line"><span>Z-score</span><span class="mono" id="mvarZ">0.000</span></div>
+        <div class="line total"><span>M-VaR (upper bound this period)</span><span class="mono" id="mvarOut">$0</span></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ TAB 5: OPERATING FRAMEWORK ============ -->
   <section class="tabpanel" id="tab-framework">
     <h1>Operating Framework — A 90-Day Thesis</h1>
@@ -783,6 +913,38 @@
         document's real underlying formula (standing = depreciation + floor + service, spread over
         scheduled hours × OEE) but uses fresh illustrative numbers, not the copied ones.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Sixth &amp; seventh documents — real quantitative methods, one formula-sign nuance</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">Two more downloaded documents
+        proposed six predictive mathematical models (learning curves, Markov capacity states,
+        mean-reverting commodity pricing, additive-failure logistic regression, tool-wear
+        degradation, build-vs-buy scale economics) and a quantitative risk-management framework
+        (Cost-FMEA/CRPN scoring, Manufacturing Value at Risk, Monte Carlo should-cost). Seven
+        specific mathematical claims were checked independently — five came back fully correct:
+        Wright's/Crawford's learning-curve models and the b = ln(φ)/ln(2) formula; the
+        Ornstein-Uhlenbeck mean-reversion process (the same equation underlying the Vasicek
+        interest-rate model); the Wiener-process-degradation → Inverse Gaussian remaining-useful-life
+        relationship (confirmed via published cutting-tool-wear reliability literature); the
+        Beta-PERT mean/σ approximation formulas; and the one-tailed VaR Z-scores (1.645 / 2.326).
+        Two needed a closer look: the document's Manufacturing Value at Risk formula
+        (M-VaRα = μ + Z·σ) looks backwards next to textbook portfolio VaR, which subtracts
+        Z·σ — but that textbook convention applies to a RETURNS distribution where a loss is
+        negative. This document's variance metric (Δ) is already signed the other way — positive
+        means unfavorable — so <b>addition is actually the correct operation for this metric's own
+        sign convention</b>, not an error to silently copy or silently "fix" against the wrong
+        precedent. And Theil's Inequality Coefficient is real and correctly bounded [0,1], but the
+        claim that 1 means "as bad as a naive forecast" belongs to a different, unrelated formula
+        (Theil's U2) — U1 (the one actually given) is a documented poor discriminator of forecast
+        quality and isn't built here. Separately, <b>"Cost-FMEA" and "CRPN" are not established
+        named frameworks</b> — the underlying practice (classic FMEA's Probability × Severity ×
+        Detection Risk Priority Number, with dollar-banded severity) is real, but that specific
+        branding is the document's own, labeled as such rather than implied as a citable standard.
+        The risk register's 10 CRPN scores (P × S × D) all reproduce exactly by hand. The recurring
+        "1,520 test fixtures" figure and the unconfirmed Project Kuiper/Amazon Robotics/AWS client
+        relationship both appear again — same exclusion treatment, and all such references were
+        genericized in the built modules below.</p>
+    </div>
   </section>
 
   <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
@@ -835,7 +997,11 @@
     vosv: { title: 'Variable Overhead Spending Variance (VOSV)', formula: 'VOSV = Actual Variable OH − (Actual Hours × Standard Variable OH Rate)', body: 'Isolates whether consumables (coolant, shielding gas, cutting-tool wear) cost more or less per hour than the standard rate assumed, for the hours actually run.' },
     fohv: { title: 'Fixed Overhead Volume Variance (FOHV)', formula: 'FOHV = (Budgeted Hours − Actual Hours) × Standard Fixed OH Rate', body: 'Not a spending variance at all — it is the P&L cost of running fewer or more hours than the volume the fixed-overhead rate assumed, i.e. unabsorbed (or over-absorbed) capacity.' },
     mdqs: { title: 'Master Data Quality Scorecard (MDQS)', formula: 'MDQS = 100% − (30%·routing_err_rate + 30%·confirm_var_rate + 25%·unlinked_scrap_rate + 15%·stale_standard_rate)', body: 'A single weighted score across four independent data-quality signals, banded green ≥98% / amber 93–98% / red <93% — the same formula the Governance tab computes live, sourced from a downloaded document’s own real, well-defined SAP data-governance model.' },
-    mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'Standing cost is a capital/facility question, spread over how many hours the machine is actually expected to run. Running cost is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab.' }
+    mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'Standing cost is a capital/facility question, spread over how many hours the machine is actually expected to run. Running cost is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab.' },
+    learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
+    crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
+    mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
+    ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1035,6 +1201,33 @@
   }
   window.calcCommodityExposure = calcCommodityExposure;
   ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcCommodityExposure); });
+
+  // ---------- Mean-Reversion Forward Band (Ornstein-Uhlenbeck) ----------
+  // Uses the current spot price (cpSpot) above as the process's starting point P_t.
+  function calcOuForward(){
+    var Pt = parseFloat(document.getElementById('cpSpot').value) || 0;
+    var Pbar = parseFloat(document.getElementById('ouEquilibrium').value) || 0;
+    var theta = parseFloat(document.getElementById('ouTheta').value) || 0;
+    var sigma = parseFloat(document.getElementById('ouSigma').value) || 0;
+    var dt = parseFloat(document.getElementById('ouHorizon').value) || 1;
+
+    var expected = Pbar + (Pt - Pbar) * Math.exp(-theta * dt);
+    var variance = theta > 0 ? (Math.pow(sigma, 2) / (2 * theta)) * (1 - Math.exp(-2 * theta * dt)) : 0;
+    var stdDev = Math.sqrt(variance);
+    var Z_TWO_SIDED_95 = 1.96; // two-sided normal critical value -- a forecast BAND, distinct from
+                               // the one-sided M-VaR convention used on the Predictive & Risk tab.
+    var lower = expected - Z_TWO_SIDED_95 * stdDev;
+    var upper = expected + Z_TWO_SIDED_95 * stdDev;
+
+    document.getElementById('ouExpected').textContent = '$' + expected.toFixed(2);
+    document.getElementById('ouStdDev').textContent = '$' + stdDev.toFixed(2);
+    document.getElementById('ouBand').textContent = '$' + lower.toFixed(2) + ' – $' + upper.toFixed(2);
+    return { expected: expected, variance: variance, stdDev: stdDev, lower: lower, upper: upper };
+  }
+  window.calcOuForward = calcOuForward;
+  ['cpSpot', 'ouEquilibrium', 'ouTheta', 'ouSigma', 'ouHorizon'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcOuForward);
+  });
 
   // ---------- Tab 4: Build-vs-Buy / NPV ----------
   function calcBuildBuy(){
@@ -1529,6 +1722,119 @@
   document.getElementById('pbDomain').addEventListener('change', renderPlaybook);
   document.getElementById('pbSearch').addEventListener('input', renderPlaybook);
 
+  // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
+  function calcLearningCurve(){
+    var a = parseFloat(document.getElementById('lcFirstArticle').value) || 0;
+    var phiPct = parseFloat(document.getElementById('lcLearningRate').value) || 0;
+    var M = parseFloat(document.getElementById('lcBatchStart').value) || 0;
+    var N = parseFloat(document.getElementById('lcBatchSize').value) || 1;
+    var rate = parseFloat(document.getElementById('lcLaborRate').value) || 0;
+    var phi = phiPct / 100;
+
+    var b = phi > 0 ? Math.log(phi) / Math.log(2) : 0;
+    var exp = b + 1;
+    var totalHours = (a / exp) * (Math.pow(M + N, exp) - Math.pow(M, exp));
+    var avgUnitTime = N > 0 ? totalHours / N : 0;
+    var totalCost = totalHours * rate;
+    var distortion = (avgUnitTime - a) * rate * N; // negative = a fake "favorable" variance if a
+                                                     // static Unit-1 standard were kept unrevised.
+
+    document.getElementById('lcB').textContent = b.toFixed(4);
+    document.getElementById('lcTotalHours').textContent = totalHours.toFixed(2) + ' hrs';
+    document.getElementById('lcAvgUnitTime').textContent = avgUnitTime.toFixed(2) + ' hrs';
+    document.getElementById('lcTotalCost').textContent = '$' + totalCost.toFixed(2);
+    document.getElementById('lcDistortion').textContent = fmtMoney(distortion) + (distortion < 0 ? ' (fake favorable)' : '');
+    return { b: b, totalHours: totalHours, avgUnitTime: avgUnitTime, totalCost: totalCost, distortion: distortion };
+  }
+  window.calcLearningCurve = calcLearningCurve;
+  ['lcFirstArticle', 'lcLearningRate', 'lcBatchStart', 'lcBatchSize', 'lcLaborRate'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcLearningCurve);
+  });
+
+  // ---------- Cost Risk Register (CRPN = Probability x Severity x Detection) ----------
+  var RISK_REGISTER = [
+    { id: 'RSK-01', event: 'Raw Alloy Spot-Buy Premium (Material Price)', p: 4, s: 4, d: 2,
+      root: 'Expedited internal engineering-program revisions bypass long-lead mill blanket agreements.',
+      mitigation: 'Aggregate 12-month demand across internal client programs; execute indexed blanket purchasing tied to LME baselines.' },
+    { id: 'RSK-02', event: 'Spindle Starvation / Under-Absorption (Overhead)', p: 3, s: 5, d: 3,
+      root: 'Machine tools sit idle during prototype CAD freezes; fixed depreciation remains unabsorbed.',
+      mitigation: 'Deploy automated capacity forecasting; schedule secondary qualification batches and modular soft fixturing to absorb available hours.' },
+    { id: 'RSK-03', event: 'Additive Recoater Collision & Build Crash (Scrap)', p: 3, s: 4, d: 1,
+      root: 'Thermal residual stress causes thin-walled features to warp into the path of the recoater blade.',
+      mitigation: 'Mandate finite-element thermal stress simulation before build release; add sacrificial support anchors on high-aspect-ratio overhangs.' },
+    { id: 'RSK-04', event: 'Stale Routing Standard Drift (Labor Efficiency)', p: 4, s: 3, d: 4,
+      root: 'Cycle times remain uncalibrated in SAP following toolpath optimizations, generating distorted variances.',
+      mitigation: 'Deploy automated SQL linting flagging routings where actual hours deviate >10% over three runs; trigger recalibration sprints.' },
+    { id: 'RSK-05', event: 'Premature Carbide Tool Wear (Variable Overhead)', p: 4, s: 2, d: 2,
+      root: 'Operators apply feed-rate overrides without compensation during hard-metal cutting, chipping insert edges.',
+      mitigation: 'Lock console overrides above 100% on high-temp alloys; integrate spindle vibration/torque monitoring.' },
+    { id: 'RSK-06', event: 'Manual Deburring Labor Explosion (Labor Touch)', p: 5, s: 2, d: 3,
+      root: 'CAM programs omit edge-breaking toolpaths, shifting deburring to manual hand work.',
+      mitigation: 'Add automated deburring toolpaths and tumbling cycles to CAM masters; barcode-track labor standards at finishing benches.' },
+    { id: 'RSK-07', event: 'Inaccurate Tooling Amortization (Capital Decay)', p: 2, s: 4, d: 4,
+      root: 'Dedicated fixtures expensed upfront against single batches rather than amortized across programs.',
+      mitigation: 'Standardize zero-point modular fixturing bases; create serialized fixture assets amortized across projected program life.' },
+    { id: 'RSK-08', event: 'High-Mix Setup Time Inconsistency (Conversion)', p: 4, s: 3, d: 2,
+      root: 'Prototype runs require manual fixture alignment without preset tooling.',
+      mitigation: 'Implement SMED standardization; equip CNC tool holders with RFID tags for automated offset loading.' },
+    { id: 'RSK-09', event: 'Additive Powder Oxygen Contamination (Feedstock)', p: 2, s: 4, d: 3,
+      root: 'Ultrasonic sieve screen tears allow particulate agglomeration, failing internal powder-reuse quality checks.',
+      mitigation: 'Install digital differential-pressure sensors on sieves; track powder lot genealogies and lock reuse limits.' },
+    { id: 'RSK-10', event: 'Quoting-to-Actual COGS Prediction Drift (Margin)', p: 4, s: 3, d: 3,
+      root: 'Quoting models rely on theoretical CAD algorithms that omit inspection, setup, and finishing cycles.',
+      mitigation: 'Implement an automated closed-loop should-cost quoting engine calibrated against closed work-order actuals.' }
+  ];
+  var CRPN_ESCALATION_THRESHOLD = 25; // source document's own stated governance rule
+  function crpnBand(crpn){ return crpn >= CRPN_ESCALATION_THRESHOLD ? 'red' : 'green'; }
+  function renderRiskRegister(){
+    var rows = RISK_REGISTER.map(function(r){
+      var crpn = r.p * r.s * r.d;
+      var band = crpnBand(crpn);
+      return '<tr><td class="mono">' + r.id + '</td><td>' + r.event +
+        '<div style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:4px"><b>Root cause:</b> ' + r.root + '<br><b>Mitigation:</b> ' + r.mitigation + '</div></td>' +
+        '<td class="mono">' + r.p + '</td><td class="mono">' + r.s + '</td><td class="mono">' + r.d + '</td>' +
+        '<td class="mono">' + crpn + '</td><td><span class="status-pill ' + band + '">' + (band === 'red' ? 'ESCALATE' : 'MONITOR') + '</span></td></tr>';
+    }).join('');
+    document.getElementById('riskRegisterBody').innerHTML = rows;
+  }
+  window.RISK_REGISTER = RISK_REGISTER;
+  window.renderRiskRegister = renderRiskRegister;
+
+  function calcRiskScorer(){
+    var p = parseFloat(document.getElementById('riskP').value) || 0;
+    var s = parseFloat(document.getElementById('riskS').value) || 0;
+    var d = parseFloat(document.getElementById('riskD').value) || 0;
+    var crpn = p * s * d;
+    var band = crpnBand(crpn);
+    document.getElementById('riskScoreOut').textContent = String(crpn);
+    document.getElementById('riskScoreBand').innerHTML = '<span class="status-pill ' + band + '">' + (band === 'red' ? 'ESCALATE (RCCA required)' : 'MONITOR') + '</span>';
+    return { crpn: crpn, band: band };
+  }
+  window.calcRiskScorer = calcRiskScorer;
+  ['riskP', 'riskS', 'riskD'].forEach(function(id){ document.getElementById(id).addEventListener('change', calcRiskScorer); });
+
+  // ---------- Manufacturing Value at Risk (M-VaR) ----------
+  // One-sided upper confidence bound on an already-signed "unfavorable = positive" variance
+  // metric -- NOT textbook portfolio-returns VaR (which subtracts Z*sigma from a returns mean).
+  // See the Methodology tab for why addition is the correct operation for THIS metric's sign
+  // convention, independently verified rather than copied from the source document's own framing.
+  var MVAR_Z = { '95': 1.645, '99': 2.326 };
+  function calcMVaR(){
+    var mu = parseFloat(document.getElementById('mvarMu').value) || 0;
+    var sigma = parseFloat(document.getElementById('mvarSigma').value) || 0;
+    var confidence = document.getElementById('mvarConfidence').value;
+    var z = MVAR_Z[confidence] || 0;
+    var mvar = mu + z * sigma;
+    document.getElementById('mvarZ').textContent = z.toFixed(3);
+    document.getElementById('mvarOut').textContent = '$' + mvar.toFixed(2);
+    return { z: z, mvar: mvar };
+  }
+  window.calcMVaR = calcMVaR;
+  ['mvarMu', 'mvarSigma', 'mvarConfidence'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcMVaR);
+    document.getElementById(id).addEventListener('change', calcMVaR);
+  });
+
   // ---------- Initial render ----------
   calcMhrBuildup();
   calcShouldCost();
@@ -1541,7 +1847,12 @@
   calcMdqs();
   calcGates();
   calcCommodityExposure();
+  calcOuForward();
   renderPlaybook();
+  calcLearningCurve();
+  renderRiskRegister();
+  calcRiskScorer();
+  calcMVaR();
 })();
 </script>
 </body>
