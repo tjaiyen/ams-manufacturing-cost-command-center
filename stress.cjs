@@ -591,6 +591,40 @@ elements.pbSearch.value = "";
 sandbox.renderPlaybook();
 check(elements.pbCount.textContent === "Showing 30 of 30 scenarios", "clearing the search restores all 30 scenarios (filter state isn't sticky/broken)", elements.pbCount.textContent);
 
+console.log("--- KPI research round (2026-09-05): Buy-to-Fly threshold correction + threshold-scale redesign ---");
+// A 7-agent research pass cross-checked all 30 Playbook KPIs against published industry evidence.
+// Buy-to-Fly / Swarf-to-Solid Ratio was the one confirmed miscalibration: the original <=4.0:1 green
+// ceiling sat below the low end of every published aerospace-titanium buy-to-fly range found (real
+// figures run 6:1-20:1+, averaging ~11:1) -- widened here to bracket the real average.
+const buyToFlyEntry = sandbox.PLAYBOOK.filter((p) => p.code === "MAT-02")[0];
+check(!!buyToFlyEntry, "found the Buy-to-Fly / Swarf-to-Solid Ratio playbook entry (MAT-02)");
+if (buyToFlyEntry) {
+  check(buyToFlyEntry.green === "≤10.0:1", "Buy-to-Fly green threshold corrected to bracket the real ~11:1 industry average, not the original (too-strict) 4.0:1", buyToFlyEntry.green);
+  check(buyToFlyEntry.amber === "10.1–16.0:1", "Buy-to-Fly amber threshold corrected", buyToFlyEntry.amber);
+  check(buyToFlyEntry.red === ">16.0:1", "Buy-to-Fly red threshold corrected", buyToFlyEntry.red);
+}
+check(!html.includes(".pb-thresholds"), "the old three-separate-badge .pb-thresholds display was fully replaced, not left as dead CSS alongside the new one");
+check(html.includes(".pb-scale{"), "the new consolidated banded-scale CSS exists");
+check(html.includes('class="zone-green"') && html.includes('class="zone-amber"') && html.includes('class="zone-red"'), "renderPlaybook's own template references all three zone classes (confirms the redesign is actually wired in, not just styled-but-unused CSS)");
+
+console.log("--- KPI research round (2026-09-05): Methodology-tab research disclosure card ---");
+check(html.includes("A research pass on the 30-scenario Playbook's own KPIs"), "found the card documenting this round's KPI research pass and the Buy-to-Fly correction");
+
+console.log("--- KPI research round (2026-09-05): Quality/Scrap Cost Pareto chart (research-recommended chart type, built from real already-computed figures) ---");
+check(typeof sandbox.renderQualityParetoChart === "function", "window.renderQualityParetoChart is exposed as a function");
+const paretoData = sandbox.renderQualityParetoChart();
+check(paretoData.items.length === 3, "Pareto chart covers exactly the 3 quality/scrap-adjacent scenarios", paretoData.items.length);
+check(paretoData.items.map((it) => it.code).join(",") === "QLT-04,QLT-01,QLT-02", "items are correctly sorted descending by dollar exposure (Build Failure Amortization $7,862 > Defect Sunk Scrap $7,350 > Rework Conversion $4,090.50)", paretoData.items.map((it) => it.code).join(","));
+check(Math.abs(paretoData.items[0].value - 7862) < 0.01, "Build Failure Amortization Factor's extracted dollar value matches its own printed result ($7,862), not a re-typed number", paretoData.items[0].value);
+check(Math.abs(paretoData.items[1].value - 7350) < 0.01, "Defect Sunk Scrap Cost Drag's extracted dollar value matches its own printed result ($7,350)", paretoData.items[1].value);
+check(Math.abs(paretoData.items[2].value - 4090.5) < 0.01, "Rework Conversion Surcharge's extracted dollar value matches its own printed result ($4,090.50)", paretoData.items[2].value);
+check(Math.abs(paretoData.total - 19302.5) < 0.01, "total exposure across the 3 scenarios matches the pre-registered golden value (verified via Node before this check was written)", paretoData.total);
+check(Math.abs(paretoData.cumPoints[0].pct - 40.73047532703018) < 0.0001, "first cumulative-% point matches the pre-registered golden value", paretoData.cumPoints[0].pct);
+check(Math.abs(paretoData.cumPoints[1].pct - 78.80844450200752) < 0.0001, "second cumulative-% point matches the pre-registered golden value", paretoData.cumPoints[1].pct);
+check(Math.abs(paretoData.cumPoints[2].pct - 100) < 0.0001, "final cumulative-% point reaches exactly 100%", paretoData.cumPoints[2].pct);
+check(elements.qualityParetoWrap.innerHTML.includes("<svg"), "the Pareto chart actually rendered an <svg> element into the page, not just returned numbers");
+check(elements.qualityParetoWrap.innerHTML.includes("$7,862") && elements.qualityParetoWrap.innerHTML.includes("$7,350") && elements.qualityParetoWrap.innerHTML.includes("$4,091"), "the rendered SVG labels all 3 bars with their real dollar values", elements.qualityParetoWrap.innerHTML.match(/\$[\d,]+/g));
+
 console.log("--- Learning Curve Forecaster: golden values (pre-registered via Python/Node, matching a corrected recompute of the source document's own worked example) ---");
 // The source document's own worked example ($3,345.75) has a real ~0.4% arithmetic slip -- this
 // dashboard's golden value is the independently re-derived correct figure, not a copy of theirs.

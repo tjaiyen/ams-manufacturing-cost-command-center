@@ -222,8 +222,12 @@
   .pb-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;flex-wrap:wrap}
   .pb-code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:rgb(var(--c-text-secondary))}
   .pb-q{font-size:13.5px;font-weight:700;margin:2px 0 8px}
-  .pb-thresholds{display:flex;gap:6px;font-size:10px;flex-wrap:wrap;margin-bottom:10px}
-  .pb-thresholds span{padding:2px 8px;border-radius:99px;font-family:ui-monospace,Menlo,monospace;font-weight:700}
+  .pb-scale{display:flex;border-radius:8px;overflow:hidden;font-size:10px;font-family:ui-monospace,Menlo,monospace;
+    font-weight:700;margin-bottom:10px;border:1px solid var(--c-line)}
+  .pb-scale>div{flex:1 1 0;min-width:0;padding:4px 6px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pb-scale .zone-green{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
+  .pb-scale .zone-amber{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
+  .pb-scale .zone-red{background:rgb(var(--c-danger)/.15);color:rgb(var(--c-danger))}
   .pb-row{font-size:12.5px;color:rgb(var(--c-text-secondary));margin:5px 0}
   .pb-row b{color:rgb(var(--c-text-primary))}
   .pb-formula{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:rgb(var(--c-accent));background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;margin:8px 0}
@@ -290,7 +294,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 400/400 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 420/420 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
@@ -807,6 +811,15 @@
       every dollar figure is an illustrative worked example, not AMS's real numbers. See the
       Methodology tab for sourcing and for what changed from the source document.</p>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><h2>Where quality/scrap cost concentrates (Pareto)</h2></div>
+      <p class="lede" style="margin-bottom:10px">The three scrap/quality-adjacent scenarios below
+        (Q5, Q10, Q14), ranked by their own already-computed dollar exposure — a Pareto chart is the
+        established ASQ/Juran root-cause-prioritization tool for exactly this question. Built from
+        real figures already on this page; nothing new invented for this view.</p>
+      <div id="qualityParetoWrap"></div>
+    </div>
+
     <div class="pb-controls">
       <select id="pbDomain" aria-label="Filter by domain">
         <option value="all">All domains (30)</option>
@@ -980,7 +993,7 @@
         <li><span class="srctag real">REAL</span> Standard-cost variance formulas (MPV/MQV/DLRV/DLEV/VOSV/FOHV) — textbook cost-accounting definitions, not AMS-specific.</li>
         <li><span class="srctag real">REAL</span> SMED (Single-Minute Exchange of Die) — Shigeo Shingo's 1950s Toyota/Mazda changeover-reduction methodology, typically cuts changeover time 50–80% (<a href="https://en.wikipedia.org/wiki/Single-minute_exchange_of_die">Wikipedia</a>, <a href="https://tractian.com/en/glossary/single-minute-exchange-of-dies-smed">Tractian</a>).</li>
         <li><span class="srctag real">REAL</span> MTConnect and OPC-UA — genuine, actively-used CNC machine telemetry protocols (<a href="https://www.ptc.com/en/technologies/iiot/industrial-automation/mtconnect">PTC</a>, <a href="https://www.mmsonline.com/columns/the-difference-between-mtconnect-and-opc-ua">Modern Machine Shop</a>) — real terminology, not a claim about AMS's specific telemetry stack.</li>
-        <li><span class="srctag real">REAL</span> Aerospace titanium buy-to-fly ratios of 6:1+ — the real reported range is 6:1 to 16:1+ (average ~11:1), so this figure is on the conservative end of real industry norms, not inflated.</li>
+        <li><span class="srctag real">REAL</span> Aerospace titanium buy-to-fly ratios of 6:1+ — the real reported range is 6:1 to 20:1+ (average ~11:1; complex parts commonly cited up to 25–30:1 — widened 2026-09-05 from an earlier, narrower 16:1+ estimate after a second independent research pass found sources citing higher upper bounds), so this figure is on the conservative end of real industry norms, not inflated.</li>
         <li><span class="srctag real">REAL</span> SAP Movement Type 551 — the actual SAP transaction code for goods-issue-for-scrap (<a href="https://community.sap.com/t5/enterprise-resource-planning-q-a/movement-type-551/qaq-p/3552926">SAP Community</a>).</li>
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> The Design-for-Cost sensitivity model (wall thickness / pocket depth / build height penalties) — an illustrative heuristic built for this exercise, not a physics-based cost simulation or a claim about how AMS's actual DFM feedback works.</li>
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> Every dollar figure on the Executive, Should-Cost, Variance, and Build-vs-Buy tabs — invented worked-example numbers, editable by design. Not AMS's real costs.</li>
@@ -1208,6 +1221,35 @@
         already open. Same discipline as every prior round: the fix isn't the deliverable, the
         re-verified fix is — see <code>stress.cjs</code> for the checks written specifically to
         prove each one, not just that nothing crashed.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A research pass on the 30-scenario Playbook's own KPIs — one real miscalibration found and fixed</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">Every one of the Cost Diagnostic
+        Playbook's 30 KPIs was cross-checked against published industry evidence (7 independent
+        research passes, each requiring ≥2 corroborating sources and a disconfirming search before
+        accepting a figure). The headline finding, true across nearly all 30: the underlying
+        <b>concepts</b> are overwhelmingly real, named disciplines — standard-costing variance
+        analysis, machine-hour-rate costing, TPM/OEE, SMED, Activity-Based Costing (Cooper &amp;
+        Kaplan's 1988 <i>Harvard Business Review</i> founding argument, which the Asset Capital
+        Burden Index KPI directly implements), should-cost modeling (a codified DFARS acquisition
+        practice), and GAAP units-of-production depreciation — but the specific
+        <b>green/amber/red numeric threshold bands are, with two exceptions, internal calibrations
+        with no traceable external benchmark.</b> This isn't unique to this dashboard: multiple
+        sources (including a veteran <i>Modern Machine Shop</i> columnist on spindle utilization)
+        state outright that most shop-floor cost thresholds are legitimately shop-specific, not
+        universal — so read every threshold on this page as "this build's working target," not "an
+        audited industry standard," unless a scenario says otherwise. One KPI's thresholds were
+        confirmed genuinely miscalibrated against real data and corrected here: the
+        <b>Buy-to-Fly / Swarf-to-Solid Ratio</b>'s original ≤4.0:1 "green" ceiling sat below the low
+        end of every published aerospace-titanium buy-to-fly range found (real figures commonly run
+        6:1–20:1+, averaging ~11:1) — widened to ≤10.0:1 / 10.1–16.0:1 / &gt;16.0:1 to bracket the
+        real average with headroom for genuinely poor outliers. By contrast, First-Pass Sheet
+        Nesting Yield's thresholds (≥85% / 75–84.9% / &lt;75%) matched published fabrication-industry
+        benchmarks almost exactly and needed no change. Two areas came back genuinely contradictory
+        across sources rather than settled — metal-powder reuse rates and metal-AM build-failure
+        rates — reported as unresolved rather than forced to a single number. Full findings,
+        source-by-source, are filed in the vault dated 2026-09-05.</p>
     </div>
   </section>
 
@@ -2017,7 +2059,12 @@
       gl: 'Purchase Price Variance account',
       action: 'Debit the variance to the PPV account; sourcing consolidates quarterly alloy demand to expand blanket-agreement coverage.' },
     { num: 2, domain: 'material', code: 'MAT-02', kpi: 'Buy-to-Fly / Swarf-to-Solid Ratio',
-      green: '≤4.0:1', amber: '4.1–6.0:1', red: '>6.0:1',
+      // Corrected 2026-09-05: independently verified published aerospace-titanium buy-to-fly ranges
+      // run 6:1-20:1+ (average ~11:1; complex parts commonly cited up to 25-30:1) -- the original
+      // ≤4.0:1/4.1-6.0:1/>6.0:1 bands sat below the low end of every real range found, which would
+      // flag a typical real part "red" even at industry-average performance. Widened to bracket the
+      // ~11:1 average with headroom for genuinely poor outliers. See Methodology tab.
+      green: '≤10.0:1', amber: '10.1–16.0:1', red: '>16.0:1',
       q: 'Why has the buy-to-fly ratio on a billet-milled part blown past the engineering release limit?',
       root: 'CAM selected an oversized raw-stock blank after an extrusion stockout, machining most of the billet into chips.',
       formula: 'Buy-to-Fly = M_gross / M_net · MQV = (AQ − SQ) × SP',
@@ -2300,10 +2347,10 @@
       return '<div class="pb-card">' +
         '<div class="pb-card-head"><span class="pb-code">Q' + item.num + ' · ' + item.code + ' · ' + (PB_DOMAIN_LABELS[item.domain] || item.domain) + '</span></div>' +
         '<div class="pb-q">' + item.kpi + '</div>' +
-        '<div class="pb-thresholds">' +
-          '<span style="background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))">GREEN ' + item.green + '</span>' +
-          '<span style="background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))">AMBER ' + item.amber + '</span>' +
-          '<span style="background:rgb(var(--c-danger)/.15);color:rgb(var(--c-danger))">RED ' + item.red + '</span>' +
+        '<div class="pb-scale" title="A qualitative three-zone scale, not a measured gauge — segment widths are equal by design, not proportional to the underlying units (units vary by KPI: %, ratio, $, or count). See the Methodology tab on why these bands are internal calibrations, not external industry benchmarks.">' +
+          '<div class="zone-green">GREEN ' + item.green + '</div>' +
+          '<div class="zone-amber">AMBER ' + item.amber + '</div>' +
+          '<div class="zone-red">RED ' + item.red + '</div>' +
         '</div>' +
         '<p class="pb-row"><b>Question: </b>' + item.q + '</p>' +
         '<p class="pb-row"><b>Root cause pattern: </b>' + item.root + '</p>' +
@@ -2321,6 +2368,62 @@
   window.renderPlaybook = renderPlaybook;
   document.getElementById('pbDomain').addEventListener('change', renderPlaybook);
   document.getElementById('pbSearch').addEventListener('input', renderPlaybook);
+
+  // ---------- Quality/Scrap Cost Pareto (research-recommended chart type for these 3 KPIs,
+  // 2026-09-05: Pareto charts are the established ASQ/Juran root-cause-prioritization tool for
+  // exactly this question -- "which failure mode dominates cost exposure"). Built from the three
+  // scrap/quality-adjacent scenarios' own already-computed dollar results above -- no new figures
+  // invented for this chart, same never-fabricate discipline as everywhere else on this page. ----------
+  function renderQualityParetoChart(){
+    var codes = ['QLT-04', 'QLT-01', 'QLT-02'];
+    var items = codes.map(function(code){
+      var item = PLAYBOOK.filter(function(p){ return p.code === code; })[0];
+      var m = item.result.match(/\+\$([\d,.]+)/);
+      return { code: code, kpi: item.kpi, num: item.num, value: m ? parseFloat(m[1].replace(/,/g, '')) : 0 };
+    });
+    items.sort(function(a, b){ return b.value - a.value; });
+    var total = items.reduce(function(s, it){ return s + it.value; }, 0);
+    var cum = 0;
+    var cumPoints = items.map(function(it){ cum += it.value; return { pct: total > 0 ? (cum / total) * 100 : 0 }; });
+
+    var W = 600, H = 260, marginLeft = 55, marginRight = 30, marginTop = 24, marginBottom = 68;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var barGap = 30, barW = (plotW - barGap * (items.length - 1)) / items.length;
+    var maxVal = Math.max.apply(null, items.map(function(it){ return it.value; })) * 1.15;
+    function barX(i){ return marginLeft + i * (barW + barGap); }
+    function barY(val){ return marginTop + (1 - val / maxVal) * plotH; }
+    function cumY(pct){ return marginTop + (1 - pct / 100) * plotH; }
+    function truncLabel(s){ return s.length > 24 ? (s.slice(0, 23) + '…') : s; }
+
+    var bars = items.map(function(it, i){
+      var x = barX(i), y = barY(it.value), h = (marginTop + plotH) - y;
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="rgb(var(--c-accent)/.75)"/>' +
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">$' + Math.round(it.value).toLocaleString() + '</text>' +
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + plotH + 16) + '" font-size="9.5" fill="rgb(var(--c-text-secondary))" text-anchor="middle">Q' + it.num + '</text>' +
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + plotH + 30) + '" font-size="9" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + truncLabel(it.kpi) + '</text>';
+    }).join('');
+
+    var linePoints = cumPoints.map(function(cp, i){
+      return (i === 0 ? 'M' : 'L') + (barX(i) + barW / 2).toFixed(1) + ',' + cumY(cp.pct).toFixed(1);
+    }).join(' ');
+    var dots = cumPoints.map(function(cp, i){
+      var x = barX(i) + barW / 2, y = cumY(cp.pct);
+      return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="rgb(var(--c-warning))"/>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y - 8).toFixed(1) + '" font-size="9.5" fill="rgb(var(--c-warning))" text-anchor="middle">' + cp.pct.toFixed(0) + '%</text>';
+    }).join('');
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Pareto chart of the three quality and scrap cost scenarios ranked by dollar exposure, with a cumulative percentage line">' +
+      '<line x1="' + marginLeft + '" y1="' + (marginTop + plotH) + '" x2="' + (W - marginRight) + '" y2="' + (marginTop + plotH) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (marginTop + plotH) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      bars +
+      '<path d="' + linePoints + '" fill="none" stroke="rgb(var(--c-warning))" stroke-width="1.5" stroke-dasharray="4,3"/>' +
+      dots +
+      '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Dollar exposure (bars) · cumulative % (dashed line)</text>' +
+      '</svg>';
+    document.getElementById('qualityParetoWrap').innerHTML = svg;
+    return { items: items, total: total, cumPoints: cumPoints };
+  }
+  window.renderQualityParetoChart = renderQualityParetoChart;
 
   // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
   function calcLearningCurve(){
@@ -2452,6 +2555,7 @@
   calcCommodityExposure();
   calcOuForward();
   renderPlaybook();
+  renderQualityParetoChart();
   calcLearningCurve();
   renderRiskRegister();
   calcRiskScorer();

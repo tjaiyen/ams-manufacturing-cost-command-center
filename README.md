@@ -413,7 +413,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 400 checks, all passing as of this writing.
+Run: `node stress.cjs` — 420 checks, all passing as of this writing.
 
 ## Status
 
@@ -467,5 +467,26 @@ overflowed at 375px after the grid fix (fixed with `overflow-wrap:anywhere`), an
 from one modal to another stranded the return-focus target on the first modal's own control instead
 of the real pre-modal trigger (fixed in `openModal`). This repo's DOM-stub test harness was also
 upgraded to actually exercise focus tracking and a controllable `matchMedia` mock, closing two
-real testing gaps rather than accepting them as permanent limitations. Checks: 357 → 400. Committed
-locally — pending push with explicit confirmation, same discipline as every prior round.
+real testing gaps rather than accepting them as permanent limitations. Checks: 357 → 400. Pushed live.
+
+**2026-09-05, eleventh round (KPI research pass on the Cost Diagnostic Playbook):** all 30 Playbook
+KPIs were cross-checked against published industry evidence via 7 independent research passes (6
+KPI-domain clusters + one on dashboard-visualization practice), each requiring ≥2 corroborating
+sources and a disconfirming search before accepting a figure. Headline finding: the underlying
+concepts are overwhelmingly real, named disciplines (standard-costing variance analysis, MHR
+costing, TPM/OEE, SMED, Activity-Based Costing, should-cost modeling, GAAP units-of-production
+depreciation) but the specific green/amber/red numeric thresholds are, with two exceptions,
+internal calibrations with no traceable external benchmark — stated explicitly now in a new
+Methodology-tab card rather than left implied. One confirmed miscalibration, fixed: the Buy-to-Fly
+/ Swarf-to-Solid Ratio's original ≤4.0:1 green ceiling sat below every published aerospace-titanium
+range found (real range 6:1–20:1+, average ~11:1) — widened to ≤10.0:1/10.1–16.0:1/&gt;16.0:1, and an
+earlier, narrower 16:1+ estimate elsewhere on the Methodology tab was reconciled to match. Also
+shipped: the 30 Playbook cards' three separate threshold badges were consolidated into one compact
+banded scale per card (a bullet-graph-inspired visual consolidation, without fabricating a
+per-scenario numeric needle position across 30 heterogeneous units); and a small Pareto chart was
+added for the three scrap/quality-adjacent scenarios (Defect Sunk Scrap Cost Drag, Build Failure
+Amortization Factor, Rework Conversion Surcharge), built entirely from real, already-computed
+dollar figures already on the page — Pareto charts are the established ASQ/Juran tool for exactly
+this root-cause-prioritization question. Full findings filed in the vault, dated 2026-09-05. Checks:
+400 → 420. Committed locally — pending push with explicit confirmation, same discipline as every
+prior round.
