@@ -41,6 +41,50 @@ check((html.match(/data-tooltip="/g) || []).length >= 12, "at least 12 collapsed
 check(html.includes('id="contrastBtn"') && html.includes('aria-pressed='), "the High-Contrast toggle exists and exposes its state via aria-pressed (real accessibility feature, not decorative)");
 check(html.includes('data-contrast="true"') && html.includes(':focus-visible{ outline-width:3px'), "High-Contrast mode has real CSS behind it (boosted secondary-text contrast + thicker focus rings), not just a button with no effect");
 
+console.log("--- Stress-test round (2026-09-05) fix 1: responsive grids never force horizontal overflow ---");
+// A stress-test found `minmax(320px,1fr)` never shrinks below 320px even on a viewport narrower than
+// that -- reproduced live at 375px (grid.cols-2 forced horizontal scroll). Fixed with minmax(min(Npx,
+// 100%),1fr), which lets the track shrink to the viewport instead. Checking the exact rule text (not
+// just "mentions minmax") so a future edit that silently drops the min() wrapper is caught.
+check(html.includes(".grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}"), "cols-4 grid track floor is wrapped in min(220px,100%) so it can shrink on a narrower-than-220px viewport instead of forcing overflow");
+check(html.includes(".grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}"), "cols-3 grid uses the same overflow-safe min() pattern");
+check(html.includes(".grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}"), "cols-2 grid uses the same overflow-safe min() pattern (this was the specific rule that reproduced the 375px overflow)");
+
+console.log("--- Stress-test round (2026-09-05) fix 2: every collapsed-mode nav control has a real accessible name ---");
+// In collapsed mode the .sidenav-label text is display:none and the tooltip is a CSS ::after
+// pseudo-element -- neither is in the accessibility tree, so a screen reader announced these 12
+// buttons (plus 3 footer controls) with no name at all. Fixed via aria-label on each.
+const sidenavItemAriaLabelCount = (html.match(/class="sidenav-item"[^>]*aria-label="[^"]+"/g) || []).length;
+check(sidenavItemAriaLabelCount === 12, "all 12 side-nav item buttons carry a real aria-label, not just a CSS-only tooltip/label", sidenavItemAriaLabelCount);
+check(html.includes('aria-label="High Contrast"'), "the High-Contrast toggle carries a real aria-label independent of its CSS-hideable .label-text span");
+check(html.includes('aria-label="Toggle theme"'), "the theme toggle carries a real aria-label independent of its CSS-hideable .label-text span");
+check(html.includes('aria-label="Fit brief (opens in the same tab)"'), "the Fit-brief footer link carries a real aria-label independent of its CSS-hideable .label-text span");
+check(/id="sidenavToggle"[^>]*aria-controls="sidenav"/.test(html), "the collapse toggle's aria-controls correctly points at the real #sidenav id");
+
+console.log("--- Stress-test round (2026-09-05) fix 7: dead CSS removed ---");
+check(!html.includes(".kpi-foot.bad"), "the dead .kpi-foot.bad rule (no element in the page ever carries that class combination) was removed");
+check(!html.includes(",.tabular{"), "the dead .tabular class name (never applied to any element) was dropped from the code/.mono/.tabular selector list");
+check(html.includes("code,.mono{"), "the code/.mono selector list still carries the classes that ARE actually used (71 .mono usages), confirming the fix trimmed the dead class without breaking the live one");
+
+console.log("--- Stress-test round (2026-09-05) finding 11 (found during this round's own live-browser re-verify, not in the original 10): a long inline <code> string overflowed at 375px ---");
+// Found live at a 375px viewport while re-verifying fix 1 (the grid overflow) on every tab -- the
+// Methodology tab's own <code>hookSpecificOutput.permissionDecision</code> is 38 characters of
+// monospace text with no wrap opportunity, overflowing the page by 13px (scrollWidth 388 vs
+// clientWidth 375) even though the grid fix itself was already working correctly on every tab.
+check(html.includes("code,.mono{font-family:ui-monospace,\"SF Mono\",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}"), "code/.mono elements can now wrap mid-word when a long identifier has no natural break point, instead of forcing the page wider than the viewport");
+
+console.log("--- Stress-test round (2026-09-05) fix 10: prefers-reduced-motion is respected ---");
+check(html.includes("@media (prefers-reduced-motion:reduce)"), "a prefers-reduced-motion block exists");
+const reducedMotionBlockMatch = html.match(/@media \(prefers-reduced-motion:reduce\)\{([\s\S]*?)\n  \}/);
+check(!!reducedMotionBlockMatch, "found the prefers-reduced-motion block's body to check its contents");
+if (reducedMotionBlockMatch) {
+  const body = reducedMotionBlockMatch[1];
+  check(body.includes(".sidenav,") || body.includes(".sidenav{") || body.includes(".sidenav "), "the block disables the side-nav's own width transition (the collapse/expand animation)", body);
+  check(body.includes(".sidenav-item::after"), "the block disables the collapsed-mode tooltip's fade-in transition", body);
+  check(body.includes(".wf-bar"), "the block disables the Variance Waterfall bar-height transition", body);
+  check(body.includes("transition:none"), "the block actually sets transition:none, not just re-declaring the selectors with no effect", body);
+}
+
 console.log("--- Honest stress-test badge (the real count, not the fabricated '1,520' a downloaded document proposed for the same idea) ---");
 // This is a hand-maintained claim, same as the README's own "N checks, all passing as of this
 // writing" line -- it can only assert internal self-consistency (the two numbers in the badge
@@ -221,7 +265,12 @@ function makeElement(id) {
     setAttribute(name, v) { attrs[name] = String(v); },
     appendChild() {},
     click() { (listeners.click || []).forEach((fn) => fn.call(el)); },
-    focus() {},
+    // Real (not no-op) focus tracking -- needed to test the shared modal focus-management helpers
+    // (openModal/closeModal move focus in/out on real elements, not just toggle a CSS class). Every
+    // stub element shares the same documentStub, so this updates the one document.activeElement the
+    // page's own code reads back via `document.activeElement === first/last` (trapModalTab) and
+    // `modalReturnFocusTo.focus()` (closeModal).
+    focus() { documentStub.activeElement = el; },
     // Test-only helper (not a real Element method) so keyboard-nav logic can be exercised the same
     // way click() already exercises click handlers -- fires a stubbed event at every listener
     // registered for `type` via addEventListener.
@@ -265,8 +314,33 @@ const documentStub = {
   // has document.addEventListener; this stub only needs to accept the call without throwing (the
   // actual Escape-key behavior is verified live in-browser, not re-implemented here).
   addEventListener() {},
+  // Tracks whichever stub element's .focus() was called most recently -- see makeElement's focus()
+  // above. Real browsers seed this with document.body; nothing has focus yet in this stub at load.
+  activeElement: null,
 };
-const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } }, console, Math, Object, Array, parseFloat, isFinite };
+// Minimal, controllable window.matchMedia -- lets the collapse-toggle's isNavForcedCollapsed()/
+// renderCollapseState() forced-narrow-viewport code path actually run inside this stub instead of
+// being permanently accepted-limitationed away by `typeof window.matchMedia !== 'function'`.
+// matchMediaMatches starts false (not narrow), matching the pre-existing stubbed-run behavior this
+// harness already asserted below. registerMqListener records the page's own 'change' subscription so
+// a test can simulate a live viewport resize by flipping matchMediaMatches and re-invoking it --
+// exactly how a real MediaQueryList fires its change event, not a reimplementation of the page logic.
+let matchMediaMatches = false;
+const mqChangeListeners = [];
+function stubMatchMedia(query) {
+  return {
+    matches: matchMediaMatches,
+    addEventListener(type, fn) { if (type === "change") mqChangeListeners.push(fn); },
+    addListener(fn) { mqChangeListeners.push(fn); },
+    removeEventListener() {},
+    removeListener() {},
+  };
+}
+function simulateViewportForcedNarrow(forced) {
+  matchMediaMatches = forced;
+  mqChangeListeners.forEach((fn) => fn());
+}
+const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } }, console, Math, Object, Array, parseFloat, isFinite, matchMedia: stubMatchMedia };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 try {
@@ -312,6 +386,26 @@ check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") 
 check(elements.sidenavToggle.getAttribute("aria-expanded") === "false", "the toggle's own aria-expanded state flips to false when collapsed", elements.sidenavToggle.getAttribute("aria-expanded"));
 elements.sidenavToggle.click();
 check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "clicking it again expands the side-nav back", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+
+console.log("--- Stress-test round (2026-09-05) fix 3: collapse toggle stops lying below the CSS's own 760px hard floor ---");
+// Pre-registered expectation: below 760px the CSS itself force-collapses the side-nav regardless of
+// the user's stored preference -- before this fix the toggle's aria-expanded/disabled state never
+// knew that (a real, reproduced case: toggle claimed "expanded, clickable" while the nav rendered at
+// 60px underneath it, and clicking it visibly did nothing). simulateViewportForcedNarrow flips this
+// stub's matchMedia mock and fires the exact 'change' callback the real page itself registers --
+// exercising the real isNavForcedCollapsed()/renderCollapseState() code, not a reimplementation.
+check(elements.sidenavToggle.disabled === false, "the toggle is NOT disabled while the (mocked) viewport is wide/not forced", elements.sidenavToggle.disabled);
+simulateViewportForcedNarrow(true);
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "true", "simulating a <=760px viewport force-collapses the side-nav even though the user's stored preference is still 'expanded'", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+check(elements.sidenavToggle.getAttribute("aria-expanded") === "false", "aria-expanded correctly reports 'collapsed' once the viewport forces it, not the stale desired-state", elements.sidenavToggle.getAttribute("aria-expanded"));
+check(elements.sidenavToggle.getAttribute("aria-label") === "Expand navigation", "the toggle's own aria-label updates to match the forced-collapsed state, not a static string", elements.sidenavToggle.getAttribute("aria-label"));
+check(elements.sidenavToggle.disabled === true, "the toggle disables itself while forced -- no false affordance for an action that would visibly do nothing", elements.sidenavToggle.disabled);
+const navDataCollapsedWhileForced = sandbox.document.getElementById("sidenav").getAttribute("data-collapsed");
+elements.sidenavToggle.click();
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === navDataCollapsedWhileForced, "clicking the toggle while forced is a genuine no-op (the click handler's own early-return), not just a disabled visual with live behavior still underneath", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+simulateViewportForcedNarrow(false);
+check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "un-forcing the viewport (simulating a resize back to desktop width) restores the user's real desired state (still 'expanded', since the forced click above was correctly a no-op)", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
+check(elements.sidenavToggle.disabled === false, "the toggle re-enables itself once the viewport no longer forces collapse", elements.sidenavToggle.disabled);
 
 console.log("--- High-Contrast Mode: behavioral checks ---");
 check(sandbox.document.documentElement.getAttribute("data-contrast") !== "true", "high-contrast is off by default (no stored preference)", sandbox.document.documentElement.getAttribute("data-contrast"));
@@ -385,6 +479,28 @@ check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve F
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
 check(riskTabMatch.length === 4, "exactly 4 command index entries point at the Predictive & Risk Models tab", riskTabMatch.length);
 sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
+
+console.log("--- Stress-test round (2026-09-05) fix 9: Command Palette exposes real ARIA combobox/listbox semantics ---");
+// Before this fix, arrow-key highlighting was purely visual (a CSS .selected class) -- a screen
+// reader had no way to know which of the 21 rendered options was highlighted, or that the input was
+// driving a list at all.
+check(/id="paletteInput"[^>]*role="combobox"/.test(html), "the palette search input is a real ARIA combobox");
+check(/id="paletteInput"[^>]*aria-controls="paletteList"/.test(html), "the combobox's aria-controls points at the real #paletteList id");
+check(/id="paletteList"[^>]*role="listbox"/.test(html), "the results container is a real ARIA listbox, not just a styled <div>");
+sandbox.renderPaletteList("");
+check(elements.paletteList.innerHTML.includes('role="option"'), "rendered palette items carry role=\"option\"");
+check(elements.paletteList.innerHTML.includes('id="palette-item-0"'), "the first rendered item has a stable, predictable id (needed for aria-activedescendant to reference it)");
+check(elements.paletteList.innerHTML.includes('aria-selected="true"'), "the first (default-highlighted) item is marked aria-selected=\"true\"");
+check(elements.paletteInput.getAttribute("aria-activedescendant") === "palette-item-0", "the combobox's aria-activedescendant tracks the currently-highlighted option's real id, not left empty", elements.paletteInput.getAttribute("aria-activedescendant"));
+const noPaletteMatch = sandbox.renderPaletteList("zzz-no-such-command-zzz");
+check(noPaletteMatch.length === 0 && elements.paletteInput.getAttribute("aria-activedescendant") === "", "when a search has zero matches, aria-activedescendant is correctly cleared rather than pointing at a stale/nonexistent option id", elements.paletteInput.getAttribute("aria-activedescendant"));
+sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
+// Stub limitation (not a page bug): arrow-key-driven re-highlighting (updatePaletteSelection) calls
+// paletteListEl.querySelectorAll('.palette-item') -- a real DOM method every browser element has, but
+// this stub only implements querySelectorAll on documentStub itself, not on individual stub elements,
+// so that path can't run in Node. Verified live in a real browser instead (2026-09-05): ArrowDown
+// correctly moved aria-activedescendant from palette-item-0 to palette-item-1, and the referenced
+// option carried role="option" aria-selected="true" -- confirmed working, not an open gap.
 check(html.includes('id="paletteModal"') && html.includes('id="paletteInput"') && html.includes('id="paletteBtn"'), "the palette modal, search input, and header trigger button all exist in the HTML");
 check(html.includes("⌘K"), "the header button visibly hints at the Cmd/Ctrl+K shortcut");
 
@@ -526,6 +642,35 @@ check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.E
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
 check(explainButtonCount === 17, "exactly 17 explain buttons are wired in the HTML (16 from before + the Monte Carlo Explorer)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
+
+console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");
+// Pre-registered expectation: opening a modal moves focus onto a real element inside it (not left on
+// the now-hidden trigger); opening a second modal while one is already open auto-closes the first;
+// closing the last modal in the chain restores focus to whatever had it before ANY modal opened.
+// Tab-trapping itself needs a real child-DOM query engine this stub doesn't have (getFocusableIn
+// calls container.querySelectorAll, which only documentStub implements, not individual stub
+// elements) -- can't run in this stub. Verified live in a real browser instead (2026-09-05): with
+// the palette modal's 2 real focusable elements (close button, search input), Tab on the last
+// element wrapped to the first and Shift+Tab on the first wrapped to the last -- confirmed working.
+check(typeof sandbox.openModal === "function" && typeof sandbox.closeModal === "function" && typeof sandbox.trapModalTab === "function" && typeof sandbox.getFocusableIn === "function", "openModal/closeModal/trapModalTab/getFocusableIn are all exposed as functions");
+const preModalTrigger = makeElement("__preModalTrigger"); // stand-in for whatever real page control the user last focused before opening a modal
+preModalTrigger.focus();
+check(documentStub.activeElement === preModalTrigger, "sanity check: this stub's new focus-tracking actually reflects a .focus() call before testing the modal logic against it");
+sandbox.openExplain("cmar");
+check(elements.explainModal.classList.contains("open"), "openExplain() (routing through the shared openModal helper) adds the 'open' class to explainModal");
+check(documentStub.activeElement === elements.explainClose, "opening the modal moves focus onto a real element inside it (the close button), not leaving it on the now-hidden trigger");
+sandbox.openPalette();
+check(elements.paletteModal.classList.contains("open"), "openPalette() opens paletteModal");
+check(!elements.explainModal.classList.contains("open"), "opening a second modal (the palette) while explainModal is still open auto-closes explainModal first -- openModal's own \"close any OTHER open modal\" behavior, not two modals stacked open");
+check(documentStub.activeElement === elements.paletteInput, "focus moves into the newly-opened palette's own input");
+sandbox.closePalette();
+check(!elements.paletteModal.classList.contains("open"), "closePalette() removes the 'open' class");
+// This is the actual finding from writing this check: the first draft of openModal recaptured
+// modalReturnFocusTo on EVERY open call, so swapping straight from Explain to the Palette overwrote
+// it with explainModal's own (already-closing) close button instead of the real pre-modal trigger --
+// closing the palette then stranded focus on a hidden element. Fixed by only capturing
+// modalReturnFocusTo when no modal was already open, re-verified here (not just re-asserted).
+check(documentStub.activeElement === preModalTrigger, "closing the modal restores focus to whatever had it before ANY modal opened (survives the explain->palette handoff above), not stranded on the first modal's own now-hidden control");
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");
 ["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551", "Medallion Architecture"].forEach((term) => {

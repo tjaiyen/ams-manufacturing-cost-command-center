@@ -60,7 +60,7 @@ wins that a technical reviewer would actually notice and respect. Every idea bel
 29. **Achievement badges for exploring all tabs.** ⛔ same reasoning as #25/#27.
 30. **Sound cues on interaction** (from the reviewed document). ⛔ previously declined for the same dashboard; reaffirmed.
 
-**Tally:** 15 ✅ good fit, 7 ⚠ real tension to resolve deliberately, 8 ⛔ declined (mostly items #25/27/29's gamification-for-retention shape, or items needing fabricated telemetry/external fonts).
+**Tally:** 21 ✅ good fit, 4 ⚠ real tension to resolve deliberately, 5 ⛔ declined (mostly items #25/27/29's gamification-for-retention shape, or items needing fabricated telemetry/external fonts).
 
 ---
 

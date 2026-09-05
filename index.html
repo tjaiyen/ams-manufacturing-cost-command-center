@@ -52,7 +52,7 @@
   body{margin:0;background:rgb(var(--c-bg-primary));color:rgb(var(--c-text-primary));
     font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased}
-  code,.mono,.tabular{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  code,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   a{color:rgb(var(--c-accent))}
   :focus-visible{outline:2px solid rgb(var(--c-accent));outline-offset:2px;border-radius:4px}
   .skip-link{position:absolute;left:-999px;top:0;background:rgb(var(--c-accent));color:#04141a;padding:8px 14px;border-radius:0 0 8px 0;z-index:100}
@@ -129,9 +129,13 @@
   .frame strong{color:rgb(var(--c-text-primary))}
 
   .grid{display:grid;gap:16px}
-  .grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-  .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  /* min(Npx,100%) instead of a bare px minimum -- a bare minmax(320px,1fr) never shrinks below
+     320px even when the container itself is narrower (a real, reproduced overflow: 50px of
+     horizontal scroll at a 375px viewport, confirmed via a stress-test pass). Applied to all three
+     grid classes, not just the one that was measured -- same defect class, same fix. */
+  .grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}
+  .grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
+  .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
 
   .card{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;padding:18px 20px}
   .card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--c-line)}
@@ -144,7 +148,6 @@
   .kpi-foot{font-size:11.5px;color:rgb(var(--c-text-secondary));display:flex;align-items:center;gap:5px}
   .kpi-foot.good{color:rgb(var(--c-success))}
   .kpi-foot.amber{color:rgb(var(--c-warning))}
-  .kpi-foot.bad{color:rgb(var(--c-danger))}
 
   .field{margin-bottom:12px}
   .field label{display:block;font-size:10.5px;color:rgb(var(--c-text-secondary));text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
@@ -231,6 +234,10 @@
   .palette-item{padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px}
   .palette-item:hover{background:rgb(var(--c-accent)/.08)}
   .palette-item.selected{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
+
+  @media (prefers-reduced-motion:reduce){
+    .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,.wf-bar{transition:none}
+  }
 </style>
 </head>
 <body>
@@ -241,53 +248,53 @@
   <div class="sidenav-head">
     <span class="dot"></span>
     <span class="sidenav-brand-text"><b>AMS Cost Command Center</b><small>Sr. Manufacturing Cost Engineer</small></span>
-    <button class="sidenav-collapse-btn" id="sidenavToggle" type="button" aria-label="Collapse navigation" aria-expanded="true">‹</button>
+    <button class="sidenav-collapse-btn" id="sidenavToggle" type="button" aria-label="Collapse navigation" aria-expanded="true" aria-controls="sidenav">‹</button>
   </div>
   <div class="sidenav-list" role="tablist" aria-orientation="vertical" aria-label="Command center sections">
-    <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview">
+    <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview" aria-label="Executive Overview">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 15V9M10 15V5M16 15v-3"/></svg></span><span class="sidenav-label">Executive Overview</span>
     </button>
-    <button class="sidenav-item" data-tab="shouldcost" role="tab" aria-selected="false" aria-controls="tab-shouldcost" id="navtab-shouldcost" tabindex="-1" data-tooltip="Should-Cost & MHR">
+    <button class="sidenav-item" data-tab="shouldcost" role="tab" aria-selected="false" aria-controls="tab-shouldcost" id="navtab-shouldcost" tabindex="-1" data-tooltip="Should-Cost & MHR" aria-label="Should-Cost & MHR">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14a7 7 0 0 1 14 0"/><path d="M10 14 13 8"/><circle cx="10" cy="14" r="1"/></svg></span><span class="sidenav-label">Should-Cost &amp; MHR</span>
     </button>
-    <button class="sidenav-item" data-tab="variance" role="tab" aria-selected="false" aria-controls="tab-variance" id="navtab-variance" tabindex="-1" data-tooltip="Variance Waterfall">
+    <button class="sidenav-item" data-tab="variance" role="tab" aria-selected="false" aria-controls="tab-variance" id="navtab-variance" tabindex="-1" data-tooltip="Variance Waterfall" aria-label="Variance Waterfall">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 6h4v4h4v4h4"/></svg></span><span class="sidenav-label">Variance Waterfall</span>
     </button>
-    <button class="sidenav-item" data-tab="buildbuy" role="tab" aria-selected="false" aria-controls="tab-buildbuy" id="navtab-buildbuy" tabindex="-1" data-tooltip="Build-vs-Buy / CapEx">
+    <button class="sidenav-item" data-tab="buildbuy" role="tab" aria-selected="false" aria-controls="tab-buildbuy" id="navtab-buildbuy" tabindex="-1" data-tooltip="Build-vs-Buy / CapEx" aria-label="Build-vs-Buy / CapEx">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 6l12 8M16 6 4 14"/></svg></span><span class="sidenav-label">Build-vs-Buy / CapEx</span>
     </button>
-    <button class="sidenav-item" data-tab="capacity" role="tab" aria-selected="false" aria-controls="tab-capacity" id="navtab-capacity" tabindex="-1" data-tooltip="Capacity Forecast">
+    <button class="sidenav-item" data-tab="capacity" role="tab" aria-selected="false" aria-controls="tab-capacity" id="navtab-capacity" tabindex="-1" data-tooltip="Capacity Forecast" aria-label="Capacity Forecast">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg></span><span class="sidenav-label">Capacity Forecast</span>
     </button>
-    <button class="sidenav-item" data-tab="tooling" role="tab" aria-selected="false" aria-controls="tab-tooling" id="navtab-tooling" tabindex="-1" data-tooltip="Tooling Amortization">
+    <button class="sidenav-item" data-tab="tooling" role="tab" aria-selected="false" aria-controls="tab-tooling" id="navtab-tooling" tabindex="-1" data-tooltip="Tooling Amortization" aria-label="Tooling Amortization">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4z"/><path d="M3 11l7 4 7-4"/></svg></span><span class="sidenav-label">Tooling Amortization</span>
     </button>
-    <button class="sidenav-item" data-tab="dfm" role="tab" aria-selected="false" aria-controls="tab-dfm" id="navtab-dfm" tabindex="-1" data-tooltip="DFM/DFC Sensitivity">
+    <button class="sidenav-item" data-tab="dfm" role="tab" aria-selected="false" aria-controls="tab-dfm" id="navtab-dfm" tabindex="-1" data-tooltip="DFM/DFC Sensitivity" aria-label="DFM/DFC Sensitivity">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 7h14M3 13h14"/><circle cx="8" cy="7" r="1.6"/><circle cx="13" cy="13" r="1.6"/></svg></span><span class="sidenav-label">DFM/DFC Sensitivity</span>
     </button>
-    <button class="sidenav-item" data-tab="governance" role="tab" aria-selected="false" aria-controls="tab-governance" id="navtab-governance" tabindex="-1" data-tooltip="Data Governance">
+    <button class="sidenav-item" data-tab="governance" role="tab" aria-selected="false" aria-controls="tab-governance" id="navtab-governance" tabindex="-1" data-tooltip="Data Governance" aria-label="Data Governance">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l6 2.5v4c0 4-2.5 6.5-6 7.5-3.5-1-6-3.5-6-7.5v-4L10 3z"/></svg></span><span class="sidenav-label">Data Governance</span>
     </button>
-    <button class="sidenav-item" data-tab="playbook" role="tab" aria-selected="false" aria-controls="tab-playbook" id="navtab-playbook" tabindex="-1" data-tooltip="Diagnostic Playbook">
+    <button class="sidenav-item" data-tab="playbook" role="tab" aria-selected="false" aria-controls="tab-playbook" id="navtab-playbook" tabindex="-1" data-tooltip="Diagnostic Playbook" aria-label="Diagnostic Playbook">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 4h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H4z"/><path d="M16 4h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z"/></svg></span><span class="sidenav-label">Diagnostic Playbook</span>
     </button>
-    <button class="sidenav-item" data-tab="risk" role="tab" aria-selected="false" aria-controls="tab-risk" id="navtab-risk" tabindex="-1" data-tooltip="Predictive & Risk Models">
+    <button class="sidenav-item" data-tab="risk" role="tab" aria-selected="false" aria-controls="tab-risk" id="navtab-risk" tabindex="-1" data-tooltip="Predictive & Risk Models" aria-label="Predictive & Risk Models">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 6h3v3"/></svg></span><span class="sidenav-label">Predictive &amp; Risk Models</span>
     </button>
-    <button class="sidenav-item" data-tab="framework" role="tab" aria-selected="false" aria-controls="tab-framework" id="navtab-framework" tabindex="-1" data-tooltip="Operating Framework">
+    <button class="sidenav-item" data-tab="framework" role="tab" aria-selected="false" aria-controls="tab-framework" id="navtab-framework" tabindex="-1" data-tooltip="Operating Framework" aria-label="Operating Framework">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></span><span class="sidenav-label">Operating Framework</span>
     </button>
-    <button class="sidenav-item" data-tab="methodology" role="tab" aria-selected="false" aria-controls="tab-methodology" id="navtab-methodology" tabindex="-1" data-tooltip="Methodology & Sourcing">
+    <button class="sidenav-item" data-tab="methodology" role="tab" aria-selected="false" aria-controls="tab-methodology" id="navtab-methodology" tabindex="-1" data-tooltip="Methodology & Sourcing" aria-label="Methodology & Sourcing">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M6 3h6l3 3v11H6z"/><path d="M12 3v3h3"/><path d="M8 11h4M8 14h4"/></svg></span><span class="sidenav-label">Methodology &amp; Sourcing</span>
     </button>
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 357/357 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 400/400 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
-    <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
-    <button class="icobtn" id="themeBtn" type="button" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
-    <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html" data-tooltip="Fit brief"><span class="label-text">Fit brief ↗</span></a>
+    <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
+    <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
+    <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html" aria-label="Fit brief (opens in the same tab)" data-tooltip="Fit brief"><span class="label-text">Fit brief ↗</span></a>
   </div>
 </nav>
 
@@ -1170,6 +1177,38 @@
         (3D/WebGL/gamification vs. this dashboard's restrained, verifiable tone), so they're
         recorded as considered options, not committed to as code.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A stress-test of the navigation overhaul itself</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">The vertical-navigation round
+        above shipped the most consequential interaction change on this page, so it got a dedicated
+        adversarial review afterward: independent self-review plus a fresh-context reviewer, every
+        finding empirically reproduced before being accepted, and every fix re-verified rather than
+        just re-asserted. Findings, all fixed: a real 375px horizontal-scroll bug from a
+        <code>minmax(320px,1fr)</code> grid track that can't shrink below its own floor; collapsed
+        nav items and three footer controls with no real accessible name — only a CSS-hidden label
+        or a <code>::after</code> tooltip, neither in the accessibility tree; a collapse toggle that
+        kept claiming "expanded, clickable" below the CSS's own 760px hard floor while the nav
+        silently rendered collapsed underneath it; neither modal moving focus in on open, trapping
+        Tab, or restoring focus on close; two stale count self-contradictions in
+        <code>README.md</code>/<code>UX_ROADMAP.md</code>; dead CSS; a Command Palette with no ARIA
+        combobox/listbox semantics for its arrow-key-highlighted results; and no
+        <code>prefers-reduced-motion</code> support. One item was judged moderate, not broken, and
+        is an accepted limitation rather than a fix: on touch devices, the collapsed nav's
+        <code>::after</code> tooltips only reveal on hover/focus, so a touch user sees an icon-only
+        button with no on-screen label until they activate it — the real accessible name still
+        exists for a screen reader either way. Two more surfaced while fixing the others, not in the
+        original pass: live-verifying the grid fix at 375px found the Methodology tab's own long
+        inline <code>&lt;code&gt;</code> identifiers had no wrap opportunity, overflowing the page by
+        13px even after the grid itself was fixed — <code>overflow-wrap:anywhere</code> closed it.
+        And writing the test for the modal-focus fix found that opening a second modal while one was
+        already open (Explain, then ⌘K for the palette) overwrote the return-focus target with the
+        first modal's own closing button instead of the real pre-modal trigger, stranding focus once
+        the second modal closed — fixed by only capturing the return-focus target when no modal was
+        already open. Same discipline as every prior round: the fix isn't the deliverable, the
+        re-verified fix is — see <code>stress.cjs</code> for the checks written specifically to
+        prove each one, not just that nothing crashed.</p>
+    </div>
   </section>
 
   <div class="modal-overlay" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
@@ -1182,8 +1221,8 @@
   <div class="modal-overlay" id="paletteModal" role="dialog" aria-modal="true" aria-label="Quick navigation">
     <div class="modal-box">
       <div class="modal-head"><h3>Quick Navigation</h3><button class="modal-close" id="paletteClose" type="button" aria-label="Close">×</button></div>
-      <input type="text" id="paletteInput" class="palette-input" placeholder="Jump to a tab or module…" aria-label="Search tabs and modules">
-      <div class="palette-list" id="paletteList"></div>
+      <input type="text" id="paletteInput" class="palette-input" placeholder="Jump to a tab or module…" aria-label="Search tabs and modules" role="combobox" aria-expanded="true" aria-controls="paletteList" aria-autocomplete="list" aria-activedescendant="">
+      <div class="palette-list" id="paletteList" role="listbox" aria-label="Command palette results"></div>
     </div>
   </div>
 
@@ -1258,26 +1297,53 @@
   });
 
   // Collapse/expand: persisted preference, defaulting to collapsed on narrow viewports where a
-  // 248px sidebar would crowd the content (a CSS media query underneath provides a hard floor on
-  // very narrow screens regardless of this JS-driven default).
+  // 248px sidebar would crowd the content. A CSS media query forces icon-only below 760px
+  // regardless of this JS state -- a stress-test found the ORIGINAL version of this code let
+  // aria-expanded/the toggle glyph keep reporting the JS-desired state even while that media query
+  // had visually collapsed the nav to 60px underneath it (a real, reproduced case: toggle claims
+  // "expanded", nav renders at 60px either way, and clicking it visibly does nothing while still
+  // announcing a state change). Fixed by tracking the user's DESIRED state separately from the
+  // EFFECTIVE (rendered) state, and re-deriving the effective state from the same 760px breakpoint
+  // the CSS uses, via matchMedia -- kept in sync live if the viewport is resized, not just at load.
   var sidenav = document.getElementById('sidenav');
   var sidenavToggle = document.getElementById('sidenavToggle');
+  var NAV_FORCE_COLLAPSE_QUERY = '(max-width: 760px)';
+  var desiredNavCollapsed = false;
+  function isNavForcedCollapsed(){
+    return typeof window.matchMedia === 'function' && window.matchMedia(NAV_FORCE_COLLAPSE_QUERY).matches;
+  }
+  function renderCollapseState(){
+    var forced = isNavForcedCollapsed();
+    var effective = forced || desiredNavCollapsed;
+    sidenav.setAttribute('data-collapsed', effective ? 'true' : 'false');
+    sidenavToggle.setAttribute('aria-expanded', effective ? 'false' : 'true');
+    sidenavToggle.setAttribute('aria-label', effective ? 'Expand navigation' : 'Collapse navigation');
+    sidenavToggle.textContent = effective ? '›' : '‹';
+    sidenavToggle.disabled = forced; // no false affordance -- the toggle can't do anything while the viewport itself forces collapse
+  }
   function setCollapsed(collapsed){
-    sidenav.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
-    sidenavToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    sidenavToggle.textContent = collapsed ? '›' : '‹';
+    desiredNavCollapsed = collapsed;
     try{ localStorage.setItem('ams-cc-nav-collapsed', collapsed ? '1' : '0'); }catch(e){}
+    renderCollapseState();
   }
   sidenavToggle.addEventListener('click', function(){
+    if (isNavForcedCollapsed()) return;
     setCollapsed(sidenav.getAttribute('data-collapsed') !== 'true');
   });
   (function initCollapsedState(){
     var stored = null;
     try{ stored = localStorage.getItem('ams-cc-nav-collapsed'); }catch(e){}
-    if (stored === '1') setCollapsed(true);
-    else if (stored === '0') setCollapsed(false);
-    else setCollapsed(typeof window.innerWidth === 'number' && window.innerWidth < 900);
+    if (stored === '1') desiredNavCollapsed = true;
+    else if (stored === '0') desiredNavCollapsed = false;
+    else desiredNavCollapsed = typeof window.innerWidth === 'number' && window.innerWidth < 900;
+    renderCollapseState();
   })();
+  if (typeof window.matchMedia === 'function'){
+    var navForceMq = window.matchMedia(NAV_FORCE_COLLAPSE_QUERY);
+    var onNavForceChange = function(){ renderCollapseState(); };
+    if (navForceMq.addEventListener) navForceMq.addEventListener('change', onNavForceChange);
+    else if (navForceMq.addListener) navForceMq.addListener(onNavForceChange); // legacy Safari
+  }
 
   // ---------- Explain-the-Math modal ----------
   var EXPLAIN = {
@@ -1301,13 +1367,57 @@
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
   var explainBody = document.getElementById('explainBody');
+
+  // ---------- Shared modal focus management (WAI-ARIA "Dialog (Modal)" pattern) ----------
+  // A stress-test found neither modal moved focus on open, trapped Tab within itself, or restored
+  // focus on close -- real, reproduced gaps: opening a modal via keyboard left focus sitting on the
+  // now-hidden trigger button, and Tab could walk straight out of the (aria-modal="true") dialog
+  // into page content behind the overlay. Fixed once here and shared by both modals -- same
+  // data-table-plus-generic-modal shape as EXPLAIN/COMMAND_INDEX, not two separate patches.
+  var modalReturnFocusTo = null;
+  function getFocusableIn(container){
+    if (!container || typeof container.querySelectorAll !== 'function') return [];
+    return Array.prototype.slice.call(container.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+  }
+  function trapModalTab(modalEl, ev){
+    if (ev.key !== 'Tab') return;
+    var focusable = getFocusableIn(modalEl.querySelector('.modal-box') || modalEl);
+    if (!focusable.length) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (ev.shiftKey && document.activeElement === first){ ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last){ ev.preventDefault(); first.focus(); }
+  }
+  function openModal(modalEl, focusTarget){
+    // Only capture the return-focus target when no modal is already open -- otherwise swapping
+    // straight from one modal to another (open Explain, then Cmd/Ctrl+K for the palette) would
+    // overwrite modalReturnFocusTo with the first modal's own now-closing control instead of the
+    // real pre-modal trigger, stranding focus on a hidden element once the second modal closes
+    // (reproduced: a stress-test check written to verify this very feature caught it).
+    var alreadyOpen = [explainModal, paletteModal].some(function(m){ return m && m.classList.contains('open'); });
+    [explainModal, paletteModal].forEach(function(m){ if (m && m !== modalEl) m.classList.remove('open'); });
+    if (!alreadyOpen) modalReturnFocusTo = document.activeElement;
+    modalEl.classList.add('open');
+    if (focusTarget && focusTarget.focus) focusTarget.focus();
+  }
+  function closeModal(modalEl){
+    modalEl.classList.remove('open');
+    if (modalReturnFocusTo && modalReturnFocusTo.focus) modalReturnFocusTo.focus();
+    modalReturnFocusTo = null;
+  }
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.trapModalTab = trapModalTab;
+  window.getFocusableIn = getFocusableIn;
+
   function openExplain(key){
     var e = EXPLAIN[key]; if(!e) return;
     explainTitle.textContent = e.title;
     explainBody.innerHTML = '<div class="formula-box">' + e.formula + '</div><p>' + e.body + '</p>';
-    explainModal.classList.add('open');
+    openModal(explainModal, document.getElementById('explainClose'));
   }
-  function closeExplain(){ explainModal.classList.remove('open'); }
+  function closeExplain(){ closeModal(explainModal); }
   window.EXPLAIN = EXPLAIN;
   window.openExplain = openExplain;
   document.getElementById('explainClose').addEventListener('click', closeExplain);
@@ -1351,15 +1461,19 @@
     paletteSelectedIndex = paletteFiltered.length ? 0 : -1;
     paletteListEl.innerHTML = paletteFiltered.length
       ? paletteFiltered.map(function(item, i){
-          return '<div class="palette-item' + (i === 0 ? ' selected' : '') + '" data-idx="' + i + '">' + item.label + '</div>';
+          return '<div class="palette-item' + (i === 0 ? ' selected' : '') + '" data-idx="' + i + '" id="palette-item-' + i + '" role="option" aria-selected="' + (i === 0 ? 'true' : 'false') + '">' + item.label + '</div>';
         }).join('')
       : '<div class="palette-item" style="opacity:.6;cursor:default">No matches</div>';
+    paletteInput.setAttribute('aria-activedescendant', paletteFiltered.length ? 'palette-item-0' : '');
     return paletteFiltered;
   }
   function updatePaletteSelection(){
     Array.prototype.slice.call(paletteListEl.querySelectorAll('.palette-item')).forEach(function(el, i){
-      el.classList.toggle('selected', i === paletteSelectedIndex);
+      var isSel = i === paletteSelectedIndex;
+      el.classList.toggle('selected', isSel);
+      el.setAttribute('aria-selected', isSel ? 'true' : 'false');
     });
+    paletteInput.setAttribute('aria-activedescendant', paletteSelectedIndex > -1 ? 'palette-item-' + paletteSelectedIndex : '');
   }
   function activatePaletteItem(item){
     if (!item) return;
@@ -1371,12 +1485,11 @@
     }
   }
   function openPalette(){
-    paletteModal.classList.add('open');
     paletteInput.value = '';
     renderPaletteList('');
-    paletteInput.focus();
+    openModal(paletteModal, paletteInput);
   }
-  function closePalette(){ paletteModal.classList.remove('open'); }
+  function closePalette(){ closeModal(paletteModal); }
   window.COMMAND_INDEX = COMMAND_INDEX;
   window.renderPaletteList = renderPaletteList;
   window.activatePaletteItem = activatePaletteItem;
@@ -1398,6 +1511,10 @@
   document.addEventListener('keydown', function(ev){
     if (ev.key === 'Escape'){ closeExplain(); closePalette(); }
     else if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); openPalette(); }
+    else if (ev.key === 'Tab'){
+      if (explainModal.classList.contains('open')) trapModalTab(explainModal, ev);
+      else if (paletteModal.classList.contains('open')) trapModalTab(paletteModal, ev);
+    }
   });
 
   // ---------- Rate card (single source of truth for MHR by work center) ----------

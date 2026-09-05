@@ -360,8 +360,8 @@ against exact numbers **independently verified live in a real browser before thi
   harness's own stub elements and re-invoking the real `renderPlaybook()`: all-domains shows 30,
   filtering to "additive" shows exactly 5, searching "buy-to-fly" narrows to exactly 1, clearing the
   search restores 30.
-- Explain-the-Math modal: `EXPLAIN` data object has a title/formula/body for all 14 keyed formulas,
-  exactly 15 explain buttons are wired in the HTML, `openExplain` is exposed for the harness to call.
+- Explain-the-Math modal: `EXPLAIN` data object has a title/formula/body for all 16 keyed formulas,
+  exactly 17 explain buttons are wired in the HTML, `openExplain` is exposed for the harness to call.
 - Learning Curve Forecaster defaults (6.0hr first article, 80% learning rate, units 21–60, $45.00/hr)
   → b = **−0.3219** / total hours **74.64** / avg unit time **1.87 hrs** / total cost **$3,358.59**
   (independently re-derived — NOT the source document's own $3,345.75, a real ~0.4% arithmetic slip
@@ -413,7 +413,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 357 checks, all passing as of this writing.
+Run: `node stress.cjs` — 400 checks, all passing as of this writing.
 
 ## Status
 
@@ -448,5 +448,24 @@ modules — all new cards/cross-cutting features on existing tabs) — pushed li
 ARIA-compliant side navigation and added a High-Contrast Mode toggle, per a direct three-phase UX
 overhaul request (still 12 modules — a navigation/shell change, not a new module). Wrote
 `UX_ROADMAP.md` for the accompanying 30-idea brainstorm and backlog. Fixed a real bug in this
-repo's own test-harness stub along the way (see Verification above) — pending push with explicit
-confirmation, same discipline as every prior round.
+repo's own test-harness stub along the way (see Verification above) — pushed live.
+
+**2026-09-05, tenth round (stress-test of the ninth round):** the navigation overhaul above was the
+most consequential interaction change on this page, so it got a dedicated adversarial review —
+independent self-review plus a fresh-context reviewer, every finding empirically reproduced, every
+fix re-verified rather than re-asserted. Fixed: the `.grid` responsive tracks forcing horizontal
+overflow below their own `minmax()` floor (real, reproduced at 375px); 15 controls (12 nav items + 3
+footer controls) with no real accessible name in collapsed mode; the collapse toggle silently lying
+about its own state below the CSS's 760px hard floor; neither modal moving focus in, trapping Tab,
+or restoring focus on close; a stale tally in `UX_ROADMAP.md` and a stale formula/button count in
+this file (both self-contradicted an already-correct number elsewhere in the same file); two dead
+CSS rules; missing ARIA combobox/listbox semantics on the Command Palette; and no
+`prefers-reduced-motion` support. One item (touch-device discoverability of collapsed-nav tooltips)
+was judged moderate, not broken, and is an accepted limitation rather than a fix. Two more surfaced
+while re-verifying the others: a long inline `<code>` identifier on the Methodology tab still
+overflowed at 375px after the grid fix (fixed with `overflow-wrap:anywhere`), and swapping directly
+from one modal to another stranded the return-focus target on the first modal's own control instead
+of the real pre-modal trigger (fixed in `openModal`). This repo's DOM-stub test harness was also
+upgraded to actually exercise focus tracking and a controllable `matchMedia` mock, closing two
+real testing gaps rather than accepting them as permanent limitations. Checks: 357 → 400. Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.
