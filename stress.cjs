@@ -82,6 +82,7 @@ const DEFAULTS = {
   vLSR: "42.00", vLAR: "44.50", vVOSR: "8.00", vVOAct: "4750", vBudHrs: "500", vFOHR: "24.00",
   bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000",
   bbRate: "10", bbYears: "3",
+  cpFrozen: "26.00", cpSpot: "29.50", cpVolume: "2200",
   tlCost: "18000", tlRun: "2400", tlBatch: "24",
   dfmThickness: "1.5", dfmPocket: "5", dfmHeight: "80",
   capOhRate: "28.00",
@@ -187,6 +188,11 @@ check(elements.dfmHeightOut.textContent === "+24.0%", "build-height penalty matc
 check(elements.dfmTotalOut.textContent === "+53.0%", "total uplift matches golden value (sum of the three penalties above)", elements.dfmTotalOut.textContent);
 check(elements.dfmCostOut.textContent === "$153.00", "estimated cost matches golden value ($100 baseline x 1.53)", elements.dfmCostOut.textContent);
 
+console.log("--- Commodity Price Exposure Early Warning: golden values ---");
+check(elements.cpShiftPct.textContent === "13.46%", "price shift % matches golden value ($29.50 vs $26.00 frozen)", elements.cpShiftPct.textContent);
+check(elements.cpProjected.textContent === "+$7,700", "projected MPV exposure matches golden value ($3.50/kg x 2,200kg)", elements.cpProjected.textContent);
+check(elements.cpStatus.innerHTML.includes(">WARNING<"), "13.46% shift correctly triggers WARNING (>8% threshold)", elements.cpStatus.innerHTML);
+
 console.log("--- Data Governance: MDQS + Guardrail Gate Simulator golden values ---");
 check(elements.mdqsScore.textContent === "96.875%", "MDQS score matches golden value (100% - weighted deductions)", elements.mdqsScore.textContent);
 check(elements.mdqsBand.innerHTML.includes(">AMBER<"), "96.875% is correctly banded AMBER (93-98%)", elements.mdqsBand.innerHTML);
@@ -195,7 +201,7 @@ check(elements.gatePoOut.innerHTML.includes(">BLOCKED<"), "PO gate (7% vs 5% thr
 check(elements.gateConfOut.innerHTML.includes(">PASS<"), "Confirmation gate (12% vs 15% threshold) correctly PASSES", elements.gateConfOut.innerHTML);
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");
-["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551"].forEach((term) => {
+["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551", "Medallion Architecture"].forEach((term) => {
   check(html.includes(term), `Methodology tab cites "${term}" (independently verified this session, not asserted bare)`);
 });
 check(html.includes("illustrative heuristic, not a physics-based"), "the DFM/DFC model is explicitly labeled a heuristic, not a precise simulation, matching the never-fabricate discipline");

@@ -84,6 +84,18 @@ scaffolding is meaningfully more accurate than the first two documents' invented
 fabrication remains narrow and specific to claims about AMS, not the underlying technical
 vocabulary.
 
+**A fourth verification round (2026-09-04, on a fourth downloaded document — a Claude-Code-as-
+data-engineer architecture proposal)** found it mostly duplicative: the same `pre_tool_call` hooks
+schema mistake as the third document (not a new error, the *identical* one — two documents making
+the same specific mistake independently is effectively impossible; this is a shared template, not
+independent authorship each time), the same unconfirmed named-client claim, and a forward-looking
+overhead-absorption formula identical to the existing Capacity Forecast tab (nothing new built from
+it). One genuinely real, new concept confirmed: **Bronze/Silver/Gold Medallion Architecture** is a
+well-known, accurately-described [Databricks data-lakehouse pattern](https://www.databricks.com/blog/what-is-medallion-architecture).
+One genuinely new addition: a **Commodity Price Exposure Early Warning** calculator, added to the
+Variance Waterfall tab — the forward-looking cousin of the MPV line, using the document's own real
+8% early-warning threshold on a spot-price shift against open purchasing volume.
+
 ## The ten modules
 
 1. **Executive Overview** — a synthetic 3-site P&L rollup. The count of three sites is the real
@@ -97,7 +109,9 @@ vocabulary.
    rate card (CNC 3-Axis, CNC 5-Axis, Additive/DMLS, Sheet Metal), each with its own standing/running
    cost split — deliberately different invented numbers from either source document, not a copy.
 3. **Variance Waterfall** — the real six-way standard-cost decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOHV),
-   fully interactive, rendered as a live CSS bar-chart waterfall.
+   fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
+   Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
+   open purchasing volume → projected dollar exposure, flagged at a real 8% threshold).
 4. **Build-vs-Buy / CapEx** — an NPV/payback analyzer generalizing the same methodology used in
    [`ams-narrative.html`](https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html)'s
    worked example, with a year-by-year discounted cash-flow table.
@@ -160,8 +174,10 @@ against exact numbers **independently verified live in a real browser before thi
   single-card exclusion didn't cover, false-positiving until both cards were excluded together) —
   reproduced, fixed, then confirmed the new guard actually fails when "PP02" is reintroduced outside
   both cards, before confirming it passes clean.
+- Commodity Price Exposure defaults ($26.00 frozen, $29.50 spot, 2,200kg open volume) → **13.46%**
+  shift, **+$7,700** projected exposure, correctly flagged **WARNING** (>8% threshold).
 
-Run: `node stress.cjs` — 128 checks, all passing as of this writing.
+Run: `node stress.cjs` — 135 checks, all passing as of this writing.
 
 ## Status
 

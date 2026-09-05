@@ -342,6 +342,24 @@
         </div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Commodity Price Exposure Early Warning</h2><span class="tag">FORWARD-LOOKING MPV</span></div>
+      <p class="lede" style="margin-bottom:12px">The forward-looking cousin of the MPV line above —
+        a spot-price shift against open purchasing volume, before it becomes a realized variance.</p>
+      <div class="field-row">
+        <div class="field"><label>Frozen standard price ($/kg)</label><input type="number" id="cpFrozen" value="26.00" step="0.5"></div>
+        <div class="field"><label>Current spot price ($/kg)</label><input type="number" id="cpSpot" value="29.50" step="0.5"></div>
+      </div>
+      <div class="field" style="max-width:260px"><label>Open purchasing volume (kg)</label><input type="number" id="cpVolume" value="2200" step="50"></div>
+      <div class="outline">
+        <div class="line"><span>Price shift vs. frozen standard</span><span class="mono" id="cpShiftPct">0.0%</span></div>
+        <div class="line total"><span>Projected MPV exposure</span><span class="mono" id="cpProjected">$0</span> <span id="cpStatus"></span></div>
+      </div>
+      <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Warning threshold
+        (&gt;8% above frozen standard) is the source document's own stated number — a real,
+        well-defined early-warning pattern, not a claim about AMS's actual commodity contracts.</p>
+    </div>
   </section>
 
   <!-- ============ TAB 4: BUILD-VS-BUY / CAPEX ============ -->
@@ -629,6 +647,21 @@
         tab are real, well-defined formulas taken directly from that document; they demonstrate the
         methodology live, not a claim that AMS's actual SAP instance runs these exact numbers.</p>
     </div>
+
+    <div class="card">
+      <div class="card-head"><h2>A fourth document, mostly a repeat</h2></div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">A fourth downloaded document
+        proposed a Claude-Code-as-data-engineer architecture. It repeated the exact same Claude Code
+        hooks schema mistake as the third document (the same invented settings.json key, not the
+        real event name) and the same unconfirmed named-client claim — two separate documents
+        making an identical, specific mistake is strong evidence of a shared template, not
+        independent authorship each time. Its forward-looking overhead-absorption formula duplicates
+        the Capacity Forecast tab exactly, so nothing new was built from it there. The one genuinely
+        new, real concept — Bronze/Silver/Gold Medallion Architecture — is a well-known, accurately
+        described Databricks data-lakehouse pattern. The one genuinely new addition, the Commodity
+        Price Exposure calculator above, uses the document's own real 8% early-warning threshold — a
+        well-defined formula, not a claim about AMS's actual commodity contracts.</p>
+    </div>
   </section>
 
   <footer>
@@ -790,6 +823,23 @@
   ['vMSQ','vMAQ','vMSP','vMAP','vLSH','vLAH','vLSR','vLAR','vVOSR','vVOAct','vBudHrs','vFOHR'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcVariance);
   });
+
+  // ---------- Commodity Price Exposure Early Warning ----------
+  function calcCommodityExposure(){
+    var frozen = parseFloat(document.getElementById('cpFrozen').value) || 0;
+    var spot = parseFloat(document.getElementById('cpSpot').value) || 0;
+    var volume = parseFloat(document.getElementById('cpVolume').value) || 0;
+    var shiftPct = frozen > 0 ? ((spot - frozen) / frozen) * 100 : 0;
+    var projected = (spot - frozen) * volume;
+    var warning = shiftPct > 8;
+    document.getElementById('cpShiftPct').textContent = shiftPct.toFixed(2) + '%';
+    document.getElementById('cpProjected').textContent = fmtMoney(projected);
+    document.getElementById('cpProjected').style.color = projected > 0 ? 'rgb(var(--c-danger))' : (projected < 0 ? 'rgb(var(--c-success))' : '');
+    document.getElementById('cpStatus').innerHTML = '<span class="status-pill ' + (warning ? 'red' : 'green') + '">' + (warning ? 'WARNING' : 'OK') + '</span>';
+    return { shiftPct: shiftPct, projected: projected, warning: warning };
+  }
+  window.calcCommodityExposure = calcCommodityExposure;
+  ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcCommodityExposure); });
 
   // ---------- Tab 4: Build-vs-Buy / NPV ----------
   function calcBuildBuy(){
@@ -970,6 +1020,7 @@
   calcDfm();
   calcMdqs();
   calcGates();
+  calcCommodityExposure();
 })();
 </script>
 </body>
