@@ -333,6 +333,7 @@ const documentStub = {
     return makeElement("__q_" + Math.random());
   },
   documentElement: makeElement('__documentElement'),
+  body: makeElement('__body'), // Focus Mode toggles a class on document.body -- a standard, always-present real-browser object this stub had never needed before now
   createElement: () => makeElement("__created_" + Math.random()),
   // The Escape-to-close modal handler binds a document-level keydown listener -- a real browser
   // has document.addEventListener; this stub only needs to accept the call without throwing (the
@@ -364,7 +365,13 @@ function simulateViewportForcedNarrow(forced) {
   matchMediaMatches = forced;
   mqChangeListeners.forEach((fn) => fn());
 }
-const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } }, console, Math, Object, Array, parseFloat, isFinite, matchMedia: stubMatchMedia };
+const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } }, console, Math, Object, Array, parseFloat, isFinite, matchMedia: stubMatchMedia,
+  // Real-browser timers this stub had never needed before the nav-innovation round -- same "accept
+  // the call without throwing, real timing verified live" philosophy as document.addEventListener
+  // above. Deliberately NOT firing the callback: an eager/synchronous fire risks looping or
+  // reordering relative to the surrounding synchronous code in ways a real 900ms/2s delay never
+  // would, which would test a behavior the real page can't actually exhibit.
+  setTimeout: () => 0, clearTimeout: () => {} };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 try {
@@ -877,6 +884,119 @@ Object.keys(RATE_CARD_EXPECTED).forEach((wc) => {
   check(!!m, `found the static MHR table cell for ${wc}`);
   if (m) check(parseFloat(m[1]) === RATE_CARD_EXPECTED[wc], `${wc}'s displayed MHR ($${m[1]}) matches window.mhrFor('${wc}') = $${sandbox.mhrFor(wc).toFixed(2)}`, `table=${m[1]} computed=${sandbox.mhrFor(wc)}`);
 });
+
+console.log("--- Navigation innovation round (2026-09-05): 8 curated features from a 30-pattern nav-design brainstorm ---");
+// Only 8 of the 30 originally-brainstormed patterns were built. This dashboard is a single-view,
+// 12-tab flat calculator app (not a canvas/multi-pane/deep-hierarchy app), and 3 of the 8 curated
+// features overlap infrastructure already built earlier this session (the collapsible density-
+// adaptive rail, the Cmd/Ctrl+K command palette, the KPI Interaction Map's cross-tab jump() links) --
+// this section tests only the genuinely new additions layered on top. See README for the full
+// accounting of what was skipped and why.
+function currentActiveTab() {
+  const activeId = NAVTAB_IDS.find((id) => elements[id] && elements[id].getAttribute("aria-selected") === "true");
+  return activeId ? activeId.replace("navtab-", "") : null;
+}
+
+console.log("--- 1. Session Reload Memory (persists the last-active tab; restore-on-load verified live, see README) ---");
+sandbox.activateTab("variance");
+check(sandbox.localStorage._s["ams-cc-last-tab"] === "variance", "activateTab() persists the newly-active tab name to localStorage", sandbox.localStorage._s["ams-cc-last-tab"]);
+
+console.log("--- 2. Keyboard Chord Navigation (g, then a mnemonic letter) ---");
+check(typeof sandbox.cancelChord === "function", "window.cancelChord is exposed (the pending-chord state; the 2s timeout and the actual keydown interception are verified live, since this stub's document.addEventListener is an intentional no-op -- see stress.cjs's own comment on the Escape-key handler above)");
+check(typeof sandbox.CHORD_MAP === "object" && sandbox.CHORD_MAP !== null, "window.CHORD_MAP is exposed (checking the real map, not a hand-copied duplicate)");
+const chordEntries = Object.keys(sandbox.CHORD_MAP || {});
+check(chordEntries.length === 12, "the chord map has exactly 12 entries, one per tab", chordEntries.length);
+chordEntries.forEach((letter) => {
+  const tab = sandbox.CHORD_MAP[letter];
+  check(TABPANEL_IDS.includes("tab-" + tab), `chord "g then ${letter}" maps to a real, existing tab ("${tab}")`, TABPANEL_IDS.join(","));
+  check(html.includes('<span class="mono">' + letter + '</span>'), `the on-screen chord hint lists "${letter}" as a completion key, matching the real map (not a hint that's drifted from the actual bindings)`);
+});
+
+console.log("--- 3. Recency-Based Tab Stepper (Ctrl/Cmd+Shift+[ and ], MRU order) ---");
+check(typeof sandbox.stepMru === "function" && typeof sandbox.getTabVisitOrder === "function", "window.stepMru/getTabVisitOrder are exposed");
+const preStepOrder = sandbox.getTabVisitOrder();
+const n = preStepOrder.length;
+check(n >= 2, "at least 2 distinct tabs have been visited by this point in the run, so the stepper has something to step through", n);
+if (n >= 2) {
+  sandbox.stepMru(1);
+  check(currentActiveTab() === preStepOrder[1 % n], "first step (dir=1, the '[' key) lands on the pre-step MRU snapshot's 2nd entry", `expected=${preStepOrder[1 % n]} actual=${currentActiveTab()}`);
+  check(elements.mruToast.hidden === false, "the MRU toast becomes visible on step");
+  const step1Label = elements["navtab-" + preStepOrder[1 % n]].getAttribute("aria-label");
+  check(elements.mruToast.textContent.indexOf(step1Label) !== -1, "the toast announces the destination's real accessible label (aria-live, so a screen-reader user gets the same confirmation)", elements.mruToast.textContent);
+  sandbox.stepMru(1);
+  check(currentActiveTab() === preStepOrder[2 % n], "a SECOND step within the same burst lands on the STABLE pre-step snapshot's 3rd entry, not a reshuffled list -- the snapshot-freeze mechanism this feature exists to get right (activateTab() itself would otherwise reorder tabVisitOrder mid-gesture)", `expected=${preStepOrder[2 % n]} actual=${currentActiveTab()}`);
+  sandbox.stepMru(-1);
+  check(currentActiveTab() === preStepOrder[1 % n], "stepping back (dir=-1, the ']' key) within the same burst returns to the snapshot's 2nd entry");
+}
+
+console.log("--- 4. Ambient Data-State Nav Coloring (Governance + Capacity only -- the two tabs with a real, already-computed pass/fail signal) ---");
+check(typeof sandbox.setNavStatus === "function", "window.setNavStatus is exposed");
+sandbox.setNavStatus("capacity", "red");
+check(elements["navstatus-dot-capacity"].className === "nav-status-dot red", "setNavStatus sets the dot's class to reflect a 'red' status");
+check(elements["navstatus-capacity"].textContent === "Needs attention", "setNavStatus sets the paired aria-describedby text -- never color alone (WCAG 1.4.1)");
+sandbox.setNavStatus("capacity", "green");
+check(elements["navstatus-dot-capacity"].className === "nav-status-dot green", "setNavStatus updates the dot back to 'green'");
+check(elements["navstatus-capacity"].textContent === "All clear", "the paired text updates in lockstep with the dot");
+// Real wiring, not just the setter in isolation: cross-check against the SPC/MDQS/gate calculators'
+// OWN return values (a second, independent code path from updateGovernanceNavStatus()'s own
+// regex-on-rendered-HTML approach) -- these should agree if the wiring is correct, and could diverge
+// if either the regex mis-parses or the combining logic has a bug, so this isn't tautological.
+const spcForNav = sandbox.renderCapacitySPC();
+check(elements["navstatus-dot-capacity"].className === "nav-status-dot " + (spcForNav.outOfControl.some(Boolean) ? "red" : "green"), "the Capacity tab's nav dot matches renderCapacitySPC()'s own live outOfControl result", `outOfControl=${JSON.stringify(spcForNav.outOfControl)} dotClass=${elements["navstatus-dot-capacity"].className}`);
+const mdqsForNav = sandbox.calcMdqs();
+const gatesForNav = sandbox.calcGates();
+const anyBlocked = !gatesForNav.bomPass || !gatesForNav.poPass || !gatesForNav.confPass;
+const expectedGovStatus = anyBlocked || mdqsForNav.band === "red" ? "red" : mdqsForNav.band;
+check(elements["navstatus-dot-governance"].className === "nav-status-dot " + expectedGovStatus, "the Governance tab's nav dot matches calcMdqs()'s band + calcGates()'s pass/fail, combined the same way updateGovernanceNavStatus() combines them", `mdqsBand=${mdqsForNav.band} anyBlocked=${anyBlocked} dotClass=${elements["navstatus-dot-governance"].className}`);
+
+console.log("--- 5. Screen-Reader Landmark Teleporter (upgraded from a single skip-link) ---");
+check(html.includes('id="sidenav"') && /id="sidenav"[^>]*tabindex="-1"|tabindex="-1"[^>]*id="sidenav"/.test(html), "the nav landmark (#sidenav) is a valid fragment-link focus target (tabindex=-1) -- without this, a browser scrolls a skip-link's target into view but never actually MOVES keyboard focus there, a real pre-existing gap this round fixed");
+check(/id="main"[^>]*tabindex="-1"/.test(html), "the main landmark (#main) is likewise a valid focus target");
+check(html.includes('href="#sidenav"') && html.includes('href="#main"') && html.includes('id="skipToSearch"'), "the skip-links group offers all 3 real destinations: navigation, main content, and quick search");
+check(typeof elements.skipToSearch !== "undefined", "the quick-search skip control exists as a real, focusable element");
+elements.skipToSearch.fire("click");
+check(elements.paletteModal.classList.contains("open"), "activating the quick-search skip link opens the real command palette (the same one Cmd/Ctrl+K opens), not a separate parallel search");
+sandbox.closePalette();
+
+console.log("--- 6. Magnetic Hover Physics (CSS-only; the actual hover/focus rendering is verified live, this checks the authored rule + its reduced-motion fallback) ---");
+check(/\.sidenav-item:hover \.sidenav-icon,\.sidenav-item:focus-visible \.sidenav-icon\{transform:scale\(1\.18\)\}/.test(html), "the magnetic-hover scale rule is authored on both :hover AND :focus-visible (keyboard users get the same affordance, not a mouse-only effect)");
+check(/cubic-bezier\(\.34,1\.56,\.64,1\)/.test(html), "the hover transition uses a spring-overshoot easing curve, not a linear ease (the actual 'magnetic' feel)");
+check(/@media \(prefers-reduced-motion:reduce\)\{[\s\S]*?\.sidenav-icon\{transition:none\}/.test(html), "the magnetic-hover transition is disabled under prefers-reduced-motion (WCAG 2.3.3), in the same media block as this dashboard's other motion");
+
+console.log("--- 7. Cognitive-Load Focus Mode ---");
+check(typeof sandbox.setFocusMode === "function", "window.setFocusMode is exposed");
+sandbox.setFocusMode(true);
+check(elements.focusBtn.getAttribute("aria-pressed") === "true", "setFocusMode(true) marks the toggle button pressed");
+check(elements["__body"].classList.contains("focus-mode"), "setFocusMode(true) adds the focus-mode class to document.body");
+check(sandbox.localStorage._s["ams-cc-focus-mode"] === "1", "focus-mode preference persists to localStorage, same pattern as theme/contrast/nav-collapsed");
+sandbox.setFocusMode(false);
+check(elements.focusBtn.getAttribute("aria-pressed") === "false", "setFocusMode(false) un-presses the toggle");
+check(!elements["__body"].classList.contains("focus-mode"), "setFocusMode(false) removes the class again");
+
+console.log("--- 8. Spatial Bookmarks (saved scenarios) ---");
+check(["loadBookmarks", "captureCurrentScenario", "restoreScenario", "renderBookmarksList"].every((fn) => typeof sandbox[fn] === "function"), "all 4 bookmark functions are exposed");
+sandbox.activateTab("shouldcost");
+const emptyCapture = sandbox.captureCurrentScenario("Empty-values check");
+check(emptyCapture.tab === "shouldcost" && emptyCapture.name === "Empty-values check" && typeof emptyCapture.ts === "number", "captureCurrentScenario() returns the right shape (name/tab/ts)", JSON.stringify(emptyCapture));
+// Accepted limitation: .values is {} here because this stub's document.querySelectorAll only
+// recognizes two hardcoded selectors (the side-nav tab list and .tabpanel, per its own comment
+// above) -- "#tab-x input, #tab-x select" isn't one of them, so the real per-tab input-value capture
+// is verified live in a real browser instead, not re-implemented in this stub.
+check(Object.keys(emptyCapture.values).length === 0, "documents the accepted stub limitation explicitly, rather than silently passing on an untested assumption", JSON.stringify(emptyCapture.values));
+sandbox.localStorage.setItem("ams-cc-bookmarks", JSON.stringify([{ name: "Test Scenario", tab: "shouldcost", values: {}, ts: 12345 }]));
+const restored = sandbox.loadBookmarks();
+check(restored.length === 1 && restored[0].name === "Test Scenario", "loadBookmarks() reads back a manually-seeded bookmark correctly", JSON.stringify(restored));
+sandbox.activateTab("exec");
+sandbox.restoreScenario(restored[0]);
+check(currentActiveTab() === "shouldcost", "restoreScenario() activates the bookmark's saved tab", currentActiveTab());
+sandbox.renderBookmarksList();
+check(elements.bookmarksList.innerHTML.includes("Test Scenario"), "renderBookmarksList() renders the saved scenario's name");
+check(elements.bookmarksList.innerHTML.includes('data-idx="0"'), "renderBookmarksList() renders a data-idx hook for the restore/delete click delegation");
+const fakeDeleteClickEvt = { target: { getAttribute: (attr) => (attr === "data-idx" ? "0" : null), classList: { contains: (c) => c === "bookmarks-delete" } } };
+elements.bookmarksList.fire("click", fakeDeleteClickEvt);
+check(sandbox.loadBookmarks().length === 0, "clicking the delete control (delegated event) removes the bookmark from storage");
+sandbox.renderBookmarksList();
+check(elements.bookmarksList.innerHTML.includes("No saved scenarios yet"), "the empty state renders once the last bookmark is deleted");
 
 console.log("");
 console.log(failures === 0 ? "All stress checks passed." : `${failures} stress check(s) FAILED (${passes} passed).`);

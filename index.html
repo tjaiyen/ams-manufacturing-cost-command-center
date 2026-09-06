@@ -55,8 +55,9 @@
   code,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   a{color:rgb(var(--c-accent))}
   :focus-visible{outline:2px solid rgb(var(--c-accent));outline-offset:2px;border-radius:4px}
-  .skip-link{position:absolute;left:-999px;top:0;background:rgb(var(--c-accent));color:#04141a;padding:8px 14px;border-radius:0 0 8px 0;z-index:100}
-  .skip-link:focus{left:0}
+  .skip-links{position:absolute;top:0;left:0;z-index:300;display:flex;flex-direction:column;transform:translateY(-200%);transition:transform .15s}
+  .skip-links:focus-within{transform:translateY(0)}
+  .skip-link{background:rgb(var(--c-accent));color:#04141a;padding:8px 14px;border:none;border-radius:0 0 8px 0;font:inherit;text-align:left;cursor:pointer;text-decoration:none;display:block}
 
   .brand{display:flex;gap:9px;align-items:center;font-weight:700;font-size:14px}
   .dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-accent));flex:none}
@@ -84,10 +85,12 @@
   .sidenav-list{list-style:none;margin:0;padding:8px;display:flex;flex-direction:column;gap:2px;flex:1 1 auto}
   .sidenav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;
     background:none;color:rgb(var(--c-text-secondary));cursor:pointer;font-family:inherit;font-size:12.8px;
-    font-weight:600;text-align:left;width:100%;position:relative}
+    font-weight:600;text-align:left;width:100%;position:relative;transition:background .12s}
   .sidenav-item:hover{background:rgb(var(--c-accent)/.08);color:rgb(var(--c-text-primary))}
   .sidenav-item[aria-selected="true"]{background:rgb(var(--c-accent)/.14);color:rgb(var(--c-accent))}
-  .sidenav-icon{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+  .sidenav-icon{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+    transition:transform .28s cubic-bezier(.34,1.56,.64,1)} /* magnetic hover: spring overshoot, not a linear ease */
+  .sidenav-item:hover .sidenav-icon,.sidenav-item:focus-visible .sidenav-icon{transform:scale(1.18)}
   .sidenav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
   .sidenav-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sidenav[data-collapsed="true"] .sidenav-label{display:none}
@@ -209,6 +212,36 @@
   .formula-box{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgb(var(--c-bg-primary));border:1px solid var(--c-line);border-radius:6px;padding:10px 12px;margin:10px 0;font-size:12px;color:rgb(var(--c-accent));word-break:break-word}
   .modal-body p{font-size:12.5px;color:rgb(var(--c-text-secondary));margin:0}
 
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .nav-status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:auto;flex:none}
+  .nav-status-dot.green{background:rgb(var(--c-success))}
+  .nav-status-dot.amber{background:rgb(var(--c-warning))}
+  .nav-status-dot.red{background:rgb(var(--c-danger))}
+  .sidenav[data-collapsed="true"] .nav-status-dot{position:absolute;top:6px;right:6px;margin-left:0}
+  body.focus-mode .nav-status-dot{display:none}
+  body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn){opacity:.35}
+  body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn):hover,
+  body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn):focus-visible{opacity:1}
+  .bookmarks-details summary{list-style:none;cursor:pointer}
+  .bookmarks-details summary::-webkit-details-marker{display:none}
+  .bookmarks-panel{padding:6px 2px 2px}
+  .bookmarks-list{list-style:none;margin:4px 0 0;padding:0;max-height:160px;overflow-y:auto}
+  .bookmarks-item{display:flex;align-items:center;gap:4px}
+  .bookmarks-restore{flex:1;text-align:left;background:none;border:none;color:rgb(var(--c-text-secondary));
+    font:inherit;font-size:12px;padding:5px 8px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bookmarks-restore:hover,.bookmarks-restore:focus-visible{background:rgb(var(--c-accent)/.08);color:rgb(var(--c-text-primary))}
+  .bookmarks-delete{flex:none;background:none;border:none;color:rgb(var(--c-text-secondary));cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px}
+  .bookmarks-delete:hover,.bookmarks-delete:focus-visible{color:rgb(var(--c-danger))}
+  .bookmarks-empty{font-size:11.5px;color:rgb(var(--c-text-secondary));padding:5px 8px}
+  .sidenav[data-collapsed="true"] .bookmarks-panel{display:none}
+
+  .kbd-hint,.kbd-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:210;
+    background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:8px;padding:8px 14px;
+    font-size:12px;color:rgb(var(--c-text-secondary));box-shadow:0 8px 24px rgb(0 0 0/.35);white-space:nowrap}
+  .kbd-hint .mono,.kbd-toast{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .kbd-hint .mono{color:rgb(var(--c-accent));font-weight:700}
+  .kbd-toast{color:rgb(var(--c-accent))}
+
   .pb-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
   .pb-controls select,.pb-controls input{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);color:inherit;padding:7px 10px;border-radius:6px;font-family:inherit;font-size:12.5px}
   .pb-controls select{min-width:260px}
@@ -236,15 +269,20 @@
   .palette-item.selected{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
 
   @media (prefers-reduced-motion:reduce){
-    .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after{transition:none}
+    .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
+    .skip-links,.sidenav-item,.sidenav-icon{transition:none}
   }
 </style>
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to main content</a>
+<div class="skip-links" id="skipLinks">
+  <a class="skip-link" href="#sidenav">Skip to navigation</a>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <button class="skip-link" type="button" id="skipToSearch">Open quick search (⌘K)</button>
+</div>
 
 <div class="app-shell">
-<nav class="sidenav" id="sidenav" data-collapsed="false">
+<nav class="sidenav" id="sidenav" data-collapsed="false" tabindex="-1">
   <div class="sidenav-head">
     <span class="dot"></span>
     <span class="sidenav-brand-text"><b>AMS Cost Command Center</b><small>Sr. Manufacturing Cost Engineer</small></span>
@@ -263,8 +301,10 @@
     <button class="sidenav-item" data-tab="buildbuy" role="tab" aria-selected="false" aria-controls="tab-buildbuy" id="navtab-buildbuy" tabindex="-1" data-tooltip="Build-vs-Buy / CapEx" aria-label="Build-vs-Buy / CapEx">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 6l12 8M16 6 4 14"/></svg></span><span class="sidenav-label">Build-vs-Buy / CapEx</span>
     </button>
-    <button class="sidenav-item" data-tab="capacity" role="tab" aria-selected="false" aria-controls="tab-capacity" id="navtab-capacity" tabindex="-1" data-tooltip="Capacity Forecast" aria-label="Capacity Forecast">
+    <button class="sidenav-item" data-tab="capacity" role="tab" aria-selected="false" aria-controls="tab-capacity" id="navtab-capacity" tabindex="-1" data-tooltip="Capacity Forecast" aria-label="Capacity Forecast" aria-describedby="navstatus-capacity">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg></span><span class="sidenav-label">Capacity Forecast</span>
+      <span class="nav-status-dot" id="navstatus-dot-capacity" aria-hidden="true"></span>
+      <span class="sr-only" id="navstatus-capacity"></span>
     </button>
     <button class="sidenav-item" data-tab="tooling" role="tab" aria-selected="false" aria-controls="tab-tooling" id="navtab-tooling" tabindex="-1" data-tooltip="Tooling Amortization" aria-label="Tooling Amortization">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4z"/><path d="M3 11l7 4 7-4"/></svg></span><span class="sidenav-label">Tooling Amortization</span>
@@ -272,8 +312,10 @@
     <button class="sidenav-item" data-tab="dfm" role="tab" aria-selected="false" aria-controls="tab-dfm" id="navtab-dfm" tabindex="-1" data-tooltip="DFM/DFC Sensitivity" aria-label="DFM/DFC Sensitivity">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 7h14M3 13h14"/><circle cx="8" cy="7" r="1.6"/><circle cx="13" cy="13" r="1.6"/></svg></span><span class="sidenav-label">DFM/DFC Sensitivity</span>
     </button>
-    <button class="sidenav-item" data-tab="governance" role="tab" aria-selected="false" aria-controls="tab-governance" id="navtab-governance" tabindex="-1" data-tooltip="Data Governance" aria-label="Data Governance">
+    <button class="sidenav-item" data-tab="governance" role="tab" aria-selected="false" aria-controls="tab-governance" id="navtab-governance" tabindex="-1" data-tooltip="Data Governance" aria-label="Data Governance" aria-describedby="navstatus-governance">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3l6 2.5v4c0 4-2.5 6.5-6 7.5-3.5-1-6-3.5-6-7.5v-4L10 3z"/></svg></span><span class="sidenav-label">Data Governance</span>
+      <span class="nav-status-dot" id="navstatus-dot-governance" aria-hidden="true"></span>
+      <span class="sr-only" id="navstatus-governance"></span>
     </button>
     <button class="sidenav-item" data-tab="playbook" role="tab" aria-selected="false" aria-controls="tab-playbook" id="navtab-playbook" tabindex="-1" data-tooltip="Diagnostic Playbook" aria-label="Diagnostic Playbook">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 4h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H4z"/><path d="M16 4h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z"/></svg></span><span class="sidenav-label">Diagnostic Playbook</span>
@@ -290,15 +332,23 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 486/486 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 551/551 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
+    <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
     <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html" aria-label="Fit brief (opens in the same tab)" data-tooltip="Fit brief"><span class="label-text">Fit brief ↗</span></a>
+    <details class="bookmarks-details" id="bookmarksDetails">
+      <summary class="icobtn" data-tooltip="Saved Scenarios"><span class="label-text">Saved Scenarios</span></summary>
+      <div class="bookmarks-panel">
+        <button type="button" class="icobtn" id="saveBookmarkBtn"><span class="label-text">+ Save current view</span></button>
+        <ul class="bookmarks-list" id="bookmarksList"></ul>
+      </div>
+    </details>
   </div>
 </nav>
 
-<main id="main" class="content">
+<main id="main" class="content" tabindex="-1">
 <div class="wrap">
 
   <div class="frame warn"><strong>Read this before anything else.</strong> Every dollar figure,
@@ -1409,6 +1459,13 @@
     </div>
   </div>
 
+  <div class="kbd-hint" id="chordHint" hidden aria-live="polite">Go to… <span class="mono">e</span>xec ·
+    <span class="mono">s</span>hould-cost · <span class="mono">v</span>ariance · <span class="mono">b</span>uild-vs-buy ·
+    <span class="mono">c</span>apacity · <span class="mono">t</span>ooling · <span class="mono">d</span>fm ·
+    <span class="mono">g</span>overnance · <span class="mono">p</span>laybook · <span class="mono">r</span>isk ·
+    <span class="mono">f</span>ramework · <span class="mono">m</span>ethodology</div>
+  <div class="kbd-toast" id="mruToast" hidden aria-live="polite" role="status"></div>
+
   <footer>
     <p>Built as a purpose-specific companion to the <a href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html">AMS fit brief</a>,
       <a href="https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html">narrative work sample</a>,
@@ -1446,6 +1503,109 @@
   });
   try{ if(localStorage.getItem('ams-cc-contrast') === '1') applyContrast(true); }catch(e){}
 
+  // ---------- Cognitive-Load Focus Mode ----------
+  // Hides the ambient nav-status dots and dims every secondary footer control except Quick Jump --
+  // an explicit, instantly-reversible opt-out of ambient chrome for attention-fatigue/ADHD-friendly
+  // use, independent of theme/contrast (same persisted-preference pattern as both).
+  var focusBtn = document.getElementById('focusBtn');
+  function setFocusMode(on){
+    document.body.classList.toggle('focus-mode', on);
+    focusBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    try{ localStorage.setItem('ams-cc-focus-mode', on ? '1' : '0'); }catch(e){}
+  }
+  window.setFocusMode = setFocusMode;
+  focusBtn.addEventListener('click', function(){
+    setFocusMode(focusBtn.getAttribute('aria-pressed') !== 'true');
+  });
+  try{ if(localStorage.getItem('ams-cc-focus-mode') === '1') setFocusMode(true); }catch(e){}
+
+  // ---------- Spatial Bookmarks (saved scenarios) ----------
+  // Captures the active tab name + every <input>/<select> value inside that tab's own panel, named
+  // and restorable later -- generic across all 12 tabs (no per-tab special-casing). Uses
+  // document.querySelectorAll with a scoped selector string ("#tab-x input") rather than
+  // panel.querySelectorAll(...): this dashboard's stress.cjs DOM stub supports the former (already
+  // exercised by the existing sidenav-tab query above) but not element-scoped querySelector calls,
+  // which return non-elements from the stub -- confirmed by reproduction while building this.
+  var BOOKMARKS_KEY = 'ams-cc-bookmarks';
+  function loadBookmarks(){
+    try{ return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]'); }catch(e){ return []; }
+  }
+  function saveBookmarksToStorage(list){
+    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function activeTabName(){
+    var on = navTabs.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
+    return on ? on.getAttribute('data-tab') : 'exec';
+  }
+  function captureCurrentScenario(name){
+    var tab = activeTabName();
+    var values = {};
+    Array.prototype.slice.call(document.querySelectorAll('#tab-' + tab + ' input, #tab-' + tab + ' select')).forEach(function(el){
+      if (el.id) values[el.id] = el.value;
+    });
+    return { name: name, tab: tab, values: values, ts: Date.now() };
+  }
+  function restoreScenario(bm){
+    activateTab(bm.tab, { focus: false });
+    Object.keys(bm.values).forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.value = bm.values[id];
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function renderBookmarksList(){
+    var list = loadBookmarks();
+    var listEl = document.getElementById('bookmarksList');
+    if (!listEl) return;
+    listEl.innerHTML = list.length ? list.map(function(bm, i){
+      return '<li class="bookmarks-item"><button type="button" class="bookmarks-restore" data-idx="' + i + '">' +
+        escapeHtml(bm.name) + ' <span style="opacity:.6">(' + bm.tab + ')</span></button>' +
+        '<button type="button" class="bookmarks-delete" data-idx="' + i + '" aria-label="Delete ' + escapeHtml(bm.name) + '">×</button></li>';
+    }).join('') : '<li class="bookmarks-empty">No saved scenarios yet.</li>';
+  }
+  window.loadBookmarks = loadBookmarks;
+  window.captureCurrentScenario = captureCurrentScenario;
+  window.restoreScenario = restoreScenario;
+  window.renderBookmarksList = renderBookmarksList;
+  document.getElementById('saveBookmarkBtn').addEventListener('click', function(){
+    var name = window.prompt('Name this scenario (saves the current tab + its input values):');
+    if (!name) return;
+    var list = loadBookmarks();
+    list.push(captureCurrentScenario(name));
+    saveBookmarksToStorage(list);
+    renderBookmarksList();
+  });
+  document.getElementById('bookmarksList').addEventListener('click', function(ev){
+    var idxAttr = ev.target.getAttribute && ev.target.getAttribute('data-idx');
+    if (idxAttr === null || idxAttr === undefined) return;
+    var idx = parseInt(idxAttr, 10);
+    var list = loadBookmarks();
+    var bm = list[idx];
+    if (!bm) return;
+    if (ev.target.classList.contains('bookmarks-delete')){
+      list.splice(idx, 1);
+      saveBookmarksToStorage(list);
+      renderBookmarksList();
+    } else {
+      restoreScenario(bm);
+      document.getElementById('bookmarksDetails').removeAttribute('open');
+    }
+  });
+  renderBookmarksList();
+
+  // tabVisitOrder's initializer has to run BEFORE activateTab() can possibly be called (it is,
+  // immediately below, by restoreLastTab()) -- var declarations hoist, but their assignments don't,
+  // so leaving this down in the "Recency-Based Tab Stepper" block (its logical home, textually
+  // later) let restoreLastTab's very first call run recordTabVisit() against an as-yet-unassigned
+  // tabVisitOrder. A defensive `(tabVisitOrder || [])` guard alone wasn't enough either: the
+  // `var tabVisitOrder = ['exec']` statement further down still re-executes at ITS textual position
+  // and would silently clobber the just-recorded first visit back to the seed value. Reproduced live
+  // (not hypothetical) before moving this line -- see the Recency-Based Tab Stepper block for the
+  // rest of this feature's state and logic.
+  var tabVisitOrder = ['exec'];
+
   // ---------- Vertical side navigation: tabs + roving-tabindex keyboard nav + collapse ----------
   var navTabs = Array.prototype.slice.call(document.querySelectorAll('.sidenav-item[role="tab"]'));
   var panels = Array.prototype.slice.call(document.querySelectorAll('.tabpanel'));
@@ -1458,8 +1618,20 @@
       if (on && focusToo) b.focus();
     });
     panels.forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
+    try{ localStorage.setItem('ams-cc-last-tab', name); }catch(e){}
+    recordTabVisit(name);
   }
   window.activateTab = activateTab;
+  // Session Reload Memory: restore the last-active tab on load, same persisted-preference pattern
+  // as theme/contrast/nav-collapsed above. Silently no-ops if the stored tab no longer exists (e.g.
+  // an older save from before a tab was renamed) -- never activates an invalid tab name.
+  (function restoreLastTab(){
+    var stored = null;
+    try{ stored = localStorage.getItem('ams-cc-last-tab'); }catch(e){}
+    if (stored && stored !== 'exec' && navTabs.some(function(b){ return b.getAttribute('data-tab') === stored; })){
+      activateTab(stored, { focus: false });
+    }
+  })();
   navTabs.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab'), { focus: false }); }); });
 
   // Roving tabindex + arrow-key navigation, per the WAI-ARIA APG vertical Tabs pattern
@@ -1679,6 +1851,7 @@
   window.openPalette = openPalette;
   window.closePalette = closePalette;
   document.getElementById('paletteBtn').addEventListener('click', openPalette);
+  document.getElementById('skipToSearch').addEventListener('click', openPalette); // third skip-link target: not a landmark, but the fastest path for a keyboard user's very first tab stop
   document.getElementById('paletteClose').addEventListener('click', closePalette);
   paletteModal.addEventListener('click', function(ev){ if (ev.target === paletteModal) closePalette(); });
   paletteInput.addEventListener('input', function(){ renderPaletteList(paletteInput.value); });
@@ -1697,6 +1870,122 @@
     else if (ev.key === 'Tab'){
       if (explainModal.classList.contains('open')) trapModalTab(explainModal, ev);
       else if (paletteModal.classList.contains('open')) trapModalTab(paletteModal, ev);
+    }
+  });
+
+  function isTypingTarget(el){
+    if (!el) return false;
+    var tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!el.isContentEditable;
+  }
+  function tabLabelFor(name){
+    var btn = document.getElementById('navtab-' + name);
+    return btn ? btn.getAttribute('aria-label') : name;
+  }
+
+  // ---------- Keyboard Chord Navigation (g, then a mnemonic letter) ----------
+  // A sequential (not simultaneous) keybinding layer, same pattern as Gmail's "g then i" -- extends
+  // the addressable shortcut space past what single-modifier combos allow across 12 tabs. Guarded by
+  // isTypingTarget so a plain "g" keystroke while editing any calculator input is never intercepted.
+  var CHORD_MAP = { e: 'exec', s: 'shouldcost', v: 'variance', b: 'buildbuy', c: 'capacity',
+    t: 'tooling', d: 'dfm', g: 'governance', p: 'playbook', r: 'risk', f: 'framework', m: 'methodology' };
+  var chordPending = false;
+  var chordTimer = null;
+  var chordHintEl = document.getElementById('chordHint');
+  function cancelChord(){
+    chordPending = false;
+    clearTimeout(chordTimer);
+    if (chordHintEl) chordHintEl.hidden = true;
+  }
+  function startChord(){
+    chordPending = true;
+    if (chordHintEl) chordHintEl.hidden = false;
+    clearTimeout(chordTimer);
+    chordTimer = setTimeout(cancelChord, 2000);
+  }
+  window.cancelChord = cancelChord; // exposed for stress.cjs (simulating the 2s timeout without a real timer)
+  window.CHORD_MAP = CHORD_MAP; // exposed so stress.cjs checks the real map, not a hand-copied duplicate
+  document.addEventListener('keydown', function(ev){
+    if (isTypingTarget(ev.target)) return;
+    if (chordPending){
+      var target = CHORD_MAP[ev.key.toLowerCase()];
+      cancelChord();
+      if (target){ ev.preventDefault(); activateTab(target); }
+      return;
+    }
+    if (ev.key.toLowerCase() === 'g' && !ev.metaKey && !ev.ctrlKey && !ev.altKey){
+      ev.preventDefault();
+      startChord();
+    }
+  });
+
+  // ---------- Recency-Based Tab Stepper (MRU order, not DOM order) ----------
+  // Ctrl/Cmd+Tab is reserved by every major browser for its OWN tab-cycling and never reaches page
+  // JS, so this uses Ctrl/Cmd+Shift+[ and ] instead -- unclaimed, and pairs with the plain Arrow-key
+  // sequential nav already on the sidenav (Arrows = DOM order, this = recency order). A snapshot is
+  // taken on the FIRST step of a burst and held stable while stepping continues, so repeated presses
+  // walk a fixed list instead of one that reshuffles under you as each step itself "visits" a tab;
+  // the real MRU history only records the final landing spot once the burst settles (900ms idle).
+  // (tabVisitOrder itself is declared earlier, right before activateTab -- see that comment for why.)
+  var stepperSnapshot = null;
+  var stepperIndex = 0;
+  var stepperCommitTimer = null;
+  function recordTabVisit(name){
+    if (stepperSnapshot) return;
+    tabVisitOrder = tabVisitOrder.filter(function(t){ return t !== name; });
+    tabVisitOrder.unshift(name);
+  }
+  window.getTabVisitOrder = function(){ return tabVisitOrder.slice(); }; // exposed for stress.cjs
+  var mruToastEl = document.getElementById('mruToast');
+  var mruToastTimer = null;
+  function flashMruToast(name){
+    if (!mruToastEl) return;
+    mruToastEl.textContent = 'Switched to: ' + tabLabelFor(name);
+    mruToastEl.hidden = false;
+    clearTimeout(mruToastTimer);
+    mruToastTimer = setTimeout(function(){ mruToastEl.hidden = true; }, 900);
+  }
+  function stepMru(dir){
+    if (!stepperSnapshot){
+      if (tabVisitOrder.length < 2) return false;
+      stepperSnapshot = tabVisitOrder.slice();
+      stepperIndex = 0;
+    }
+    stepperIndex = (stepperIndex + dir + stepperSnapshot.length) % stepperSnapshot.length;
+    activateTab(stepperSnapshot[stepperIndex], { focus: false });
+    flashMruToast(stepperSnapshot[stepperIndex]);
+    clearTimeout(stepperCommitTimer);
+    stepperCommitTimer = setTimeout(function(){
+      recordTabVisit(stepperSnapshot[stepperIndex]);
+      stepperSnapshot = null;
+    }, 900);
+    return true;
+  }
+  window.stepMru = stepMru; // exposed for stress.cjs (drives it directly rather than synthesizing keydown+shift+bracket)
+
+  // ---------- Ambient Data-State Nav Coloring ----------
+  // A small live status dot on a nav item, reflecting a REAL already-computed signal from that
+  // tab's own calculator -- deliberately limited to the two tabs with a real, unambiguous pass/fail
+  // signal already in the code (Governance's MDQS band + guardrail gates; Capacity's SPC
+  // out-of-control flag), rather than inventing a threshold for tabs that don't have one to report.
+  var NAV_STATUS_TEXT = { green: 'All clear', amber: 'Caution', red: 'Needs attention' };
+  function setNavStatus(tabKey, status){
+    // Both the dot and its accessible-name span are static markup on the two wired-up nav buttons
+    // (never created via querySelector/appendChild) -- this dashboard's DOM stub in stress.cjs
+    // stubs getElementById directly rather than parsing HTML into a real queryable tree, so a
+    // dynamically-created child would be untestable there and, worse, undiscoverable by an AT
+    // walking the static accessibility tree on first paint.
+    var dot = document.getElementById('navstatus-dot-' + tabKey);
+    if (dot) dot.className = 'nav-status-dot' + (status ? ' ' + status : '');
+    var desc = document.getElementById('navstatus-' + tabKey);
+    if (desc) desc.textContent = NAV_STATUS_TEXT[status] || '';
+  }
+  window.setNavStatus = setNavStatus;
+  document.addEventListener('keydown', function(ev){
+    if (isTypingTarget(ev.target)) return;
+    if ((ev.metaKey || ev.ctrlKey) && ev.shiftKey && (ev.key === '[' || ev.key === ']')){
+      ev.preventDefault();
+      stepMru(ev.key === '[' ? 1 : -1);
     }
   });
 
@@ -2186,6 +2475,7 @@
       '<text x="' + (W - marginRight) + '" y="' + (yAt(lcl) - 5).toFixed(1) + '" font-size="11" fill="rgb(var(--c-warning))" text-anchor="end">LCL ' + lcl.toFixed(1) + '%</text>' +
       '</svg>';
     document.getElementById('capSpcWrap').innerHTML = svg;
+    setNavStatus('capacity', outOfControl.some(Boolean) ? 'red' : 'green');
     return { util: util, mean: mean, mrBar: mrBar, ucl: ucl, lcl: lcl, outOfControl: outOfControl };
   }
   window.renderCapacitySPC = renderCapacitySPC;
@@ -2253,6 +2543,7 @@
     var band = bandFor(score);
     document.getElementById('mdqsScore').textContent = score.toFixed(3) + '%';
     document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + band.toUpperCase() + '</span>';
+    updateGovernanceNavStatus();
     return { score: score, band: band };
   }
   window.calcMdqs = calcMdqs;
@@ -2271,10 +2562,25 @@
     document.getElementById('gateBomOut').innerHTML = gatePill(bomPass);
     document.getElementById('gatePoOut').innerHTML = gatePill(poPass);
     document.getElementById('gateConfOut').innerHTML = gatePill(confPass);
+    updateGovernanceNavStatus();
     return { bomPass: bomPass, poPass: poPass, confPass: confPass };
   }
   window.calcGates = calcGates;
   ['gateBom', 'gatePo', 'gateConf'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcGates); });
+  // Ambient nav status for the Governance tab: red if ANY guardrail gate is blocked or the MDQS
+  // band itself is red; amber if MDQS is amber (gates all passing); else green. Reads both
+  // calculators' own live DOM output rather than recomputing in parallel, so it can never drift
+  // from what the tab itself displays.
+  function updateGovernanceNavStatus(){
+    var mdqsBandEl = document.getElementById('mdqsBand');
+    var mdqsBand = mdqsBandEl && /red/.test(mdqsBandEl.innerHTML) ? 'red' : (mdqsBandEl && /amber/.test(mdqsBandEl.innerHTML) ? 'amber' : 'green');
+    var anyGateBlocked = ['gateBomOut', 'gatePoOut', 'gateConfOut'].some(function(id){
+      var el = document.getElementById(id);
+      return el && /BLOCKED/.test(el.innerHTML);
+    });
+    setNavStatus('governance', anyGateBlocked || mdqsBand === 'red' ? 'red' : mdqsBand);
+  }
+  window.updateGovernanceNavStatus = updateGovernanceNavStatus;
 
   // ---------- Cost Diagnostic Playbook ----------
   // 30 scenarios adapted from the fifth downloaded document's Section 7. Every dollar figure below

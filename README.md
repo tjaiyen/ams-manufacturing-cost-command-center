@@ -417,7 +417,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 486 checks, all passing as of this writing.
+Run: `node stress.cjs` — 551 checks, all passing as of this writing.
 
 ## Status
 
@@ -574,3 +574,59 @@ the Ornstein-Uhlenbeck mean-reversion model (already correctly described; added 
 correctly labeled as such; "linearizing" it per this round's own initial instinct would have made a
 correct, already-honest label wrong. Checks: 475 → 486. Committed locally — pending push with explicit
 confirmation, same discipline as every prior round.
+
+**2026-09-05, fifteenth round (8 curated navigation features, from a 30-pattern nav-design
+brainstorm):** a 30-feature "next-gen navigation" brainstorm (spatial wayfinding, power-user speed,
+micro-interaction, and inclusivity patterns) was generated as a general design exercise, then
+curated down to 8 for this specific dashboard — most of the other 22 patterns assume a canvas,
+multi-pane, or deep-hierarchy app, which this isn't (a single-view, 12-tab flat calculator), and 3
+were dropped as duplicative of infrastructure already built earlier this session (the collapsible
+density-adaptive rail, the Cmd/Ctrl+K command palette, the KPI Interaction Map's cross-tab `jump()`
+links). Built, in order of the original brainstorm's categories:
+- **Session Reload Memory** — the last-active tab now survives a hard reload (`localStorage`, same
+  pattern as theme/contrast/nav-collapsed).
+- **Spatial Bookmarks** — a "Saved Scenarios" panel in the sidenav footer captures the active tab +
+  every input/select value on it, named and restorable later; generic across all 12 tabs (no
+  per-tab special-casing).
+- **Keyboard Chord Navigation** — `g` then a mnemonic letter (`g s` → Should-Cost, `g v` → Variance,
+  etc.) jumps directly to any of the 12 tabs, Gmail-style, with an on-screen hint overlay.
+- **Recency-Based Tab Stepper** — `Ctrl/Cmd+Shift+[` and `]` cycle tabs in most-recently-visited
+  order rather than DOM order (Ctrl/Cmd+Tab itself is reserved by every major browser for its own
+  tab-cycling and never reaches page JS, so this uses an unclaimed combo instead).
+- **Ambient Data-State Nav Coloring** — a small live status dot on exactly two nav items (Data
+  Governance, Capacity Forecast) reflecting each tab's own already-computed real signal (the MDQS
+  band + guardrail gates; the SPC out-of-control flag) — deliberately not applied to the other 10
+  tabs, which don't have a real pass/fail signal to report.
+- **Screen-Reader Landmark Teleporter** — the single skip-link became a 3-item group (nav / main
+  content / quick search), and a real pre-existing gap was fixed along the way: neither `#sidenav`
+  nor `#main` had `tabindex="-1"`, so the original skip-link scrolled to its target without ever
+  actually moving keyboard focus there.
+- **Magnetic Hover Physics** — sidenav icons scale up on hover/focus with a spring-overshoot easing
+  curve, on both `:hover` and `:focus-visible` (not mouse-only), fully suppressed under
+  `prefers-reduced-motion`.
+- **Cognitive-Load Focus Mode** — one toggle hides the ambient status dots and dims secondary
+  footer controls, for attention-fatigue/ADHD-friendly use; instantly reversible, persisted like
+  every other display preference here.
+
+Two real bugs found and fixed while building, both live-browser-caught (the stub couldn't have
+caught either — see Accepted Limitations): (1) `setNavStatus`/`setFocusMode`'s first drafts used
+`element.querySelector(...)`/`appendChild(...)` and `document.body`, none of which this file's
+`stress.cjs` stub supports the same way a real browser does — fixed by using only static markup +
+`getElementById`, the same discipline every other feature in this file already follows, and by
+adding a minimal `document.body` stub. (2) A genuine var-hoisting bug: `tabVisitOrder`'s initializer
+sat inside the "Recency-Based Tab Stepper" block, textually AFTER `restoreLastTab()`'s immediate
+call chain (`restoreLastTab → activateTab → recordTabVisit`) — on a real reload with a previously
+different tab saved, this threw a live `TypeError` (var declarations hoist, their assignments don't)
+and, even after an initial defensive-guard attempt, silently clobbered the just-recorded visit back
+to the seed value the moment script execution reached the original `var` statement. Fixed by moving
+the one-line initializer earlier, not by defending against the symptom.
+
+**Accepted limitations:** `stress.cjs`'s DOM stub only recognizes 2 hardcoded `querySelectorAll`
+selectors and has no working `element.querySelector`, so `captureCurrentScenario()`'s real per-tab
+input capture returns `{}` in the stub (documented explicitly in the test, not silently passed) —
+verified live instead, where it correctly captured all 24 real inputs on the Should-Cost tab.
+Likewise, `document.addEventListener` is an intentional stub no-op (this file's own established
+pattern, predating this round), so the actual keydown-driven chord/stepper interception is verified
+live rather than re-implemented in the stub; the underlying state machines (`stepMru`, `cancelChord`,
+`CHORD_MAP`) are still directly tested. Checks: 486 → 551. Committed locally — pending push with
+explicit confirmation, same discipline as every prior round.
