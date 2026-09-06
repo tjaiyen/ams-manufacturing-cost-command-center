@@ -509,6 +509,37 @@ check(elements.waterfallChart.innerHTML.includes("<svg"), "calcVariance() render
 check((elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length === 6, "exactly 6 dashed connector lines link the 7 bars -- one between each consecutive pair, the defining visual feature of a bridge chart vs. a grouped bar chart", (elements.waterfallChart.innerHTML.match(/<line[^>]*stroke-dasharray/g) || []).length);
 check(!html.includes(".wf-col") && !html.includes(".wf-value") && !html.includes(".wf-label") && !html.includes(".wf-bar"), "the old grouped-bar-chart CSS (.wf-col/.wf-value/.wf-label/.wf-bar) was fully removed, not left as dead CSS alongside the new SVG chart");
 
+console.log("--- Variance Tug-of-War: golden values (pre-registered by hand from the same 6 default variances above) ---");
+// mat = MPV+MQV = 3025-1040 = 1985; labor = DLRV+DLEV = 1350+2520 = 3870; oh = VOSV+FOVV = 430-960 = -530
+// net = 1985+3870-530 = 5325 (matches outNet exactly -- same 6 numbers, just regrouped, not recomputed
+// from scratch); magnitude = |1985|+|3870|+|-530| = 6385; ratio = 5325/6385 = 0.8339859044635866;
+// tension = 1-0.8339859... = 0.1660141, rounds to 17%. pullFav (the only negative group, oh) = 530;
+// pullUnfav (mat+labor, both positive) = 5855; unfavorable leads 5855/530 = 11.0:1 (toFixed(1)).
+check(typeof sandbox.calcTugOfWar === "function", "window.calcTugOfWar is exposed as a function");
+const towState = sandbox.calcTugOfWar(3025, -1040, 1350, 2520, 430, -960);
+check(towState.mat === 1985 && towState.labor === 3870 && towState.oh === -530, "calcTugOfWar groups the 6 variances into material/labor/overhead exactly as pre-registered", JSON.stringify(towState));
+check(towState.net === 5325, "calcTugOfWar's net exactly equals calcVariance's own net (5325) -- same numbers regrouped, not a parallel recomputation", towState.net);
+check(towState.magnitude === 6385, "gross force magnitude (sum of absolute group values) matches golden value", towState.magnitude);
+check(Math.abs(towState.ratio - 0.8339859044635866) < 1e-9, "net/magnitude ratio matches the pre-registered golden value", towState.ratio);
+check(Math.round(towState.tension * 100) === 17, "tension (1 - |ratio|) rounds to the pre-registered 17%", towState.tension);
+check(towState.pullFav === 530 && towState.pullUnfav === 5855, "one-sided pull totals match golden values (only Overhead is favorable)", JSON.stringify(towState));
+check(towState.summary === "Net +$5,325 — the unfavorable pull leads by 11.0:1.", "plain-language summary matches the pre-registered exact string", towState.summary);
+// Two edge branches of the same summary logic, not exercised by the page's own default inputs --
+// tested directly against the pure function so both branches are actually covered, not just implied.
+const towAllZero = sandbox.calcTugOfWar(0, 0, 0, 0, 0, 0);
+check(towAllZero.magnitude === 0 && towAllZero.ratio === 0 && towAllZero.tension === 0, "all-zero variances: magnitude/ratio/tension all safely resolve to 0, no division by zero", JSON.stringify(towAllZero));
+check(towAllZero.summary === "All six variances net to exactly zero — no pull either direction.", "all-zero branch produces the exact pre-registered summary string", towAllZero.summary);
+const towOneSidedFav = sandbox.calcTugOfWar(-100, 0, -200, 0, -50, 0); // mat=-100, labor=-200, oh=-50, all favorable
+check(towOneSidedFav.pullUnfav === 0 && towOneSidedFav.pullFav === 350, "one-sided-favorable case: pullUnfav is exactly 0, pullFav is the full 350 magnitude", JSON.stringify(towOneSidedFav));
+check(towOneSidedFav.summary === "+$350 favorable, entirely one-sided — no offsetting unfavorable variance this period.", "one-sided-favorable branch produces the exact pre-registered summary string", towOneSidedFav.summary);
+
+check(elements.towNetOut.textContent === "+$5,325", "rendered net-position output matches golden value (same net as the waterfall's outNet)", elements.towNetOut.textContent);
+check(elements.towTensionOut.textContent === "17%", "rendered tension output matches golden value", elements.towTensionOut.textContent);
+check(elements.towSummaryOut.textContent === towState.summary, "rendered summary line matches calcTugOfWar's own returned summary exactly (no separate re-derivation in the render path)", elements.towSummaryOut.textContent);
+check(elements.tugOfWarWrap.innerHTML.includes("<svg") && elements.tugOfWarWrap.innerHTML.includes('role="img"'), "renderTugOfWar() renders an actual accessible <svg> (role=img), not just text outputs");
+check((elements.tugOfWarWrap.innerHTML.match(/<rect/g) || []).length === 5, "exactly 5 <rect> elements: one base bar per group (Material, Labor, Overhead) + one hatch overlay on each of the 2 unfavorable groups (Material, Labor) -- Overhead is the only favorable group, so it gets no hatch", (elements.tugOfWarWrap.innerHTML.match(/<rect/g) || []).length);
+check(elements.tugOfWarWrap.innerHTML.includes('class="tow-flag"'), "the net-position flag group is rendered with the class the reduced-motion CSS rule targets");
+
 console.log("--- Build-vs-Buy / NPV: golden values ---");
 check(elements.bbUnitSave.textContent === "$90.22", "unit saving matches golden value", elements.bbUnitSave.textContent);
 check(elements.bbAnnualSave.textContent === "$162,396", "annual saving matches golden value", elements.bbAnnualSave.textContent);
@@ -672,12 +703,12 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 21, "exactly 21 navigable items in the command index", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 21, "all 21 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 22, "exactly 22 navigable items in the command index (+1: Variance Tug-of-War)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 22, "all 22 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 21, "empty-query search returns all 21 items", allMatch.length);
+check(allMatch.length === 22, "empty-query search returns all 22 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
@@ -965,12 +996,12 @@ check(foundBannedInRisk.length === 0, "none of the banned/wrong-claim strings le
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 17, "exactly 17 explain buttons are wired in the HTML (16 from before + the Monte Carlo Explorer)", explainButtonCount);
+check(explainButtonCount === 18, "exactly 18 explain buttons are wired in the HTML (17 from before + Variance Tug-of-War)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");

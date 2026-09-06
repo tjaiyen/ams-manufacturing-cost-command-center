@@ -244,7 +244,10 @@ so the very keyboard-nav checks written to test the new nav caught it first — 
 3. **Variance Waterfall** — a six-item standard-cost variance decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOVV;
    individually-real formulas, deliberately simplified from the complete 8-variance textbook model —
    see the Source Ledger),
-   fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
+   fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Variance Tug-of-War** — the
+   same six numbers regrouped into material/labor/overhead and shown as forces pulling toward
+   favorable or unfavorable, answering a question the waterfall's running total doesn't: is the net
+   result a landslide or a knife's-edge tie between offsetting drivers — and a **Commodity Price Exposure
    Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
    open purchasing volume → projected dollar exposure, flagged at a real 8% threshold) — and a
    **Mean-Reversion Forward Band** (Ornstein-Uhlenbeck): where the spot price is actually expected
@@ -417,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 582 checks, all passing as of this writing.
+Run: `node stress.cjs` — 601 checks, all passing as of this writing.
 
 ## Status
 
@@ -733,3 +736,22 @@ floors to `3.46e-36`, rounding to "0 units"). **Accepted limitation:** the P0 fl
 large, cosmetically odd negative number (`$-900,000.00`) — noted here rather than silently fixed,
 since it wasn't the reported defect and is a separate, smaller cosmetic gap. Checks: 577 → 582.
 Committed locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-06, nineteenth round (new feature, from a `/viz-innovation` catalog):** added **Variance
+Tug-of-War**, a new visualization on the Variance tab, picked from a 30-concept data-storytelling
+brainstorm specifically because it needs zero new fabricated data — it regroups the same six
+already-computed, already-verified variances (MPV/MQV/DLRV/DLEV/VOSV/FOVV) into material/labor/
+overhead and renders them as forces pulling toward favorable (left) or unfavorable (right) from a
+shared center, with a net-position flag whose distance from center is bounded to `[-1, +1]` by the
+triangle inequality (`ratio = net / (|material| + |labor| + |overhead|)`). Answers a question the
+waterfall's running cascade doesn't surface at a glance: is the net result a landslide (every group
+pulling the same direction) or a knife's-edge tie between offsetting drivers? Colorblind-safe dual
+encoding (a diagonal hatch pattern on unfavorable bars, not color alone), an exact numeric "tension"
+readout paired with a small decorative net-flag jitter that's capped and switched off under
+`prefers-reduced-motion`, and a plain-language one-line summary ("the unfavorable pull leads by
+11.0:1") computed the same deterministic way, not templated prose. `calcTugOfWar()` is a pure
+state-computation function (no DOM reads) separated from `renderTugOfWar()`, the same pattern
+`qsComputeState()`/`renderQStarChart()` already established on the Build-vs-Buy tab, so it's directly
+unit-testable. Golden values pre-registered by hand (B35) before writing any check. Checks: 582 →
+601. Committed locally — pending push with explicit confirmation, same discipline as every prior
+round.

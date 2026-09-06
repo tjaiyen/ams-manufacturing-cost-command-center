@@ -268,9 +268,16 @@
   .palette-item:hover{background:rgb(var(--c-accent)/.08)}
   .palette-item.selected{background:rgb(var(--c-accent)/.15);color:rgb(var(--c-accent))}
 
+  /* Variance Tug-of-War: a small, capped jitter on the net-position flag when the two sides are close
+     to a tie (see calcTugOfWar's `tension`) -- purely decorative, never the only signal (towTensionOut
+     always states the same thing as an exact number), and switched off below under reduced-motion. */
+  @keyframes towTremble{0%,100%{transform:translateX(-1.5px)}50%{transform:translateX(1.5px)}}
+  .tow-flag{animation-name:towTremble;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+
   @media (prefers-reduced-motion:reduce){
     .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
     .skip-links,.sidenav-item,.sidenav-icon{transition:none}
+    .tow-flag{animation:none}
   }
 </style>
 </head>
@@ -332,7 +339,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 582/582 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 601/601 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -636,7 +643,22 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Variance Tug-of-War <button class="explain-btn" data-explain="tow" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6 VARIANCES, GROUPED BY COST CATEGORY</span></div>
+      <p class="lede" style="margin-bottom:12px">The waterfall above shows the sequential build-up to
+        the net total; this asks a different question the waterfall can't answer at a glance — is
+        the net result a landslide (one side clearly winning) or a knife's-edge tie between offsetting
+        favorable and unfavorable drivers? The same six variances, grouped into material/labor/overhead,
+        pull left (favorable) or right (unfavorable) from center.</p>
+      <div id="tugOfWarWrap"></div>
+      <div class="outline" style="margin-top:10px">
+        <div class="line"><span>Net position</span><span class="mono" id="towNetOut">$0</span></div>
+        <div class="line"><span>Tension (distance from a knife's-edge tie)</span><span class="mono" id="towTensionOut">0%</span></div>
+        <div class="line total"><span id="towSummaryOut">—</span><span></span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Commodity Price Exposure Early Warning</h2><span class="tag">FORWARD-LOOKING MPV</span></div>
       <p class="lede" style="margin-bottom:12px">The forward-looking cousin of the MPV line above —
         a spot-price shift against open purchasing volume, before it becomes a realized variance.</p>
@@ -1711,6 +1733,7 @@
     dlev: { title: 'Direct Labor Efficiency Variance (DLEV)', formula: 'DLEV = (Actual Hours − Standard Hours) × Standard Rate', body: 'Captures a pure productivity effect — a stale routing standard, work-instruction ambiguity, or a genuinely slower job — independent of the wage rate paid.' },
     vosv: { title: 'Variable Overhead Spending Variance (VOSV)', formula: 'VOSV = Actual Variable OH − (Actual Hours × Standard Variable OH Rate)', body: 'Isolates whether consumables (coolant, shielding gas, cutting-tool wear) cost more or less per hour than the standard rate assumed, for the hours actually run.' },
     fovv: { title: 'Fixed Overhead Volume Variance (FOVV)', formula: 'FOVV = (Budgeted Hours − Actual Hours) × Standard Fixed OH Rate', body: 'Not a spending variance at all — it is the P&L cost of running fewer or more hours than the volume the fixed-overhead rate assumed, i.e. unabsorbed (or over-absorbed) capacity. Relabeled FOHV→FOVV 2026-09-05: "FOHV" more commonly denotes the combined spending+volume fixed-overhead variance in the cost-accounting literature; FOVV is the less-ambiguous abbreviation for the volume-only figure this calculator actually computes.' },
+    tow: { title: 'Variance Tug-of-War (Net Force Balance)', formula: 'magnitude = |material| + |labor| + |overhead|,  ratio = net / magnitude  (bounded in [−1, +1] by the triangle inequality)', body: 'Groups the same six variances above into material (MPV+MQV), labor (DLRV+DLEV), and overhead (VOSV+FOVV), then asks a question the waterfall\'s running total doesn\'t answer at a glance: is the net result a landslide (ratio near ±1 — every group pulled the same direction) or a knife\'s-edge tie between offsetting drivers (ratio near 0)? Not a named industry technique — an original visualization built from this dashboard\'s own already-computed, already-verified variance numbers, not a new claim about AMS.' },
     mdqs: { title: 'Master Data Quality Scorecard (MDQS)', formula: 'MDQS = 100% − (30%·routing_err_rate + 30%·confirm_var_rate + 25%·unlinked_scrap_rate + 15%·stale_standard_rate)', body: 'A single weighted score across four independent data-quality signals, banded green ≥98% / amber 93–98% / red <93% — the same formula the Governance tab computes live, sourced from a downloaded document’s own real, well-defined SAP data-governance model.' },
     mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'The fixed OH allocation is a capital/facility question, spread over how many hours the machine is actually expected to run. The variable operating rate is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab. (CIMA/Indian cost-accounting calls this exact split "standing vs. running charges" — same concept, US-managerial-accounting vocabulary used here instead.)' },
     learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
@@ -1789,6 +1812,7 @@
     { label: 'MHR Build-Up Calculator', tab: 'shouldcost', scrollTo: 'mhrDepOut' },
     { label: 'Monte Carlo Should-Cost Explorer', tab: 'shouldcost', scrollTo: 'mcP50Out' },
     { label: 'Variance Waterfall', tab: 'variance' },
+    { label: 'Variance Tug-of-War', tab: 'variance', scrollTo: 'towNetOut' },
     { label: 'Commodity Price Exposure Early Warning', tab: 'variance', scrollTo: 'cpShiftPct' },
     { label: 'Mean-Reversion Forward Band', tab: 'variance', scrollTo: 'ouExpected' },
     { label: 'Build-vs-Buy / CapEx', tab: 'buildbuy' },
@@ -2167,11 +2191,108 @@
       { label: 'VOSV', value: VOSV },
       { label: 'FOVV', value: FOVV }
     ], net);
+    renderTugOfWar(calcTugOfWar(MPV, MQV, DLRV, DLEV, VOSV, FOVV));
 
     return { MPV: MPV, MQV: MQV, DLRV: DLRV, DLEV: DLEV, VOSV: VOSV, FOVV: FOVV, net: net };
   }
   window.calcVariance = calcVariance;
   window.renderWaterfall = renderWaterfall;
+
+  // ---------- Variance Tug-of-War: net force balance across the same 6 variances, grouped by cost
+  // category. Pure state computation (no DOM reads), same separation-of-concerns pattern as
+  // qsComputeState() on the Build-vs-Buy tab, so this is directly testable without a browser. ----------
+  function calcTugOfWar(MPV, MQV, DLRV, DLEV, VOSV, FOVV){
+    var mat = MPV + MQV;
+    var labor = DLRV + DLEV;
+    var oh = VOSV + FOVV;
+    var net = mat + labor + oh;
+    var magnitude = Math.abs(mat) + Math.abs(labor) + Math.abs(oh);
+    // By the triangle inequality, |net| <= magnitude always, so ratio is bounded in [-1, 1]: -1/+1
+    // means every group pulled the same direction (a landslide), 0 means the pulls fully offset.
+    var ratio = magnitude > 0 ? (net / magnitude) : 0;
+    var tension = magnitude > 0 ? (1 - Math.abs(ratio)) : 0;
+    var pullFav = (mat < 0 ? -mat : 0) + (labor < 0 ? -labor : 0) + (oh < 0 ? -oh : 0);
+    var pullUnfav = (mat > 0 ? mat : 0) + (labor > 0 ? labor : 0) + (oh > 0 ? oh : 0);
+    var summary;
+    if (pullFav === 0 && pullUnfav === 0){
+      summary = 'All six variances net to exactly zero — no pull either direction.';
+    } else if (pullFav === 0){
+      summary = fmtMoney(pullUnfav) + ' unfavorable, entirely one-sided — no offsetting favorable variance this period.';
+    } else if (pullUnfav === 0){
+      summary = fmtMoney(pullFav) + ' favorable, entirely one-sided — no offsetting unfavorable variance this period.';
+    } else {
+      var biggerSide = pullUnfav >= pullFav ? 'unfavorable' : 'favorable';
+      var biggerVal = Math.max(pullFav, pullUnfav), smallerVal = Math.min(pullFav, pullUnfav);
+      summary = 'Net ' + fmtMoney(net) + ' — the ' + biggerSide + ' pull leads by ' + (biggerVal / smallerVal).toFixed(1) + ':1.';
+    }
+    return { mat: mat, labor: labor, oh: oh, net: net, magnitude: magnitude, ratio: ratio, tension: tension, pullFav: pullFav, pullUnfav: pullUnfav, summary: summary };
+  }
+  window.calcTugOfWar = calcTugOfWar;
+
+  function renderTugOfWar(state){
+    var W = 640, H = 190, marginLeft = 92, marginRight = 92, marginTop = 14, marginBottom = 14;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var rows = [
+      { label: 'Material', value: state.mat },
+      { label: 'Labor', value: state.labor },
+      { label: 'Overhead', value: state.oh }
+    ];
+    var rowH = plotH / rows.length;
+    var centerX = marginLeft + plotW / 2;
+    var halfW = plotW / 2 - 14; // leaves room for the arrowhead + net flag at the extreme ends
+    // Bars AND the net flag share this one scale (magnitude, not the single largest group) so the
+    // flag can never visually overshoot the plotted bars: if all three groups pulled the same
+    // direction, net === magnitude, ratio === ±1, and the flag lands exactly at the far edge.
+    function barLen(v){ return state.magnitude > 0 ? (Math.abs(v) / state.magnitude) * halfW : 0; }
+
+    var bars = '';
+    rows.forEach(function(row, rowIndex){
+      var rowY = marginTop + rowH * rowIndex + rowH / 2;
+      var len = barLen(row.value);
+      var isUnfav = row.value > 0;
+      var barH = 16;
+      var x1 = isUnfav ? centerX : centerX - len;
+      bars += '<rect x="' + x1.toFixed(1) + '" y="' + (rowY - barH / 2).toFixed(1) + '" width="' + len.toFixed(1) + '" height="' + barH + '" fill="' + (isUnfav ? 'rgb(var(--c-danger)/.55)' : 'rgb(var(--c-success)/.6)') + '"/>';
+      if (isUnfav && len > 0){
+        // Colorblind-safe dual encoding: a diagonal hatch overlay on the unfavorable (red) bars only
+        // -- direction is readable from texture alone, not just the red/green hue.
+        bars += '<rect x="' + x1.toFixed(1) + '" y="' + (rowY - barH / 2).toFixed(1) + '" width="' + len.toFixed(1) + '" height="' + barH + '" fill="url(#towHatch)"/>';
+      }
+      if (len > 1){
+        var tipX = isUnfav ? (x1 + len) : x1;
+        var dir = isUnfav ? 1 : -1;
+        bars += '<polygon points="' + tipX.toFixed(1) + ',' + (rowY - 6).toFixed(1) + ' ' + tipX.toFixed(1) + ',' + (rowY + 6).toFixed(1) + ' ' + (tipX + dir * 9).toFixed(1) + ',' + rowY.toFixed(1) + '" fill="' + (isUnfav ? 'rgb(var(--c-danger))' : 'rgb(var(--c-success))') + '"/>';
+      }
+      bars += '<text x="' + (marginLeft - 10) + '" y="' + (rowY + 4) + '" font-size="12" fill="rgb(var(--c-text-secondary))" text-anchor="end">' + row.label + '</text>';
+      bars += '<text x="' + (W - marginRight + 10) + '" y="' + (rowY + 4) + '" font-size="12" fill="rgb(var(--c-text-primary))" text-anchor="start" font-family="ui-monospace,Menlo,monospace">' + fmtMoney(row.value) + '</text>';
+    });
+
+    var netX = centerX + state.ratio * halfW;
+    var flagDuration = (2.1 - state.tension * 1.6).toFixed(2);
+    var flag = '<g class="tow-flag" style="animation-duration:' + flagDuration + 's" aria-hidden="true">' +
+      '<line x1="' + netX.toFixed(1) + '" y1="' + marginTop + '" x2="' + netX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-accent))" stroke-width="2" stroke-dasharray="4,3"/>' +
+      '<polygon points="' + netX.toFixed(1) + ',' + (marginTop - 2) + ' ' + (netX - 7).toFixed(1) + ',' + (marginTop - 14) + ' ' + (netX + 7).toFixed(1) + ',' + (marginTop - 14) + '" fill="rgb(var(--c-accent))"/>' +
+      '</g>';
+    var centerLine = '<line x1="' + centerX.toFixed(1) + '" y1="' + marginTop + '" x2="' + centerX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+
+    var ariaLabel = 'Tug-of-war diagram. Material ' + fmtMoney(state.mat) + (state.mat > 0 ? ' unfavorable' : state.mat < 0 ? ' favorable' : ' flat') +
+      ', Labor ' + fmtMoney(state.labor) + (state.labor > 0 ? ' unfavorable' : state.labor < 0 ? ' favorable' : ' flat') +
+      ', Overhead ' + fmtMoney(state.oh) + (state.oh > 0 ? ' unfavorable' : state.oh < 0 ? ' favorable' : ' flat') +
+      '. Net position ' + fmtMoney(state.net) + ', ' + Math.round(Math.abs(state.ratio) * 100) + '% of the way toward ' + (state.ratio >= 0 ? 'unfavorable' : 'favorable') + '.';
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:640px" role="img" aria-label="' + ariaLabel + '">' +
+      '<defs><pattern id="towHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+      '<line x1="0" y1="0" x2="0" y2="6" stroke="rgb(var(--c-bg-primary))" stroke-width="3"/></pattern></defs>' +
+      centerLine + bars + flag +
+      '</svg>';
+    document.getElementById('tugOfWarWrap').innerHTML = svg;
+
+    document.getElementById('towNetOut').textContent = fmtMoney(state.net);
+    document.getElementById('towNetOut').style.color = state.net > 0 ? 'rgb(var(--c-danger))' : (state.net < 0 ? 'rgb(var(--c-success))' : '');
+    document.getElementById('towTensionOut').textContent = Math.round(state.tension * 100) + '%';
+    document.getElementById('towSummaryOut').textContent = state.summary;
+  }
+  window.renderTugOfWar = renderTugOfWar;
 
   // Rewritten 2026-09-05 (Pathway B of the KPI research pass) from a grouped bar chart -- every bar
   // floating from a shared zero baseline -- into a genuine cascading bridge/waterfall chart: each
