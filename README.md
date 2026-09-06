@@ -417,7 +417,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 564 checks, all passing as of this writing.
+Run: `node stress.cjs` — 577 checks, all passing as of this writing.
 
 ## Status
 
@@ -663,3 +663,55 @@ verified live in a real browser; the inverse-math functions it depends on (`qsPr
 `qsGammaFromPrice`) are exposed and tested directly with the exact pre-registered golden values.
 Checks: 551 → 564. Committed locally — pending push with explicit confirmation, same discipline as
 every prior round.
+
+**2026-09-05, seventeenth round (`/stress-test` of the Break-Even Crossover Playground):** self-
+review plus an independent fresh-context reviewer, both driving real events against a live browser
+(not just the stub), each finding reproduced with a pre-registered expectation before being
+accepted (B35). 8 real findings, all fixed and re-verified; both reviewers independently converged
+on the same top 3:
+
+1. **HIGH — no `pointercancel` handling.** An interrupted drag (touch-scroll conflict, lost pointer
+   capture, a context menu opening mid-drag) never fires `pointerup`, so `qsDragHandle`/
+   `qsDragContext` and the global `pointermove`/`pointerup` listeners stayed attached forever —
+   *any* subsequent mouse movement anywhere on the page kept silently overwriting `qsVendorP0`/
+   `qsGamma`. Reproduced live (dispatch `pointercancel`, then an unrelated `pointermove` far from
+   the chart, watch the input change); fixed by wiring `pointercancel` to the same cleanup.
+2. **HIGH — a directly-typed negative P0 → literal "NaN" written into the visible γ input.**
+   `qsVendorP0` has no `min=""` (same pre-existing gap `calcQStar()` already had, not introduced
+   here), and `Math.log()` of a non-positive ratio is `NaN`. Fixed by flooring P0 inside
+   `qsGammaFromPrice` itself; the pre-existing `calcQStar()`/`renderQStarChart()` "NaN units" bug
+   for the same root cause is flagged as a separate, out-of-scope follow-up, not silently fixed here.
+3. **HIGH — no `touch-action` anywhere; this is the file's first pointer-drag implementation.**
+   Default `touch-action:auto` means a touch-drag on either handle likely triggers native
+   page-scroll instead of (or racing) the drag, and per spec a UA taking over for scroll fires
+   `pointercancel` — compounding directly with Finding 1 on exactly the input surface (touch
+   devices) this feature most needs to work on. Fixed with `touch-action:none` on both handles.
+4. **MEDIUM — 14×14px hit targets, under WCAG 2.2 SC 2.5.8's 24×24 minimum.** A real motor-
+   accessibility gap for a sighted mouse user with limited pointer precision (the number inputs
+   remain a fully equivalent alternative — this isn't a keyboard/AT blocker). Fixed with an
+   invisible `r=14` (28px) hit-area circle per handle, `fill="transparent"` (not `"none"`, which
+   doesn't register pointer events by default) with the visible `r=7` decoration set
+   `pointer-events:none` so the larger circle underneath always receives the click/touch.
+5. **MEDIUM — a third copy of the Q\* formula.** The new `pointerdown` handler re-derived
+   `qStar`/`qMax`/`yMax` from scratch instead of reusing `calcQStar()`/`renderQStarChart()`'s own
+   computation — exactly the drift risk the same commit's own `QS_LAYOUT` extraction was trying to
+   avoid for the *layout* constants, just not applied to the *formula*. Fixed by pulling the shared
+   computation into one `qsComputeState()` helper all three call sites now read from.
+6. **LOW/MEDIUM — the "you are here" text had two rough edges.** Exact equality
+   (`npvVolume === qStar`) produced the technically-true but oddly-worded "0 units past crossover";
+   a degenerate `qStar=0` or `npvVolume=0` rendered as a silent empty string with no indication why
+   (could read as a rendering glitch). Both fixed with explicit wording.
+7. **LOW — a code comment overclaimed what `aria-hidden` was doing.** The parent `<svg role="img">`
+   already collapses all children out of the accessibility tree on its own; `aria-hidden` on the
+   handles is defensive documentation of intent, not the actual mechanism. Comment corrected.
+8. **Accepted limitation (not fixed):** no `pointerId`/`setPointerCapture` tracking, so two
+   simultaneous pointers (multi-touch, stylus+finger) would both drive whichever handle's drag
+   started first. Not independently reproducible without real multi-touch hardware, and full
+   multi-pointer isolation is disproportionate scope for a desktop/single-touch-first portfolio
+   calculator — noted here rather than silently dropped.
+
+Both reviewers separately confirmed the stress.cjs checks are non-vacuous (temporarily broke 3
+different assertions one at a time — a renamed `data-handle`, a removed clamp, a changed wording —
+confirmed each correctly failed, then reverted and confirmed `git diff` was clean). Checks: 564 →
+577. Committed locally — pending push with explicit confirmation, same discipline as every prior
+round.

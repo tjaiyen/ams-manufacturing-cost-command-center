@@ -555,6 +555,45 @@ check(Math.abs(priceRoundTrip - sandbox.qsPriceFromY(150, 483)) < 0.001, "the dr
 check(sandbox.qsGammaFromPrice(-50, 420, 2331) >= 0.01, "qsGammaFromPrice clamps a nonsensical negative price to a valid minimum gamma, never returning NaN/negative/Infinity from an out-of-range drag", sandbox.qsGammaFromPrice(-50, 420, 2331));
 check(sandbox.qsGammaFromPrice(500, 420, 2331) >= 0.01, "qsGammaFromPrice clamps a price ABOVE p0 (an increasing-curve drag, invalid for this model) to the same valid minimum, never negative", sandbox.qsGammaFromPrice(500, 420, 2331));
 
+console.log("--- /stress-test findings on the Break-Even Crossover Playground (2026-09-05, independent review round) ---");
+// Finding 1 (HIGH, reproduced live before this fix): qsVendorP0 has no min="" attribute, and a
+// negative value made qsGammaFromPrice's Math.log() argument negative/zero -> NaN -> ".toFixed(4)"
+// wrote the literal string "NaN" into the real, visible qsGamma input. Only reachable by directly
+// typing a negative price (the drag handle itself is floored at 1 and can never produce one).
+const gammaFromNegativeP0 = sandbox.qsGammaFromPrice(0.001, -50, 200);
+check(!isNaN(gammaFromNegativeP0) && gammaFromNegativeP0 >= 0.01, "qsGammaFromPrice no longer returns NaN for a directly-typed negative P0 (floors to the safe minimum instead)", gammaFromNegativeP0);
+check(gammaFromNegativeP0.toFixed(4) !== "NaN", "the value that would be written into the visible qsGamma input is a real number string, never the literal 'NaN'", gammaFromNegativeP0.toFixed(4));
+check(Math.abs(sandbox.qsGammaFromPrice(sandbox.qsPriceFromY(150, 483), 420, 2331) - 0.089392) < 0.000001, "the P0-floor guard doesn't change the result for a real, positive P0 -- same golden value as before the fix", sandbox.qsGammaFromPrice(sandbox.qsPriceFromY(150, 483), 420, 2331));
+
+// Finding 2 (HIGH, reproduced live before this fix): only 'pointerup' was handled, not
+// 'pointercancel' -- an interrupted gesture (touch conflict, lost pointer capture, a context menu
+// opening mid-drag) left qsDragHandle/qsDragContext set and the global move/up listeners attached
+// forever, so ANY subsequent mouse movement anywhere on the page kept silently overwriting
+// qsVendorP0/qsGamma. Live repro: dispatch pointerdown -> pointercancel -> an unrelated pointermove
+// far from the chart -> qsVendorP0 changed from a completely unrelated mouse move.
+check(typeof sandbox.qsPointerUp === "function", "window.qsPointerUp is exposed so its cleanup can be driven directly (a real pointercancel dispatch needs a live browser -- see README)");
+check(html.includes("addEventListener('pointercancel', qsPointerUp)"), "a pointercancel listener is now wired to the SAME cleanup function as pointerup, not a separate, possibly-diverging handler");
+
+// Finding 3 (MEDIUM, source-inspection + documented platform behavior, not reproducible without a
+// physical touchscreen): the draggable handles had no touch-action, so a touch-drag would likely
+// also trigger the browser's native page-scroll gesture, conflicting with the drag.
+// 4, not 2: each handle is now TWO stacked circles (an invisible r=14 hit-area + the visible r=7
+// decoration, see the WCAG 2.5.8 hit-target-size fix below) -- both carry touch-action:none.
+check((html.match(/data-handle="(p0|gamma)"[^>]*touch-action:none/g) || []).length === 4, "all 4 handle circles (2 per handle: hit-area + visible) set touch-action:none, so a touch-drag doesn't also scroll the page");
+
+console.log("--- Finding 4 (MEDIUM, independent review): WCAG 2.5.8 hit-target size ---");
+// The visible handle was r=7 (14px diameter), under WCAG 2.2 SC 2.5.8's 24x24 minimum. Fixed with an
+// invisible r=14 (28px) hit-area circle sharing the same data-handle value and position, with the
+// visible circle set pointer-events:none so clicks always reach the larger circle underneath.
+// Checked against the RENDERED chart (elements.qsChartWrap.innerHTML), not the raw source -- cx/cy
+// are computed values (JS string concatenation in source), so a literal-number regex against the
+// raw `html` source text can never match them; only the executed output has real numbers.
+sandbox.renderQStarChart();
+const qsRendered = elements.qsChartWrap.innerHTML;
+check((qsRendered.match(/data-handle="p0" cx="[\d.]+" cy="[\d.]+" r="14" fill="transparent"/g) || []).length === 1, "the P0 handle has an invisible r=14 (28px, clears the 24px WCAG minimum) hit-area circle");
+check((qsRendered.match(/data-handle="gamma" cx="[\d.]+" cy="[\d.]+" r="14" fill="transparent"/g) || []).length === 1, "the gamma handle has an invisible r=14 hit-area circle");
+check((qsRendered.match(/r="7"[^>]*pointer-events:none/g) || []).length === 2, "both visible r=7 decoration circles are pointer-events:none, so the invisible larger circle underneath is what actually receives the click/touch, not the small visible dot");
+
 check(html.includes('id="qsPositionOut"'), "the 'you are here' cross-reference paragraph exists in the markup");
 sandbox.renderQStarChart();
 const posText = elements.qsPositionOut.textContent;
@@ -562,6 +601,41 @@ const posText = elements.qsPositionOut.textContent;
 // rounds to 635, and 1800 > qStar means "past crossover," not "short of."
 check(posText.includes("1,800") && posText.includes("635") && posText.includes("past crossover"), "the position text correctly cross-references the NPV analyzer's real Annual Volume input (1,800, 635 units above Q*=1,165) -- not a fabricated comparison volume", posText);
 check(!posText.toLowerCase().includes("recommend") && !posText.toLowerCase().includes("agrees"), "the position text states where the NPV volume sits relative to Q*, but never claims the two analyzers' separate vendor-pricing assumptions agree or disagree -- they model different scenarios", posText);
+
+console.log("--- Finding 7 (LOW/MEDIUM, independent review): 'you are here' text edge cases ---");
+// (a) Exact equality: pre-registered inputs (mc=100, p0=180000, gamma=1) give qStar = 180000/100 =
+// 1800 exactly, matching bbVolume's default 1800 -- diff=0. Previously worded as the technically-
+// true but odd "0 units past crossover"; now says "exactly at crossover."
+sandbox.document.getElementById("qsInternalMc").value = "100";
+sandbox.document.getElementById("qsVendorP0").value = "180000";
+sandbox.document.getElementById("qsGamma").value = "1";
+sandbox.renderQStarChart();
+const exactMatchText = elements.qsPositionOut.textContent;
+check(exactMatchText.includes("exactly at crossover") && !exactMatchText.includes("0 units past"), "exact equality (npvVolume===qStar) now says 'exactly at crossover', not the odd '0 units past crossover'", exactMatchText);
+
+// (b) qStar=0 (mc=0, a real reachable typed value -- no min="" attribute prevents it): previously
+// rendered as a silent empty string; now gives an explicit reason.
+sandbox.document.getElementById("qsInternalMc").value = "0";
+sandbox.renderQStarChart();
+const zeroQStarText = elements.qsPositionOut.textContent;
+check(zeroQStarText.length > 0 && zeroQStarText.includes("not a rendering error"), "qStar=0 now shows an explicit reason instead of silently going blank (which could read as a bug)", zeroQStarText);
+
+// (c) npvVolume=0 (bbVolume cleared): restore a valid qStar, zero out the NPV volume instead.
+sandbox.document.getElementById("qsInternalMc").value = "180";
+sandbox.document.getElementById("qsVendorP0").value = "420";
+sandbox.document.getElementById("qsGamma").value = "0.12";
+sandbox.document.getElementById("bbVolume").value = "0";
+sandbox.renderQStarChart();
+const zeroVolumeText = elements.qsPositionOut.textContent;
+check(zeroVolumeText.length > 0 && zeroVolumeText.toLowerCase().includes("annual volume above zero"), "npvVolume=0 now shows an explicit reason instead of silently going blank", zeroVolumeText);
+
+// Restore real defaults so nothing downstream in this file runs against stale drag-testing state.
+sandbox.document.getElementById("qsInternalMc").value = "180.00";
+sandbox.document.getElementById("qsVendorP0").value = "420.00";
+sandbox.document.getElementById("qsGamma").value = "0.12";
+sandbox.document.getElementById("bbVolume").value = "1800";
+sandbox.renderQStarChart();
+check(elements.qsPositionOut.textContent.includes("1,800") && elements.qsPositionOut.textContent.includes("635"), "defaults restored cleanly -- the position text is back to the original golden value, confirming no residual state leaked from this edge-case testing", elements.qsPositionOut.textContent);
 
 console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
 check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);

@@ -332,7 +332,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 564/564 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 577/577 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -2318,15 +2318,27 @@
   // Q* solves P0 * Q^(-gamma) = MC_internal -- the volume where the vendor's declining per-unit
   // price falls to equal your own constant internal marginal cost. Closed-form, single, monotonic
   // crossover (vendor price is strictly decreasing in Q; internal marginal cost is constant).
-  function calcQStar(){
+  // /stress-test finding (2026-09-05, independent review): the Break-Even Crossover Playground's
+  // pointerdown handler originally re-derived qStar/qMax/yMax from scratch, a THIRD copy of this
+  // same formula (calcQStar and renderQStarChart already each had their own) that could silently
+  // drift from the other two. Pulled into one shared helper -- calcQStar, renderQStarChart, and the
+  // drag handler all read the SAME computation now, not three copies that happen to agree today.
+  function qsComputeState(){
     var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
     var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
     var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
     var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
-    var vendorAtStar = gamma > 0 ? p0 * Math.pow(qStar, -gamma) : 0;
-    document.getElementById('qsOut').textContent = Math.round(qStar).toLocaleString() + ' units';
+    var qMax = Math.max(Math.round(qStar * 2), 200);
+    var yMax = Math.max(p0, mc) * 1.15;
+    return { mc: mc, p0: p0, gamma: gamma, qStar: qStar, qMax: qMax, yMax: yMax };
+  }
+  window.qsComputeState = qsComputeState;
+  function calcQStar(){
+    var s = qsComputeState();
+    var vendorAtStar = s.gamma > 0 ? s.p0 * Math.pow(s.qStar, -s.gamma) : 0;
+    document.getElementById('qsOut').textContent = Math.round(s.qStar).toLocaleString() + ' units';
     document.getElementById('qsVendorAtStar').textContent = '$' + vendorAtStar.toFixed(2);
-    return { qStar: qStar, vendorAtStar: vendorAtStar };
+    return { qStar: s.qStar, vendorAtStar: vendorAtStar };
   }
   window.calcQStar = calcQStar;
 
@@ -2342,12 +2354,8 @@
   QS_LAYOUT.plotH = QS_LAYOUT.H - QS_LAYOUT.marginTop - QS_LAYOUT.marginBottom;
 
   function renderQStarChart(){
-    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
-    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
-    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
-    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
-    var qMax = Math.max(Math.round(qStar * 2), 200);
-    var yMax = Math.max(p0, mc) * 1.15;
+    var s = qsComputeState();
+    var mc = s.mc, p0 = s.p0, gamma = s.gamma, qStar = s.qStar, qMax = s.qMax, yMax = s.yMax;
 
     var marginLeft = QS_LAYOUT.marginLeft, marginRight = QS_LAYOUT.marginRight, marginTop = QS_LAYOUT.marginTop, marginBottom = QS_LAYOUT.marginBottom;
     var W = QS_LAYOUT.W, H = QS_LAYOUT.H, plotW = QS_LAYOUT.plotW, plotH = QS_LAYOUT.plotH;
@@ -2368,9 +2376,13 @@
     // vendor curve becomes a second input surface, not just a display. Handle 1 sits at q=1, where
     // price(q)=p0 by definition, so dragging it directly sets a new P0. Handle 2 sits at q=qMax;
     // holding p0 fixed, its price implies gamma = -ln(price/p0)/ln(qMax) (see qsGammaFromPrice
-    // below). Both are aria-hidden: they're pointer/touch accelerants layered on the pre-existing,
-    // fully keyboard/AT-accessible number inputs above, not a second, redundant keyboard path (the
-    // same "enhancement, not the only path" stance used for the sidenav's magnetic-hover-physics).
+    // below). Both are pointer/touch accelerants layered on the pre-existing, fully keyboard/AT-
+    // accessible number inputs above, not a second, redundant keyboard path (the same "enhancement,
+    // not the only path" stance used for the sidenav's magnetic-hover-physics). aria-hidden is set
+    // as explicit, defensive documentation of that intent -- independent review noted the parent
+    // <svg role="img"> already collapses all children out of the AT tree on its own, so this isn't
+    // the mechanism DOING the work, just making the "not a separate AT control" intent unambiguous
+    // if that parent role ever changes.
     var handleP0Y = yScale(p0), handleGammaY = yScale(p0 * Math.pow(qMax, -gamma));
 
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" id="qsSvg" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked. Drag either circle to reshape the vendor price curve.">' +
@@ -2380,8 +2392,16 @@
       '<path d="' + pathD + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
       '<line x1="' + qStarX.toFixed(1) + '" y1="' + marginTop + '" x2="' + qStarX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-danger))" stroke-width="1" stroke-dasharray="3,3"/>' +
       '<circle cx="' + qStarX.toFixed(1) + '" cy="' + mcY.toFixed(1) + '" r="4" fill="rgb(var(--c-danger))"/>' +
-      '<circle data-handle="p0" cx="' + marginLeft + '" cy="' + handleP0Y.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab" aria-hidden="true"/>' +
-      '<circle data-handle="gamma" cx="' + (W - marginRight) + '" cy="' + handleGammaY.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab" aria-hidden="true"/>' +
+      // /stress-test finding (2026-09-05, independent review): the visible handles are r=7 (14px
+      // diameter), well under WCAG 2.2 SC 2.5.8's 24x24 minimum target size for a sighted mouse
+      // user with limited pointer precision. Each gets an invisible r=14 (28px) hit-area circle,
+      // same data-handle value, same position -- fill="transparent" (not "none": an SVG shape with
+      // fill="none" does NOT register pointer events by default, only a real (even invisible) fill
+      // does) so it's clickable but never visually drawn.
+      '<circle data-handle="p0" cx="' + marginLeft + '" cy="' + handleP0Y.toFixed(1) + '" r="14" fill="transparent" style="cursor:grab;touch-action:none" aria-hidden="true"/>' +
+      '<circle data-handle="p0" cx="' + marginLeft + '" cy="' + handleP0Y.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab;touch-action:none;pointer-events:none" aria-hidden="true"/>' +
+      '<circle data-handle="gamma" cx="' + (W - marginRight) + '" cy="' + handleGammaY.toFixed(1) + '" r="14" fill="transparent" style="cursor:grab;touch-action:none" aria-hidden="true"/>' +
+      '<circle data-handle="gamma" cx="' + (W - marginRight) + '" cy="' + handleGammaY.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab;touch-action:none;pointer-events:none" aria-hidden="true"/>' +
       '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Vendor unit price vs. volume (Q) — drag either dot</text>' +
       '<text x="' + (marginLeft + 4) + '" y="' + (mcY - 5).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))">Internal marginal cost $' + mc.toFixed(2) + '</text>' +
       '<text x="' + (qStarX + 6).toFixed(1) + '" y="' + (marginTop + 10) + '" font-size="10" fill="rgb(var(--c-danger))">Q* = ' + Math.round(qStar).toLocaleString() + '</text>' +
@@ -2396,13 +2416,25 @@
     var npvVolume = parseFloat(document.getElementById('bbVolume').value) || 0;
     var posOut = document.getElementById('qsPositionOut');
     if (posOut){
+      // /stress-test finding (2026-09-05, independent review): two edge cases in this text, both
+      // reproduced and fixed. (1) npvVolume===qStar exactly produced the technically-true but
+      // oddly-worded "0 units past crossover" -- now says "exactly at crossover" instead. (2) when
+      // qStar is 0 (reachable by typing mc=0 or a non-positive gamma) or npvVolume is 0 (bbVolume
+      // cleared), the paragraph silently rendered as an empty string with no indication why --
+      // could read as a rendering glitch. Now gives an explicit reason instead of going blank.
       if (qStar > 0 && npvVolume > 0){
         var diff = Math.round(Math.abs(npvVolume - qStar));
-        posOut.textContent = npvVolume >= qStar
-          ? 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units past crossover — this scenario\'s vendor price has already fallen below your internal cost.'
-          : 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units short of crossover — the vendor is still pricier per unit at this volume in this scenario.';
+        if (diff === 0){
+          posOut.textContent = 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re exactly at crossover in this scenario.';
+        } else {
+          posOut.textContent = npvVolume >= qStar
+            ? 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units past crossover — this scenario\'s vendor price has already fallen below your internal cost.'
+            : 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units short of crossover — the vendor is still pricier per unit at this volume in this scenario.';
+        }
       } else {
-        posOut.textContent = '';
+        posOut.textContent = qStar <= 0
+          ? 'Crossover isn\'t meaningful for these inputs (internal cost or scale elasticity is zero/invalid) — not a rendering error.'
+          : 'Set the NPV analyzer\'s Annual Volume above zero to compare it against this crossover.';
       }
     }
     return { qStar: qStar, qMax: qMax, yMax: yMax, qStarX: qStarX, mcY: mcY, handleP0Y: handleP0Y, handleGammaY: handleGammaY };
@@ -2418,11 +2450,18 @@
     return yMax * (1 - (y - QS_LAYOUT.marginTop) / QS_LAYOUT.plotH);
   }
   function qsGammaFromPrice(price, p0, qMax){
+    // /stress-test finding (2026-09-05): qsVendorP0 has no min="" attribute (typing/pasting a
+    // negative value is possible, same pre-existing gap the untouched calcQStar() also has -- see
+    // README), and Math.log() of a negative or zero ratio is NaN, which then propagates through
+    // .toFixed(4) as the literal string "NaN" written into the real, visible qsGamma input. Floor
+    // p0 here so THIS function degrades to the safe minimum instead of ever returning NaN, even
+    // though a directly-typed negative p0 is an out-of-scope pre-existing input-validation gap.
+    var safeP0 = Math.max(0.01, p0);
     // Clamp: gamma>0 requires 0 < price < p0 (a falling curve), and the real qsGamma input itself
     // enforces min="0.01" -- both clamps mirrored here so a drag can never write an input value the
     // manual number-entry path would itself reject.
-    var clamped = Math.max(0.01, Math.min(price, p0 - 0.01));
-    return Math.max(0.01, -Math.log(clamped / p0) / Math.log(qMax));
+    var clamped = Math.max(0.01, Math.min(price, safeP0 - 0.01));
+    return Math.max(0.01, -Math.log(clamped / safeP0) / Math.log(qMax));
   }
   window.qsPriceFromY = qsPriceFromY;
   window.qsGammaFromPrice = qsGammaFromPrice;
@@ -2462,7 +2501,9 @@
     qsDragContext = null;
     document.removeEventListener('pointermove', qsPointerMove);
     document.removeEventListener('pointerup', qsPointerUp);
+    document.removeEventListener('pointercancel', qsPointerUp);
   }
+  window.qsPointerUp = qsPointerUp; // exposed for stress.cjs: confirms cleanup fires on cancel too
   document.getElementById('qsChartWrap').addEventListener('pointerdown', function(ev){
     var handle = ev.target.getAttribute && ev.target.getAttribute('data-handle');
     if (!handle) return;
@@ -2475,13 +2516,17 @@
     // fresh page load, because the axis had already rescaled from the first drag). Freezing the
     // reference frame at pointerdown gives stable 1:1 cursor tracking for the whole gesture; only
     // the FINAL value is what gets committed to the real input.
-    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
-    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
-    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
-    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
-    qsDragContext = { p0: p0, mc: mc, qMax: Math.max(Math.round(qStar * 2), 200), yMax: Math.max(p0, mc) * 1.15 };
+    var s = qsComputeState();
+    qsDragContext = { p0: s.p0, mc: s.mc, qMax: s.qMax, yMax: s.yMax };
     document.addEventListener('pointermove', qsPointerMove);
     document.addEventListener('pointerup', qsPointerUp);
+    // /stress-test finding (2026-09-05): an interrupted gesture (touch conflict, pointer-capture
+    // loss, a context menu opening mid-drag) fires 'pointercancel', never 'pointerup' -- without
+    // this listener, qsDragHandle/qsDragContext and the global move/up listeners never cleared, so
+    // ANY subsequent mouse movement anywhere on the page kept silently overwriting qsVendorP0/
+    // qsGamma. Reproduced live (dispatched pointercancel, then an unrelated pointermove at a
+    // location nowhere near the chart, and watched qsVendorP0 change) before this fix.
+    document.addEventListener('pointercancel', qsPointerUp);
   });
   window.qsPointerMove = qsPointerMove; // exposed for stress.cjs: drives the math directly since the
   // stub can't dispatch real SVG pointer/CTM events -- the live drag gesture is verified in-browser.
