@@ -332,7 +332,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 577/577 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 582/582 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -2327,7 +2327,14 @@
     var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
     var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
     var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
-    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
+    // /stress-test finding (2026-09-06): qsVendorP0 has no min="" attribute (the same pre-existing
+    // gap qsGammaFromPrice's own safeP0 floor already closed below, 2026-09-05), so a directly-typed
+    // negative price made p0/mc negative -- raising a negative number to a fractional power (1/gamma)
+    // is NaN in JS, and calcQStar() then wrote the literal "NaN units" into the visible qsOut with no
+    // error indication. Floored only for the qStar exponentiation (not the p0 field itself, which
+    // renderQStarChart's yMax/vendorAtStar still use as-typed) so qStar degrades to ~0 instead of NaN.
+    var safeP0 = Math.max(0.01, p0);
+    var qStar = (mc > 0 && gamma > 0) ? Math.pow(safeP0 / mc, 1 / gamma) : 0;
     var qMax = Math.max(Math.round(qStar * 2), 200);
     var yMax = Math.max(p0, mc) * 1.15;
     return { mc: mc, p0: p0, gamma: gamma, qStar: qStar, qMax: qMax, yMax: yMax };
@@ -2451,11 +2458,12 @@
   }
   function qsGammaFromPrice(price, p0, qMax){
     // /stress-test finding (2026-09-05): qsVendorP0 has no min="" attribute (typing/pasting a
-    // negative value is possible, same pre-existing gap the untouched calcQStar() also has -- see
-    // README), and Math.log() of a negative or zero ratio is NaN, which then propagates through
-    // .toFixed(4) as the literal string "NaN" written into the real, visible qsGamma input. Floor
-    // p0 here so THIS function degrades to the safe minimum instead of ever returning NaN, even
-    // though a directly-typed negative p0 is an out-of-scope pre-existing input-validation gap.
+    // negative value is possible; that same root cause was fixed in qsComputeState() -- see README
+    // -- on 2026-09-06, since this fix covered only THIS function's own gamma-drag path, not the
+    // pre-existing calcQStar()/renderQStarChart() one), and Math.log() of a negative or zero ratio
+    // is NaN, which then propagates through .toFixed(4) as the literal string "NaN" written into the
+    // real, visible qsGamma input. Floor p0 here so THIS function degrades to the safe minimum
+    // instead of ever returning NaN.
     var safeP0 = Math.max(0.01, p0);
     // Clamp: gamma>0 requires 0 < price < p0 (a falling curve), and the real qsGamma input itself
     // enforces min="0.01" -- both clamps mirrored here so a drag can never write an input value the

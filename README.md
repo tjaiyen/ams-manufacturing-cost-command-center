@@ -417,7 +417,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 577 checks, all passing as of this writing.
+Run: `node stress.cjs` — 582 checks, all passing as of this writing.
 
 ## Status
 
@@ -715,3 +715,21 @@ different assertions one at a time — a renamed `data-handle`, a removed clamp,
 confirmed each correctly failed, then reverted and confirmed `git diff` was clean). Checks: 564 →
 577. Committed locally — pending push with explicit confirmation, same discipline as every prior
 round.
+
+**2026-09-06, eighteenth round (follow-up fix, not a new /stress-test pass):** the seventeenth
+round's finding 2 fixed the missing-P0-floor root cause only inside `qsGammaFromPrice`'s *new*
+gamma-drag path, and explicitly flagged the matching gap in the pre-existing, untouched
+`calcQStar()`/`renderQStarChart()` path as a separate, out-of-scope bug rather than smuggling a
+second fix into that finding. This round closes that flagged gap: `qsVendorP0` still has no
+`min=""` attribute, so a directly-typed negative price made `p0/mc` negative, and raising a negative
+number to a fractional power (`1/gamma`) is `NaN` in JS — `calcQStar()` then wrote the literal
+"NaN units" into the real, visible `qsOut` with no error indication. Fixed the same way as the
+sibling function: `qsComputeState()` (the one shared helper both `calcQStar()` and
+`renderQStarChart()` already read from) now floors P0 to `Math.max(0.01, p0)` for the `qStar`
+exponentiation itself, so a negative or zero P0 degrades `qStar` to a sensible ~0 instead of `NaN`
+— pre-registered via `node -e` before writing the test (mc=180/γ=0.12 defaults, P0=-50 → `qStar`
+floors to `3.46e-36`, rounding to "0 units"). **Accepted limitation:** the P0 floor guards only the
+`qStar` calculation; `qsVendorAtStar` for the same negative-P0 input isn't `NaN` either, but is a
+large, cosmetically odd negative number (`$-900,000.00`) — noted here rather than silently fixed,
+since it wasn't the reported defect and is a separate, smaller cosmetic gap. Checks: 577 → 582.
+Committed locally — pending push with explicit confirmation, same discipline as every prior round.

@@ -637,6 +637,30 @@ sandbox.document.getElementById("bbVolume").value = "1800";
 sandbox.renderQStarChart();
 check(elements.qsPositionOut.textContent.includes("1,800") && elements.qsPositionOut.textContent.includes("635"), "defaults restored cleanly -- the position text is back to the original golden value, confirming no residual state leaked from this edge-case testing", elements.qsPositionOut.textContent);
 
+console.log("--- Finding (2026-09-06, /stress-test follow-up): calcQStar()'s own pre-existing NaN gap for a negative P0 ---");
+// The seventeenth round's finding 2 fixed this exact root cause (missing P0 floor) only inside
+// qsGammaFromPrice's NEW gamma-drag path, explicitly flagging calcQStar()/renderQStarChart() as a
+// separate, untouched, out-of-scope bug (see README) -- p0/mc going negative there also raises a
+// negative number to a fractional power (1/gamma), which is NaN in JS, previously written as the
+// literal "NaN units" into the real, visible qsOut with no error indication. Pre-registered via
+// `node -e` before writing this check (mc=180, gamma=0.12 defaults, p0=-50): qStar floors to ~0,
+// so qsOut should read "0 units", never contain "NaN".
+sandbox.document.getElementById("qsVendorP0").value = "-50";
+const negP0Result = sandbox.calcQStar();
+check(!elements.qsOut.textContent.includes("NaN"), "calcQStar() with a directly-typed negative P0 no longer writes the literal 'NaN units' into the visible qsOut", elements.qsOut.textContent);
+check(elements.qsOut.textContent === "0 units", "a negative P0 degrades qStar to the sensible minimum '0 units', matching the pre-registered golden value", elements.qsOut.textContent);
+check(!isNaN(negP0Result.qStar), "calcQStar()'s own returned qStar value is a real number, never NaN, for a negative P0", negP0Result.qStar);
+// Accepted limitation (see README): qsVendorAtStar isn't NaN either, but is a large, cosmetically
+// odd negative number ($-900,000.00) -- the P0 floor only guards the qStar exponentiation itself,
+// not this separate downstream calculation, and fixing that display quirk was not part of this fix.
+check(!elements.qsVendorAtStar.textContent.includes("NaN"), "the vendor-price-at-Q* output also never shows the literal 'NaN' for this input", elements.qsVendorAtStar.textContent);
+
+// Restore real defaults so nothing downstream in this file runs against this edge-case input.
+sandbox.document.getElementById("qsVendorP0").value = "420.00";
+sandbox.calcQStar();
+sandbox.renderQStarChart();
+check(elements.qsOut.textContent === "1,165 units", "defaults restored cleanly after this edge-case test, confirming no residual state leaked", elements.qsOut.textContent);
+
 console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
 check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);
 check(elements.mcP80Out.textContent === "$159.28", "P80 matches golden value", elements.mcP80Out.textContent);
