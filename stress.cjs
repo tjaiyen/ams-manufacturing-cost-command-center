@@ -530,6 +530,39 @@ check(Math.abs(chartData.mcY - 164.29) < 0.1, "internal-cost line's y pixel posi
 check(elements.qsChartWrap.innerHTML.includes("<svg"), "the chart actually rendered an <svg> element into the page, not just returned numbers");
 check(elements.qsChartWrap.innerHTML.includes("Q* = 1,165"), "the rendered SVG labels the crossover with the correct Q* value");
 
+console.log("--- Break-Even Crossover Playground (viz-innovation concept #11): drag-handle golden values ---");
+// Pre-registered via a standalone `node -e` script BEFORE this code was written (default inputs
+// mc=180, p0=420, gamma=0.12): handle P0 at (60.00, 50.00); handle gamma at (580.00, 171.13);
+// dragging handle P0 to y=100 -> newP0=315.0000 exactly; dragging handle gamma to y=150 ->
+// newGamma=0.089392, and recomputing price at qMax with that gamma reproduces the same 210.0000
+// the inverse math started from -- confirms the forward/inverse formulas genuinely agree, not just
+// that the inverse function returns SOMETHING.
+check(Math.abs(chartData.handleP0Y - 50.0) < 0.05, "handle P0's rendered y pixel matches golden value (yScale(p0))", chartData.handleP0Y);
+check(Math.abs(chartData.handleGammaY - 171.13) < 0.05, "handle gamma's rendered y pixel matches golden value (yScale(p0 * qMax^-gamma))", chartData.handleGammaY);
+check(elements.qsChartWrap.innerHTML.includes('data-handle="p0"') && elements.qsChartWrap.innerHTML.includes('data-handle="gamma"'), "both draggable handle circles are actually in the rendered markup");
+check(elements.qsChartWrap.innerHTML.includes('aria-hidden="true"'), "the handles are aria-hidden -- pointer/touch accelerants layered on the pre-existing, fully keyboard-accessible number inputs, not a second, redundant (and unlabeled) interactive element in the accessibility tree");
+
+check(typeof sandbox.qsPriceFromY === "function" && typeof sandbox.qsGammaFromPrice === "function", "the inverse-math functions are exposed for direct testing -- the stub can't dispatch real SVG pointer/getScreenCTM events, so the drag GESTURE is verified live in a browser, but the math it depends on is tested here");
+const newP0FromDrag = sandbox.qsPriceFromY(100, 483);
+check(Math.abs(newP0FromDrag - 315.0) < 0.001, "dragging handle P0 to y=100 computes newP0=315.0000 exactly, matching the pre-registered value", newP0FromDrag);
+const newGammaFromDrag = sandbox.qsGammaFromPrice(sandbox.qsPriceFromY(150, 483), 420, 2331);
+check(Math.abs(newGammaFromDrag - 0.089392) < 0.000001, "dragging handle gamma to y=150 computes newGamma=0.089392, matching the pre-registered value", newGammaFromDrag);
+// Round-trip sanity: recomputing price at qMax with the drag-derived gamma must reproduce the SAME
+// price the drag started from -- this is what actually proves the inverse formula is the true
+// inverse of the forward one, not just a plausible-looking function that returns a number.
+const priceRoundTrip = 420 * Math.pow(2331, -newGammaFromDrag);
+check(Math.abs(priceRoundTrip - sandbox.qsPriceFromY(150, 483)) < 0.001, "the drag-derived gamma round-trips back to the exact price the drag targeted (forward and inverse formulas genuinely agree)", `roundTrip=${priceRoundTrip} target=${sandbox.qsPriceFromY(150, 483)}`);
+check(sandbox.qsGammaFromPrice(-50, 420, 2331) >= 0.01, "qsGammaFromPrice clamps a nonsensical negative price to a valid minimum gamma, never returning NaN/negative/Infinity from an out-of-range drag", sandbox.qsGammaFromPrice(-50, 420, 2331));
+check(sandbox.qsGammaFromPrice(500, 420, 2331) >= 0.01, "qsGammaFromPrice clamps a price ABOVE p0 (an increasing-curve drag, invalid for this model) to the same valid minimum, never negative", sandbox.qsGammaFromPrice(500, 420, 2331));
+
+check(html.includes('id="qsPositionOut"'), "the 'you are here' cross-reference paragraph exists in the markup");
+sandbox.renderQStarChart();
+const posText = elements.qsPositionOut.textContent;
+// Pre-registered: npvVolume=1800 (bbVolume's real default), qStar=1165.3952 -> |1800-1165.3952|
+// rounds to 635, and 1800 > qStar means "past crossover," not "short of."
+check(posText.includes("1,800") && posText.includes("635") && posText.includes("past crossover"), "the position text correctly cross-references the NPV analyzer's real Annual Volume input (1,800, 635 units above Q*=1,165) -- not a fabricated comparison volume", posText);
+check(!posText.toLowerCase().includes("recommend") && !posText.toLowerCase().includes("agrees"), "the position text states where the NPV volume sits relative to Q*, but never claims the two analyzers' separate vendor-pricing assumptions agree or disagree -- they model different scenarios", posText);
+
 console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
 check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);
 check(elements.mcP80Out.textContent === "$159.28", "P80 matches golden value", elements.mcP80Out.textContent);

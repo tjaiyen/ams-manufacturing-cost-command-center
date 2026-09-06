@@ -332,7 +332,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 551/551 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 564/564 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -745,6 +745,7 @@
         integrating a fixed tooling investment into total cost, not marginal cost) doesn't actually
         find a crossover when run with its own stated numbers; see the Methodology tab.</p>
       <div id="qsChartWrap" style="margin-top:14px"></div>
+      <p id="qsPositionOut" style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px;font-style:italic"></p>
     </div>
   </section>
 
@@ -1716,7 +1717,7 @@
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
     ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above. Commodity-finance literature typically cites this specific application by name — Schwartz (1997), "The Stochastic Behavior of Commodity Prices," *Journal of Finance* — rather than bare "Ornstein-Uhlenbeck," since the latter is a generic process name used across many unrelated domains.' },
-    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab).' },
+    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab). The chart\'s two dots are draggable: the left one directly sets P₀, the right one (holding P₀ fixed) implies a new γ from where you drop it — a pointer-driven second input surface on top of, not instead of, the number fields above, which remain the full keyboard/screen-reader path.' },
     montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' }
   };
   var explainModal = document.getElementById('explainModal');
@@ -2310,6 +2311,8 @@
   ['bbInternal','bbExternal','bbVolume','bbTransition','bbRate','bbYears'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcBuildBuy);
   });
+  // bbVolume also feeds the Q* "you are here" cross-reference below, on the same tab -- keep it live.
+  document.getElementById('bbVolume').addEventListener('input', function(){ renderQStarChart(); });
 
   // ---------- Volume Crossover Point (Q*) ----------
   // Q* solves P0 * Q^(-gamma) = MC_internal -- the volume where the vendor's declining per-unit
@@ -2331,6 +2334,13 @@
   // continuous curve). Native SVG, no charting library -- same zero-dependency stance as the rest
   // of the page. Returns the underlying numeric chart parameters (not just renders) so they can be
   // asserted against directly, the same testability contract as every other calculator here.
+  // Shared layout constants -- pulled out so the drag-handle inverse-math functions below use the
+  // exact same numbers as the render function's own scales, rather than a second hardcoded copy
+  // that could silently drift from it.
+  var QS_LAYOUT = { W: 600, H: 280, marginLeft: 60, marginRight: 20, marginTop: 20, marginBottom: 30 };
+  QS_LAYOUT.plotW = QS_LAYOUT.W - QS_LAYOUT.marginLeft - QS_LAYOUT.marginRight;
+  QS_LAYOUT.plotH = QS_LAYOUT.H - QS_LAYOUT.marginTop - QS_LAYOUT.marginBottom;
+
   function renderQStarChart(){
     var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
     var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
@@ -2339,8 +2349,8 @@
     var qMax = Math.max(Math.round(qStar * 2), 200);
     var yMax = Math.max(p0, mc) * 1.15;
 
-    var W = 600, H = 280, marginLeft = 60, marginRight = 20, marginTop = 20, marginBottom = 30;
-    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var marginLeft = QS_LAYOUT.marginLeft, marginRight = QS_LAYOUT.marginRight, marginTop = QS_LAYOUT.marginTop, marginBottom = QS_LAYOUT.marginBottom;
+    var W = QS_LAYOUT.W, H = QS_LAYOUT.H, plotW = QS_LAYOUT.plotW, plotH = QS_LAYOUT.plotH;
     function xScale(q){ return marginLeft + (q - 1) / (qMax - 1) * plotW; }
     function yScale(price){ return marginTop + (1 - price / yMax) * plotH; }
 
@@ -2354,23 +2364,127 @@
     var pathD = pathPoints.join(' ');
     var qStarX = xScale(qStar), mcY = yScale(mc);
 
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked">' +
+    // Two draggable handles -- Break-Even Crossover Playground (viz-innovation concept #11): the
+    // vendor curve becomes a second input surface, not just a display. Handle 1 sits at q=1, where
+    // price(q)=p0 by definition, so dragging it directly sets a new P0. Handle 2 sits at q=qMax;
+    // holding p0 fixed, its price implies gamma = -ln(price/p0)/ln(qMax) (see qsGammaFromPrice
+    // below). Both are aria-hidden: they're pointer/touch accelerants layered on the pre-existing,
+    // fully keyboard/AT-accessible number inputs above, not a second, redundant keyboard path (the
+    // same "enhancement, not the only path" stance used for the sidenav's magnetic-hover-physics).
+    var handleP0Y = yScale(p0), handleGammaY = yScale(p0 * Math.pow(qMax, -gamma));
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" id="qsSvg" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked. Drag either circle to reshape the vendor price curve.">' +
       '<line x1="' + marginLeft + '" y1="' + (H - marginBottom) + '" x2="' + (W - marginRight) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       '<line x1="' + marginLeft + '" y1="' + mcY.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + mcY.toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="4,3"/>' +
       '<path d="' + pathD + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
       '<line x1="' + qStarX.toFixed(1) + '" y1="' + marginTop + '" x2="' + qStarX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-danger))" stroke-width="1" stroke-dasharray="3,3"/>' +
       '<circle cx="' + qStarX.toFixed(1) + '" cy="' + mcY.toFixed(1) + '" r="4" fill="rgb(var(--c-danger))"/>' +
-      '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Vendor unit price vs. volume (Q)</text>' +
+      '<circle data-handle="p0" cx="' + marginLeft + '" cy="' + handleP0Y.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab" aria-hidden="true"/>' +
+      '<circle data-handle="gamma" cx="' + (W - marginRight) + '" cy="' + handleGammaY.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="2" style="cursor:grab" aria-hidden="true"/>' +
+      '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Vendor unit price vs. volume (Q) — drag either dot</text>' +
       '<text x="' + (marginLeft + 4) + '" y="' + (mcY - 5).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))">Internal marginal cost $' + mc.toFixed(2) + '</text>' +
       '<text x="' + (qStarX + 6).toFixed(1) + '" y="' + (marginTop + 10) + '" font-size="10" fill="rgb(var(--c-danger))">Q* = ' + Math.round(qStar).toLocaleString() + '</text>' +
       '<text x="' + marginLeft + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))">1</text>' +
       '<text x="' + (W - marginRight) + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">' + qMax.toLocaleString() + ' units</text>' +
       '</svg>';
     document.getElementById('qsChartWrap').innerHTML = svg;
-    return { qStar: qStar, qMax: qMax, yMax: yMax, qStarX: qStarX, mcY: mcY };
+    // "You are here": a real cross-reference to the NPV analyzer's own Annual Volume input just
+    // above on this same tab (#bbVolume) -- NOT a claim that the two analyzers agree (they model
+    // different vendor-pricing assumptions: a flat external quote there vs. a power-law schedule
+    // here), just an honest statement of where that real volume sits relative to this crossover.
+    var npvVolume = parseFloat(document.getElementById('bbVolume').value) || 0;
+    var posOut = document.getElementById('qsPositionOut');
+    if (posOut){
+      if (qStar > 0 && npvVolume > 0){
+        var diff = Math.round(Math.abs(npvVolume - qStar));
+        posOut.textContent = npvVolume >= qStar
+          ? 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units past crossover — this scenario\'s vendor price has already fallen below your internal cost.'
+          : 'At the NPV analyzer\'s assumed volume (' + npvVolume.toLocaleString() + ' units), you\'re ' + diff.toLocaleString() + ' units short of crossover — the vendor is still pricier per unit at this volume in this scenario.';
+      } else {
+        posOut.textContent = '';
+      }
+    }
+    return { qStar: qStar, qMax: qMax, yMax: yMax, qStarX: qStarX, mcY: mcY, handleP0Y: handleP0Y, handleGammaY: handleGammaY };
   }
   window.renderQStarChart = renderQStarChart;
+
+  // ---------- Break-Even Crossover Playground: drag-handle inverse math ----------
+  // Pre-registered before writing (node -e, default inputs mc=180/p0=420/gamma=0.12): handle P0 at
+  // (60.00, 50.00), handle gamma at (580.00, 171.13); dragging handle P0 to y=100 -> newP0=315.0000
+  // exactly; dragging handle gamma to y=150 -> newGamma=0.089392 (price-at-qMax recomputes to
+  // 210.0000 either way -- the inverse and forward formulas agree by construction).
+  function qsPriceFromY(y, yMax){
+    return yMax * (1 - (y - QS_LAYOUT.marginTop) / QS_LAYOUT.plotH);
+  }
+  function qsGammaFromPrice(price, p0, qMax){
+    // Clamp: gamma>0 requires 0 < price < p0 (a falling curve), and the real qsGamma input itself
+    // enforces min="0.01" -- both clamps mirrored here so a drag can never write an input value the
+    // manual number-entry path would itself reject.
+    var clamped = Math.max(0.01, Math.min(price, p0 - 0.01));
+    return Math.max(0.01, -Math.log(clamped / p0) / Math.log(qMax));
+  }
+  window.qsPriceFromY = qsPriceFromY;
+  window.qsGammaFromPrice = qsGammaFromPrice;
+
+  function qsSetInput(id, value){
+    var el = document.getElementById(id);
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function qsSvgPointFromEvent(svg, ev){
+    var pt = svg.createSVGPoint();
+    pt.x = ev.clientX; pt.y = ev.clientY;
+    var ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    var loc = pt.matrixTransform(ctm.inverse());
+    return { x: loc.x, y: loc.y };
+  }
+  var qsDragHandle = null;
+  var qsDragContext = null; // frozen at pointerdown -- see comment below for why
+  function qsPointerMove(ev){
+    if (!qsDragHandle || !qsDragContext) return;
+    var svg = document.getElementById('qsSvg');
+    if (!svg) return;
+    var pt = qsSvgPointFromEvent(svg, ev);
+    var y = Math.max(QS_LAYOUT.marginTop, Math.min(QS_LAYOUT.H - QS_LAYOUT.marginBottom, pt.y));
+    if (qsDragHandle === 'p0'){
+      var newP0 = Math.max(1, qsPriceFromY(y, qsDragContext.yMax));
+      qsSetInput('qsVendorP0', newP0.toFixed(2));
+    } else if (qsDragHandle === 'gamma'){
+      var priceAtQmax = qsPriceFromY(y, qsDragContext.yMax);
+      var newGamma = qsGammaFromPrice(priceAtQmax, qsDragContext.p0, qsDragContext.qMax);
+      qsSetInput('qsGamma', newGamma.toFixed(4));
+    }
+  }
+  function qsPointerUp(){
+    qsDragHandle = null;
+    qsDragContext = null;
+    document.removeEventListener('pointermove', qsPointerMove);
+    document.removeEventListener('pointerup', qsPointerUp);
+  }
+  document.getElementById('qsChartWrap').addEventListener('pointerdown', function(ev){
+    var handle = ev.target.getAttribute && ev.target.getAttribute('data-handle');
+    if (!handle) return;
+    ev.preventDefault();
+    qsDragHandle = handle;
+    // Captured ONCE at gesture start, not recomputed every pointermove: without this, dragging p0
+    // (which changes yMax = max(p0,mc)*1.15, the axis the SAME drag is reading against) makes the
+    // scale itself shift under the cursor mid-gesture -- a live-browser test caught this exact bug
+    // (a second drag landed at a visibly different value than the identical gesture would from a
+    // fresh page load, because the axis had already rescaled from the first drag). Freezing the
+    // reference frame at pointerdown gives stable 1:1 cursor tracking for the whole gesture; only
+    // the FINAL value is what gets committed to the real input.
+    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
+    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
+    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
+    var qStar = (mc > 0 && gamma > 0) ? Math.pow(p0 / mc, 1 / gamma) : 0;
+    qsDragContext = { p0: p0, mc: mc, qMax: Math.max(Math.round(qStar * 2), 200), yMax: Math.max(p0, mc) * 1.15 };
+    document.addEventListener('pointermove', qsPointerMove);
+    document.addEventListener('pointerup', qsPointerUp);
+  });
+  window.qsPointerMove = qsPointerMove; // exposed for stress.cjs: drives the math directly since the
+  // stub can't dispatch real SVG pointer/CTM events -- the live drag gesture is verified in-browser.
   ['qsInternalMc', 'qsVendorP0', 'qsGamma'].forEach(function(id){
     document.getElementById(id).addEventListener('input', function(){ calcQStar(); renderQStarChart(); });
   });

@@ -417,7 +417,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 551 checks, all passing as of this writing.
+Run: `node stress.cjs` — 564 checks, all passing as of this writing.
 
 ## Status
 
@@ -630,3 +630,36 @@ pattern, predating this round), so the actual keydown-driven chord/stepper inter
 live rather than re-implemented in the stub; the underlying state machines (`stepMru`, `cancelChord`,
 `CHORD_MAP`) are still directly tested. Checks: 486 → 551. Committed locally — pending push with
 explicit confirmation, same discipline as every prior round.
+
+**2026-09-05, sixteenth round (Break-Even Crossover Playground — viz-innovation concept #11):**
+planned via `/plan-exec` before writing any code (FRAME/DECOMPOSE/SEQUENCE/DE-RISK/VERIFY, with the
+inverse-drag math pre-registered via a standalone Node script before implementation, per B35). The
+existing Volume Crossover Point (Q\*) calculator's SVG curve gained two draggable handles — the
+chart itself is now a second input surface, not just a display:
+- **Handle 1** (at q=1, where price(q)=P₀ by definition) directly sets the vendor's starting price.
+- **Handle 2** (at q=qMax) sets a new γ, holding P₀ fixed, via the closed-form inverse
+  `γ = −ln(price/P₀) / ln(qMax)`.
+- Both write back into the real `qsVendorP0`/`qsGamma` number inputs (which remain the full
+  keyboard/screen-reader path — the handles are `aria-hidden`, pointer/touch accelerants layered on
+  top, not a second, redundant, unlabeled control) and trigger the existing, unmodified
+  `calcQStar()`/`renderQStarChart()` pipeline — no parallel reimplementation of the math.
+- Added a real "you are here" cross-reference: the NPV analyzer's own Annual Volume input
+  (`#bbVolume`, 1,800 units) is now compared directly against Q\* on the same tab, stating where it
+  sits without claiming the two analyzers (different vendor-pricing assumptions each) agree.
+
+One real bug found via live-browser testing, not the stub: the first draft recomputed the chart's
+Y-axis scale (`yMax = max(P₀,MC)×1.15`) from the CURRENT input values on every `pointermove` —
+since dragging P₀ changes `yMax`, a single continuous drag gesture would have its own reference
+axis shift under the cursor mid-drag, making a second move within one gesture land somewhere
+inconsistent with the first. Fixed by freezing `p0`/`mc`/`qMax`/`yMax` once at `pointerdown` and
+using that frozen context for the whole gesture, only committing the final landed-on value —
+confirmed via a real multi-move single-gesture test in-browser (`node -e`-pre-registered: drag to
+y=100 → P₀=315.00 exactly; a second move to y=150 within the SAME gesture → P₀=210.00 exactly,
+against the same frozen axis, not a rescaled one).
+
+**Accepted limitation, same class as every prior round:** `stress.cjs`'s stub can't dispatch real
+SVG pointer events or compute `getScreenCTM()` (no rendering engine), so the drag GESTURE is
+verified live in a real browser; the inverse-math functions it depends on (`qsPriceFromY`,
+`qsGammaFromPrice`) are exposed and tested directly with the exact pre-registered golden values.
+Checks: 551 → 564. Committed locally — pending push with explicit confirmation, same discipline as
+every prior round.
