@@ -290,7 +290,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 475/475 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 486/486 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
@@ -357,6 +357,45 @@
         <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>: 55–70% typical
         discrete manufacturing, 70–80% advanced, &gt;80% world-class (top 5–10% of plants) — a real,
         sourced classification applied to invented site figures, not a claim about AMS's actual OEE.</p>
+    </div>
+
+    <div class="card" id="roleAlignmentCard" style="margin-top:16px">
+      <div class="card-head"><h2>Role Alignment — req 10512991</h2><span class="tag">LIVE POSTING, VERIFIED 2026-09-05</span></div>
+      <p class="lede" style="margin-bottom:10px">The posting's own charter, verbatim: <i>"build, from scratch,
+        the automated systems and analytical infrastructure that define how AMS understands,
+        reports, and defends its manufacturing cost position"</i> across <b>three manufacturing
+        sites</b> — <a href="https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services">req
+        10512991</a>. A companion posting (<a href="https://www.amazon.jobs/en/jobs/10449430/data-engineer-ii-amazon-manufacturing-services-ams">req
+        10449430</a>) confirms scale: <b>135+ machines</b> producing custom parts for <b>100+ Amazon
+        organizations</b>, on a real, named enterprise stack — SAP S/4HANA, JobBoss, Siemens
+        Teamcenter, and Dot Compliance.</p>
+      <div class="grid cols-2">
+        <div class="outline">
+          <p style="font-weight:700;font-size:12.5px;margin:0 0 8px">What the posting asks for</p>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:rgb(var(--c-text-secondary))">
+            <li>"Build, from scratch"</li>
+            <li>Understand / report / defend the cost position</li>
+            <li>Metals fabrication, machining, additive manufacturing</li>
+            <li>ERP/MRP experience; Excel, SQL, Python</li>
+          </ul>
+        </div>
+        <div class="outline">
+          <p style="font-weight:700;font-size:12.5px;margin:0 0 8px">What this dashboard demonstrates</p>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:rgb(var(--c-text-secondary))">
+            <li>Every calculator on every tab, built end-to-end this session</li>
+            <li>Should-Cost/MHR, Variance Waterfall, Cost Diagnostic Playbook</li>
+            <li>Buy-to-Fly, DMLS, CNC, and sheet-metal cost modules</li>
+            <li><code>stress.cjs</code> (see the passing-checks badge above), pure client-side JS, zero dependencies</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">
+        <b>Honest gap, stated plainly:</b> JobBoss, Siemens Teamcenter, and Dot Compliance are systems
+        studied for this exercise, not systems TJ has operated — SAP (ECC/S/4HANA) and SYSPRO are the
+        real, hands-on ERP background. Named here because knowing exactly what stack a role runs is a
+        stronger signal than staying generic, and a weaker claim stated honestly beats an overreaching
+        one that doesn't survive a follow-up question in an interview.
+      </p>
     </div>
   </section>
 
@@ -455,10 +494,10 @@
       <div class="outline">
         <div class="line"><span>Annual depreciation</span><span class="mono" id="mhrDepOut">$0</span></div>
         <div class="line"><span>Annual floor allocation</span><span class="mono" id="mhrFloorOut">$0</span></div>
-        <div class="line"><span>Standing cost basis (depreciation + floor + service)</span><span class="mono" id="mhrStandingBasisOut">$0</span></div>
+        <div class="line"><span>Fixed OH allocation basis (depreciation + floor + service)</span><span class="mono" id="mhrStandingBasisOut">$0</span></div>
         <div class="line"><span>Productive hours (scheduled × OEE)</span><span class="mono" id="mhrProdHrsOut">0</span></div>
-        <div class="line"><span>Standing rate</span><span class="mono" id="mhrStandingOut">$0.00/hr</span></div>
-        <div class="line"><span>Running rate (power + consumables)</span><span class="mono" id="mhrRunningOut">$0.00/hr</span></div>
+        <div class="line"><span>Fixed OH allocation rate</span><span class="mono" id="mhrStandingOut">$0.00/hr</span></div>
+        <div class="line"><span>Variable operating rate (power + consumables)</span><span class="mono" id="mhrRunningOut">$0.00/hr</span></div>
         <div class="line total"><span>Fully burdened MHR</span><span class="mono" id="mhrTotalOut">$0.00/hr</span></div>
       </div>
     </div>
@@ -494,7 +533,8 @@
     <span class="cadence-badge financial">FINANCIAL CADENCE — a period-close event, not a real-time feed</span>
     <p class="lede">The six-way decomposition the JD's "variance analysis" and "activity-based
       actual COGS" responsibilities point at — material price/quantity, labor rate/efficiency,
-      overhead spending/volume. This calculator updates instantly as you type, for exploration —
+      overhead spending/volume — is a deliberate 6-of-8 simplification of the complete textbook
+      variance model, not itself a named standard (see the Source Ledger). This calculator updates instantly as you type, for exploration —
       but that's a property of this demo tool, not a claim about the real accounting process it
       models. True standard-cost variance itself is only knowable at period-close: it requires
       posted, settled transactions, so a "real-time cost variance" claim should be treated
@@ -540,7 +580,7 @@
           <div class="line"><span>Labor Rate Variance (DLRV) <button class="explain-btn" data-explain="dlrv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outDLRV">$0</span></div>
           <div class="line"><span>Labor Efficiency Variance (DLEV) <button class="explain-btn" data-explain="dlev" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outDLEV">$0</span></div>
           <div class="line"><span>Variable OH Spending (VOSV) <button class="explain-btn" data-explain="vosv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outVOSV">$0</span></div>
-          <div class="line"><span>Fixed OH Volume (FOHV) <button class="explain-btn" data-explain="fohv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outFOHV">$0</span></div>
+          <div class="line"><span>Fixed OH Volume (FOVV) <button class="explain-btn" data-explain="fovv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outFOVV">$0</span></div>
           <div class="line total"><span>Net Total Variance</span><span class="mono" id="outNet">$0</span></div>
         </div>
       </div>
@@ -1016,9 +1056,10 @@
       <div class="card-head"><h2>Source Ledger</h2></div>
       <ul class="srclist">
         <li><span class="srctag real">REAL</span> The role, responsibilities, qualifications, comp band, and three-site scope — verbatim from <a href="https://www.amazon.jobs/en/jobs/10512991/senior-manufacturing-cost-engineer-amazon-manufacturing-services">req 10512991</a>, re-verified 2026-09-04.</li>
+        <li><span class="srctag real">REAL</span> "135+ machines producing custom parts for over 100 Amazon organizations," and the named enterprise stack (SAP S/4HANA, JobBoss, Siemens Teamcenter, Dot Compliance) — verbatim from a companion posting, <a href="https://www.amazon.jobs/en/jobs/10449430/data-engineer-ii-amazon-manufacturing-services-ams">req 10449430</a> (Data Engineer II, AMS), verified 2026-09-05. A fresh, independent search re-checked (and reaffirms) the already-fabricated named-client-program claim discussed on the Methodology tab — no live posting anywhere names specific internal client programs, and the org whose machine shop that claim pointed at is confirmed to run its own separate facility, not AMS's.</li>
         <li><span class="srctag real">REAL</span> OEE benchmark bands (55–70% typical / 70–80% advanced / &gt;80% world-class) — <a href="https://www.fabrico.io/blog/oee-benchmarks-by-industry-manufacturing-2026/">Fabrico (2026)</a>, <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>.</li>
-        <li><span class="srctag real">REAL</span> Should-cost and machine-hour-rate methodology (bottom-up decomposition, standing vs. running cost) — standard, publicly documented cost-accounting practice.</li>
-        <li><span class="srctag real">REAL</span> Standard-cost variance formulas (MPV/MQV/DLRV/DLEV/VOSV/FOHV) — textbook cost-accounting definitions, not AMS-specific.</li>
+        <li><span class="srctag real">REAL</span> Should-cost and machine-hour-rate methodology (bottom-up decomposition into a predetermined fixed-overhead allocation vs. variable operating cost) — standard, publicly documented cost-accounting practice. Relabeled 2026-09-05 from the CIMA/Indian cost-accounting tradition's "standing vs. running charges" terminology (same concept, real, but not native to US GAAP/CMA vocabulary) to the US managerial-accounting framing an American reviewer would expect.</li>
+        <li><span class="srctag real">REAL</span> Standard-cost variance formulas (MPV/MQV/DLRV/DLEV/VOSV/FOVV) — individually correct, textbook cost-accounting definitions; renamed FOHV→FOVV 2026-09-05 (the volume-only figure this calculator computes, not the combined spending+volume variance FOHV more commonly denotes). Note the 6-item bundle itself is a deliberate simplification, not a named standard — the complete textbook model has 8 variances (splitting overhead into variable-spending/variable-efficiency and fixed-spending/fixed-volume); this calculator tracks the 2 of those 4 overhead variances most operationally decision-relevant to a should-cost review.</li>
         <li><span class="srctag real">REAL</span> SMED (Single-Minute Exchange of Die) — Shigeo Shingo's 1950s Toyota/Mazda changeover-reduction methodology, typically cuts changeover time 50–80% (<a href="https://en.wikipedia.org/wiki/Single-minute_exchange_of_die">Wikipedia</a>, <a href="https://tractian.com/en/glossary/single-minute-exchange-of-dies-smed">Tractian</a>).</li>
         <li><span class="srctag real">REAL</span> MTConnect and OPC-UA — genuine, actively-used CNC machine telemetry protocols (<a href="https://www.ptc.com/en/technologies/iiot/industrial-automation/mtconnect">PTC</a>, <a href="https://www.mmsonline.com/columns/the-difference-between-mtconnect-and-opc-ua">Modern Machine Shop</a>) — real terminology, not a claim about AMS's specific telemetry stack.</li>
         <li><span class="srctag real">REAL</span> Aerospace titanium buy-to-fly ratios of 6:1+ — the real reported range is 6:1 to 20:1+ (average ~11:1; complex parts commonly cited up to 25–30:1 — widened 2026-09-05 from an earlier, narrower 16:1+ estimate after a second independent research pass found sources citing higher upper bounds), so this figure is on the conservative end of real industry norms, not inflated.</li>
@@ -1140,7 +1181,16 @@
         The risk register's 10 CRPN scores (P × S × D) all reproduce exactly by hand. The recurring
         "1,520 test fixtures" figure and the unconfirmed Project Kuiper/Amazon Robotics/AWS client
         relationship both appear again — same exclusion treatment, and all such references were
-        genericized in the built modules below.</p>
+        genericized in the built modules below. One of the six originally-proposed models —
+        "Markov capacity states" — was left unchecked at the time this card was written; a later,
+        independent research pass specifically targeted it and found the exact compound phrase
+        attested nowhere in operations-research or reliability-engineering literature (multiple
+        disconfirming searches, zero hits). The real, standard technique it's likely gesturing at is
+        a Markov chain model of equipment <i>availability/reliability</i> — a state-transition matrix
+        yielding steady-state operational availability and MTBF/MTTR — which is genuine and
+        well-established under that name, never as a fused "capacity chain" noun. Not built here, to
+        avoid the same trap this card exists to name: a plausible-sounding synthesis of two real
+        ideas presented as if it were itself a citable methodology.</p>
     </div>
 
     <div class="card">
@@ -1487,13 +1537,13 @@
     dlrv: { title: 'Direct Labor Rate Variance (DLRV)', formula: 'DLRV = (Actual Rate − Standard Rate) × Actual Hours', body: 'Captures wage-rate effects — overtime premiums, a more senior technician reassigned to the job — independent of how long the job actually took.' },
     dlev: { title: 'Direct Labor Efficiency Variance (DLEV)', formula: 'DLEV = (Actual Hours − Standard Hours) × Standard Rate', body: 'Captures a pure productivity effect — a stale routing standard, work-instruction ambiguity, or a genuinely slower job — independent of the wage rate paid.' },
     vosv: { title: 'Variable Overhead Spending Variance (VOSV)', formula: 'VOSV = Actual Variable OH − (Actual Hours × Standard Variable OH Rate)', body: 'Isolates whether consumables (coolant, shielding gas, cutting-tool wear) cost more or less per hour than the standard rate assumed, for the hours actually run.' },
-    fohv: { title: 'Fixed Overhead Volume Variance (FOHV)', formula: 'FOHV = (Budgeted Hours − Actual Hours) × Standard Fixed OH Rate', body: 'Not a spending variance at all — it is the P&L cost of running fewer or more hours than the volume the fixed-overhead rate assumed, i.e. unabsorbed (or over-absorbed) capacity.' },
+    fovv: { title: 'Fixed Overhead Volume Variance (FOVV)', formula: 'FOVV = (Budgeted Hours − Actual Hours) × Standard Fixed OH Rate', body: 'Not a spending variance at all — it is the P&L cost of running fewer or more hours than the volume the fixed-overhead rate assumed, i.e. unabsorbed (or over-absorbed) capacity. Relabeled FOHV→FOVV 2026-09-05: "FOHV" more commonly denotes the combined spending+volume fixed-overhead variance in the cost-accounting literature; FOVV is the less-ambiguous abbreviation for the volume-only figure this calculator actually computes.' },
     mdqs: { title: 'Master Data Quality Scorecard (MDQS)', formula: 'MDQS = 100% − (30%·routing_err_rate + 30%·confirm_var_rate + 25%·unlinked_scrap_rate + 15%·stale_standard_rate)', body: 'A single weighted score across four independent data-quality signals, banded green ≥98% / amber 93–98% / red <93% — the same formula the Governance tab computes live, sourced from a downloaded document’s own real, well-defined SAP data-governance model.' },
-    mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'Standing cost is a capital/facility question, spread over how many hours the machine is actually expected to run. Running cost is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab.' },
+    mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'The fixed OH allocation is a capital/facility question, spread over how many hours the machine is actually expected to run. The variable operating rate is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab. (CIMA/Indian cost-accounting calls this exact split "standing vs. running charges" — same concept, US-managerial-accounting vocabulary used here instead.)' },
     learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
-    ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above.' },
+    ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above. Commodity-finance literature typically cites this specific application by name — Schwartz (1997), "The Stochastic Behavior of Commodity Prices," *Journal of Finance* — rather than bare "Ornstein-Uhlenbeck," since the latter is a generic process name used across many unrelated domains.' },
     qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab).' },
     montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' }
   };
@@ -1805,17 +1855,17 @@
     var DLRV = (LAR - LSR) * LAH;                // labor rate variance
     var DLEV = (LAH - LSH) * LSR;                // labor efficiency variance
     var VOSV = VOAct - (LAH * VOSR);             // variable overhead spending variance
-    var FOHV = (budHrs - LAH) * FOHR;            // fixed overhead volume variance
-    var net = MPV + MQV + DLRV + DLEV + VOSV + FOHV;
+    var FOVV = (budHrs - LAH) * FOHR;            // fixed overhead volume variance
+    var net = MPV + MQV + DLRV + DLEV + VOSV + FOVV;
 
     document.getElementById('outMPV').textContent = fmtMoney(MPV);
     document.getElementById('outMQV').textContent = fmtMoney(MQV);
     document.getElementById('outDLRV').textContent = fmtMoney(DLRV);
     document.getElementById('outDLEV').textContent = fmtMoney(DLEV);
     document.getElementById('outVOSV').textContent = fmtMoney(VOSV);
-    document.getElementById('outFOHV').textContent = fmtMoney(FOHV);
+    document.getElementById('outFOVV').textContent = fmtMoney(FOVV);
     document.getElementById('outNet').textContent = fmtMoney(net);
-    [['outMPV',MPV],['outMQV',MQV],['outDLRV',DLRV],['outDLEV',DLEV],['outVOSV',VOSV],['outFOHV',FOHV]].forEach(function(pair){
+    [['outMPV',MPV],['outMQV',MQV],['outDLRV',DLRV],['outDLEV',DLEV],['outVOSV',VOSV],['outFOVV',FOVV]].forEach(function(pair){
       document.getElementById(pair[0]).style.color = pair[1] > 0 ? 'rgb(var(--c-danger))' : (pair[1] < 0 ? 'rgb(var(--c-success))' : '');
     });
 
@@ -1825,10 +1875,10 @@
       { label: 'DLRV', value: DLRV },
       { label: 'DLEV', value: DLEV },
       { label: 'VOSV', value: VOSV },
-      { label: 'FOHV', value: FOHV }
+      { label: 'FOVV', value: FOVV }
     ], net);
 
-    return { MPV: MPV, MQV: MQV, DLRV: DLRV, DLEV: DLEV, VOSV: VOSV, FOHV: FOHV, net: net };
+    return { MPV: MPV, MQV: MQV, DLRV: DLRV, DLEV: DLEV, VOSV: VOSV, FOVV: FOVV, net: net };
   }
   window.calcVariance = calcVariance;
   window.renderWaterfall = renderWaterfall;
@@ -2422,9 +2472,9 @@
       action: 'Re-run the standard cost roll on any routing older than 180 days; a suspiciously large favorable variance gets audited, not celebrated.' },
     { num: 21, domain: 'overhead', code: 'FIN-02', kpi: 'Overhead Absorption Efficiency (OAE)',
       green: '≥98%', amber: '92–97.9%', red: '<92%',
-      q: 'Why did the plant post an unfavorable Fixed Overhead Volume Variance last month?',
+      q: 'Why did the plant post an unfavorable Fixed Overhead Volume Variance (FOVV) last month?',
       root: 'A demand pullback on internal program submissions left machine centers idle, leaving standing depreciation and rent unabsorbed.',
-      formula: 'FOHV = Budgeted Fixed OH − Absorbed Fixed OH',
+      formula: 'FOVV = Budgeted Fixed OH − Absorbed Fixed OH',
       worked: 'Budgeted $180,000 @ 4,000 hrs ($45.00/hr rate) · actual 3,300 hrs',
       result: '+$31,500 unabsorbed drag (unfavorable); OAE = 82.5% (target ≥98%)',
       gl: 'Period Idle Capacity Loss Expense account',

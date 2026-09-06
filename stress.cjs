@@ -176,6 +176,27 @@ if (execTableMatch) {
   check(Math.abs(cStd - 1100000) / 1100000 > 0.02, "Site C's invented standard COGS is safely distinct (>2%) from the specific fabricated figure ($1,100,000) it once sat only 0.45% away from", `cStd=${cStd}, diff=${(Math.abs(cStd - 1100000) / 1100000 * 100).toFixed(2)}%`);
 }
 
+console.log("--- Role Alignment card (req 10512991, added 2026-09-05): real, sourced org facts ---");
+// Pre-registered before writing: the card must exist, must cite both live req numbers, must carry
+// the verbatim charter quote and the 135+/100+ scale + 4 named enterprise systems from req 10449430,
+// and must NOT literally repeat "Kuiper"/"Robotics"/"AWS data center" (the already-fabricated
+// client-program claim) even in its own correction sentence -- reworded specifically to avoid
+// re-triggering the bannedStrings guard rather than adding a new excluded-card region for it.
+const roleAlignmentMatch = html.match(/<div class="card" id="roleAlignmentCard"[\s\S]*?doesn't survive a follow-up question in an interview\.\s*<\/p>\s*<\/div>/);
+check(!!roleAlignmentMatch, "found the Role Alignment card to check");
+if (roleAlignmentMatch) {
+  const ra = roleAlignmentMatch[0];
+  check(ra.includes("10512991") && ra.includes("10449430"), "cites both live req numbers (10512991 and 10449430)");
+  check(ra.includes("build, from scratch"), "carries the posting's own verbatim charter quote");
+  check(ra.includes("135+ machines") && ra.includes("100+ Amazon"), "carries the verified scale figures (135+ machines, 100+ orgs)");
+  ["SAP S/4HANA", "JobBoss", "Siemens Teamcenter", "Dot Compliance"].forEach((sys) => {
+    check(ra.includes(sys), `names the real enterprise system "${sys}"`);
+  });
+  check(ra.includes("Honest gap"), "states the honest-gap framing (systems studied, not systems operated) rather than implying hands-on experience with tools not actually used");
+  check(!["Kuiper", "Robotics", "AWS data center"].some((s) => ra.includes(s)), "the card does not literally repeat the already-fabricated named-client-program strings, even while alluding to the correction");
+}
+check(html.includes('req 10449430</a> (Data Engineer II, AMS)'), "the Source Ledger cites req 10449430 as the source for the 135+/100+/enterprise-stack facts");
+
 console.log("--- No confirmed-incorrect claims asserted as fact (third document's two real errors) ---");
 // A third downloaded document had two confirmed technical errors (not fabrications, but genuinely
 // wrong claims): "PP02" is not SAP's real rework order type (the closer convention is PP03), and
@@ -436,19 +457,19 @@ check(elements.outMQV.textContent === "-$1,040", "MQV matches golden value", ele
 check(elements.outDLRV.textContent === "+$1,350", "DLRV matches golden value", elements.outDLRV.textContent);
 check(elements.outDLEV.textContent === "+$2,520", "DLEV matches golden value", elements.outDLEV.textContent);
 check(elements.outVOSV.textContent === "+$430", "VOSV matches golden value", elements.outVOSV.textContent);
-check(elements.outFOHV.textContent === "-$960", "FOHV matches golden value", elements.outFOHV.textContent);
+check(elements.outFOVV.textContent === "-$960", "FOVV matches golden value", elements.outFOVV.textContent);
 check(elements.outNet.textContent === "+$5,325", "net total variance matches golden value (and equals the sum of the six lines above)", elements.outNet.textContent);
 
 console.log("--- Pathway B (2026-09-05): Variance Waterfall rewritten as a true cascading bridge chart ---");
 // Pre-registered by hand before writing this check: cumulative running total after MPV(+3025),
-// MQV(-1040), DLRV(+1350), DLEV(+2520), VOSV(+430), FOHV(-960) = 3025, 1985, 3335, 5855, 6285, 5325 --
+// MQV(-1040), DLRV(+1350), DLEV(+2520), VOSV(+430), FOVV(-960) = 3025, 1985, 3335, 5855, 6285, 5325 --
 // the final cumulative total must equal the calculator's own separately-computed net (+5325) exactly,
 // or the "bridge" wouldn't actually bridge to the same number the rest of the page reports.
 check(typeof sandbox.renderWaterfall === "function", "window.renderWaterfall is exposed as a function");
 const bridgeResult = sandbox.renderWaterfall(
   [
     { label: "MPV", value: 3025 }, { label: "MQV", value: -1040 }, { label: "DLRV", value: 1350 },
-    { label: "DLEV", value: 2520 }, { label: "VOSV", value: 430 }, { label: "FOHV", value: -960 },
+    { label: "DLEV", value: 2520 }, { label: "VOSV", value: 430 }, { label: "FOVV", value: -960 },
   ],
   5325
 );
@@ -630,11 +651,11 @@ check(elements.gateConfOut.innerHTML.includes(">PASS<"), "Confirmation gate (12%
 console.log("--- MHR Build-Up Calculator: golden values (pre-registered via Python, verified before this file was written) ---");
 check(elements.mhrDepOut.textContent === "$82,857", "annual depreciation matches golden value ($580,000 / 7 yrs)", elements.mhrDepOut.textContent);
 check(elements.mhrFloorOut.textContent === "$12,160", "annual floor allocation matches golden value (320 sq ft x $38/sq ft)", elements.mhrFloorOut.textContent);
-check(elements.mhrStandingBasisOut.textContent === "$117,017", "standing cost basis matches golden value (depreciation + floor + service)", elements.mhrStandingBasisOut.textContent);
+check(elements.mhrStandingBasisOut.textContent === "$117,017", "fixed OH allocation basis matches golden value (depreciation + floor + service)", elements.mhrStandingBasisOut.textContent);
 check(elements.mhrProdHrsOut.textContent === "2,964", "productive hours matches golden value (3,800 scheduled x 78% OEE)", elements.mhrProdHrsOut.textContent);
-check(elements.mhrStandingOut.textContent === "$39.48/hr", "standing rate matches golden value (standing basis / productive hours)", elements.mhrStandingOut.textContent);
-check(elements.mhrRunningOut.textContent === "$14.15/hr", "running rate matches golden value (20kW x $0.12/kWh + $11.75 consumables)", elements.mhrRunningOut.textContent);
-check(elements.mhrTotalOut.textContent === "$53.63/hr", "fully burdened MHR matches golden value (standing + running, and equals the sum of the two lines above)", elements.mhrTotalOut.textContent);
+check(elements.mhrStandingOut.textContent === "$39.48/hr", "fixed OH allocation rate matches golden value (allocation basis / productive hours)", elements.mhrStandingOut.textContent);
+check(elements.mhrRunningOut.textContent === "$14.15/hr", "variable operating rate matches golden value (20kW x $0.12/kWh + $11.75 consumables)", elements.mhrRunningOut.textContent);
+check(elements.mhrTotalOut.textContent === "$53.63/hr", "fully burdened MHR matches golden value (fixed allocation + variable operating, and equals the sum of the two lines above)", elements.mhrTotalOut.textContent);
 check(!bannedStrings.some((s) => elements.mhrCapital && [elements.mhrDepOut, elements.mhrStandingOut, elements.mhrTotalOut].some((el) => el.textContent.includes(s))), "the MHR Build-Up Calculator's own outputs don't happen to reproduce any of the banned fabricated figures");
 
 console.log("--- Cost Diagnostic Playbook: structural + golden-value checks ---");
@@ -806,7 +827,7 @@ check(foundBannedInRisk.length === 0, "none of the banned/wrong-claim strings le
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fohv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });

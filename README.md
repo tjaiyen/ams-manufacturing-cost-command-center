@@ -241,7 +241,9 @@ so the very keyboard-nav checks written to test the new nav caught it first — 
    simulated trials over material/conversion cost variation, reporting P50/P80/P95 percentiles via a
    deterministically seeded PRNG (mulberry32, not `Math.random()`) so the same inputs always
    reproduce the same result — should-cost as a distribution, not a point estimate.
-3. **Variance Waterfall** — the real six-way standard-cost decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOHV),
+3. **Variance Waterfall** — a six-item standard-cost variance decomposition (MPV/MQV/DLRV/DLEV/VOSV/FOVV;
+   individually-real formulas, deliberately simplified from the complete 8-variance textbook model —
+   see the Source Ledger),
    fully interactive, rendered as a live CSS bar-chart waterfall, plus a **Commodity Price Exposure
    Early Warning** calculator — the forward-looking cousin of the MPV line (spot-price shift vs.
    open purchasing volume → projected dollar exposure, flagged at a real 8% threshold) — and a
@@ -314,7 +316,7 @@ against exact numbers **independently verified live in a real browser before thi
   nudged from $26.00/$46.00 to $24.00/$42.00 on 2026-09-04 — a stress-test found the originals sat
   2.2%/3.9% from specific fabricated MHR figures in two of the downloaded documents; every dependent
   golden value re-derived and re-verified live in-browser after the change.)
-- Variance defaults → MPV +$3,025 / MQV −$1,040 / DLRV +$1,350 / DLEV +$2,520 / VOSV +$430 / FOHV
+- Variance defaults → MPV +$3,025 / MQV −$1,040 / DLRV +$1,350 / DLEV +$2,520 / VOSV +$430 / FOVV
   −$960 / **net +$5,325**.
 - Build-vs-buy defaults ($95.78 internal vs. $186.00 external, 1,800 units/yr, $38K transition, 10%
   discount, 3yr) → unit saving $90.22 / annual saving $162,396 / payback 0.23 years / **NPV $365,855**.
@@ -415,7 +417,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 475 checks, all passing as of this writing.
+Run: `node stress.cjs` — 486 checks, all passing as of this writing.
 
 ## Status
 
@@ -542,3 +544,33 @@ viewport-aware redesign is out of scope. And a minor UX side-effect where clicki
 already on the Playbook tab with an active filter silently resets that filter (necessary so the
 target card is guaranteed to exist before scrolling to it). Checks: 462 → 475. Committed locally —
 pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-05, fourteenth round (org verification + terminology calibration):** 4 parallel independent
+research passes fact-checked the should-cost/MHR/variance methodology, the physical-manufacturing-tech
+claims, the stochastic forecasting models, and — adversarially — AMS as an organization, against live
+`amazon.jobs` postings. Real finding: **req 10512991's own charter is now cited directly** ("build,
+from scratch, the automated systems and analytical infrastructure that define how AMS understands,
+reports, and defends its manufacturing cost position"), and a companion posting (req 10449430)
+confirmed AMS's real scale (135+ machines, 100+ orgs served) and real enterprise stack (SAP S/4HANA,
+JobBoss, Siemens Teamcenter, Dot Compliance) — added as a new Role Alignment card on the Executive
+Overview tab, framed with an explicit honest-gap note (these are systems studied, not operated).
+Terminology fixes: renamed **FOHV → FOVV** (Fixed Overhead Volume Variance) — the cost-accounting
+literature more commonly reserves "FOHV" for the combined spending+volume figure, and FOVV is the
+less-ambiguous abbreviation for what this calculator actually computes; relabeled the MHR Build-Up
+Calculator's "standing/running cost" language (real, but CIMA/Indian cost-accounting-tradition
+vocabulary, not native to US GAAP/CMA) to "fixed OH allocation / variable operating cost," with the
+original terminology kept as an explanatory footnote rather than deleted; and made the Source Ledger
+explicit that the six-way variance bundle (MPV/MQV/DLRV/DLEV/VOSV/FOVV) is a deliberate simplification
+of the complete 8-variance textbook model, not itself a named standard. Also closed a real, honestly-
+flagged gap in this file's own Methodology tab: "Markov capacity states" — one of six models an
+earlier-reviewed document proposed — had been left unchecked; the new research confirmed the exact
+compound phrase is unattested anywhere in the literature, while the real underlying technique (a
+Markov chain model of equipment availability/reliability) is genuine under its own, different name —
+noted, not built. Not touched, because independent re-verification found the existing content already
+correct: the buy-to-fly 6:1–20:1+ range (already wider/better-sourced than this round's own findings),
+the Ornstein-Uhlenbeck mean-reversion model (already correctly described; added an optional Schwartz
+(1997) citation for extra precision), and the power-law Build-vs-Buy Volume Crossover (Q\*) calculator
+— this models a specific, real vendor-pricing scenario (price falling as a power function of volume),
+correctly labeled as such; "linearizing" it per this round's own initial instinct would have made a
+correct, already-honest label wrong. Checks: 475 → 486. Committed locally — pending push with explicit
+confirmation, same discipline as every prior round.
