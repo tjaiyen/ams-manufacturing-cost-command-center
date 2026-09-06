@@ -44,7 +44,7 @@ wins that a technical reviewer would actually notice and respect. Every idea bel
 ### Accessibility & Inclusivity
 16. **High-Contrast Mode.** ✅ **Built this round** — independent layer over light/dark, boosted secondary-text contrast + thicker focus rings.
 17. **Full keyboard-navigation audit** across every interactive element (sliders, tables, modals), not just the new nav. ✅ nav is done; sliders/tables need a follow-up pass.
-18. **`prefers-reduced-motion` support** — disable the nav-collapse transition and any count-up animation for users who've set that OS preference. ✅ cheap, currently a real gap, **highest-priority accessibility item not yet built.**
+18. **`prefers-reduced-motion` support** — disable the nav-collapse transition and any count-up animation for users who've set that OS preference. ✅ **Built** (2026-09-05, stress-test round 10) — see the `@media (prefers-reduced-motion:reduce)` block in `index.html` and its `stress.cjs` coverage. (This item's own status went stale after that round shipped — caught and corrected 2026-09-06.)
 19. **`aria-live="polite"` on calculator outputs** so a screen reader announces updated results without requiring re-navigation. ✅ cheap, currently a real gap, **second-highest-priority item not yet built.**
 20. **Adjustable base font-size stepper**, independent of browser zoom, without triggering horizontal scroll. ✅
 21. **Dyslexia-friendly font toggle.** ⚠ a real dyslexia-specific typeface (e.g. Atkinson Hyperlegible) would require an external web font, breaking this repo's zero-external-dependency stance; a system-font-only "legible" fallback stack is weaker and not really the same feature. Flagged, not built, until that tradeoff is deliberately revisited.
@@ -78,7 +78,7 @@ itself (not a reimplementation) — see the "Vertical side navigation" sections 
 ## Phase 3 — Backlog (P0 / P1 / P2)
 
 **P0 — do next, highest leverage per effort:**
-- `prefers-reduced-motion` support (idea #18)
+- ~~`prefers-reduced-motion` support (idea #18)~~ — done, see #18 above.
 - `aria-live="polite"` on calculator outputs (idea #19)
 - Keyboard-shortcuts help overlay, `?` key (idea #22)
 - Colorblind-safe status-pill symbol audit (idea #23)

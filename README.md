@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (17 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 21 indexed modules, and a **collapsible vertical side navigation** (real
+modals (18 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 22 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 21 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 22 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 601 checks, all passing as of this writing.
+Run: `node stress.cjs` — 640 checks, all passing as of this writing.
 
 ## Status
 
@@ -755,3 +755,71 @@ state-computation function (no DOM reads) separated from `renderTugOfWar()`, the
 unit-testable. Golden values pre-registered by hand (B35) before writing any check. Checks: 582 →
 601. Committed locally — pending push with explicit confirmation, same discipline as every prior
 round.
+
+**2026-09-06, twentieth round (fresh `/stress-test` pass, first full adversarial audit of this
+repo):** two independent reviewers (correctness/edge-cases; accessibility/fabrication-guard/
+consistency), each returning findings only. All 8 candidate findings independently reproduced and
+confirmed real before any fix — 3 CRIT/HIGH-adjacent correctness bugs, 3 HIGH accessibility gaps, 2
+doc-staleness gaps:
+
+1. **HIGH — Learning Curve Forecaster produced a literal `NaN`/`Infinity` at reachable inputs.**
+   `calcLearningCurve()`'s `(a/exp)*(...)` formula divides by `exp`, which is exactly `0` (verified:
+   `-1 === -1` in JS double precision, not just close) at a 50% learning rate — any user simply typing
+   "50" hit `NaN hrs`/`$NaN` with no error shown. Separately, `Batch Start (M) = 0` produced
+   `Infinity` for any rate below 50%, since `pow(0, negative)` is singular. Fixed with the actual
+   mathematically-correct closed form at the `exp=0` singularity — `a·ln((M+N)/M)`, the true
+   L'Hôpital limit of the power-law integral, confirmed via numerical approach from both sides
+   (49.9999%/50.0001% converge to it) — rather than an arbitrary epsilon nudge, plus flooring `M` to
+   1 (Wright/Crawford unit numbering starts at 1; `M=0` is out of the model's domain).
+2. **MEDIUM — Guardrail Gate Simulator's BOM gate was missing `Math.abs()`, unlike its 2 siblings.**
+   `bomPass = bom <= 15` let any large NEGATIVE discrepancy read as PASS, identical to a benign +8%.
+   Now `Math.abs(bom) <= 15`, matching the PO/Confirmation gates.
+3. **LOW — MDQS score wasn't floored and could exceed 100%.** A negative defect-count input (e.g.
+   routing errors = -50) made a deduction term go negative, pushing the score to 102.475% — above the
+   0-100% range the rest of the page assumes. Floored all 4 defect-count inputs to 0, both via
+   `min="0"` and defensively in JS (an HTML `min` alone doesn't stop a typed negative value from
+   parsing — confirmed by the exact same caveat already true of the Learning Curve fix above).
+4. **HIGH — ~80 calculator inputs had zero programmatically-associated accessible name.** Every one
+   of this page's 81 `<label>` elements was a plain, non-wrapping, `for`-less sibling of its control
+   — the single largest accessibility gap on a page that otherwise documents extensive, deliberate
+   ARIA work. Paired all 81 to their real control ids (verified: every `for=` target resolves to a
+   real `id=`, all 81 targets unique, and the 8 trickiest cases — a `<b>` live-value span nested
+   inside the label, or the label and control on separate source lines — spot-checked by hand).
+5. **HIGH — badge/status-pill contrast failed WCAG AA against the REAL composited background, in
+   both themes.** The same defect class already found and fixed in all three sibling repos this same
+   day: `.srctag`/`.status-pill` render full-opacity `--c-success`/`--c-warning`/`--c-danger` text on
+   a 15%-opacity tint of that same color — the actual rendered background, not the raw card color a
+   naive check would compare against. Measured (dark theme, the default): success 3.95:1, warning
+   4.47:1, danger 3.76:1 — all below 4.5:1. Retuned all 3 tokens per theme (lightened for dark, since
+   dark-theme text needs to get LIGHTER to gain contrast against a dark background, not darker — an
+   initial attempt at this fix moved the wrong direction and was caught immediately by the numbers
+   going further below threshold, not above) to clear ≥5.0:1 with margin, in all 4 theme-cascade
+   blocks kept in sync.
+6. **MEDIUM — `prefers-reduced-motion` didn't reach 2 JS-driven smooth-scroll calls.** The CSS
+   media block correctly disabled every `transition`/`animation` on the page, but missed
+   `html{scroll-behavior:smooth}` and the Command Palette's + KPI Interaction Map's
+   `scrollIntoView({behavior:'smooth'})` calls — an explicit JS `behavior` option overrides the CSS
+   property per spec, so the CSS fix alone couldn't reach these. Added `scroll-behavior:auto` to the
+   reduced-motion block (covers native/anchor scrolling) and a `prefersReducedMotion()` helper
+   (matching the sibling `cost-management-command-center` repo's existing pattern) gating both calls.
+7. **MEDIUM — this README's own evergreen summary paragraph had a stale count.** "17 [explain
+   modals]"/"21 indexed modules" — both stale since the nineteenth round shipped the 18th/22nd. The
+   exact class of staleness this README has caught on itself before, but this repo had never
+   previously had an automated check for it (unlike the sibling repos' established D62-style
+   self-check) — added one, reading the live page's real counts rather than a second hand-maintained
+   number.
+8. **LOW — `UX_ROADMAP.md` claimed `prefers-reduced-motion` was "not yet built."** True when written,
+   false since the tenth round shipped it the very next day. Corrected, and struck from the backlog.
+
+**Proactively, not from either reviewer:** while updating `#verifyBadge`, found this repo's existing
+badge check only confirmed the badge's own two numbers agree with EACH OTHER (`N/N`), never that `N`
+matches the file's actual running total — exactly the gap just found and fixed in the sibling
+`manufacturing-project-controls-command-center` repo (its own fixer updated `stress.cjs`/README but
+left a stale hand-typed badge). Closed the same hole here before it could recur, with the identical
+`passes+1` self-check pattern.
+
+Both new findings-classes of infrastructure (the WCAG contrast calculator; the label-association
+audit) were falsification-tested: temporarily reverted, confirmed each new check failed with the
+exact predicted broken values, restored, reconfirmed green. Checks: 601 → 640 (39 new: one golden-
+value block per finding + the proactive badge self-check). Committed locally — pending push with
+explicit confirmation, same discipline as every prior round.

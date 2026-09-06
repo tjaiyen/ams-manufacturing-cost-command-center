@@ -817,6 +817,28 @@ check(elements.gateBomOut.innerHTML.includes(">PASS<"), "BOM gate (8% vs 15% thr
 check(elements.gatePoOut.innerHTML.includes(">BLOCKED<"), "PO gate (7% vs 5% threshold) correctly BLOCKS", elements.gatePoOut.innerHTML);
 check(elements.gateConfOut.innerHTML.includes(">PASS<"), "Confirmation gate (12% vs 15% threshold) correctly PASSES", elements.gateConfOut.innerHTML);
 
+console.log("--- Stress-test finding (2026-09-06): BOM gate was missing Math.abs(), unlike its 2 siblings ---");
+// Pre-registered by hand: -50% is a mass discrepancy 3x past the 15% threshold in magnitude, but
+// without Math.abs() it reads as bom<=15 -> true -> PASS, identical to the benign default (8%).
+elements.gateBom.value = "-50";
+sandbox.calcGates();
+check(elements.gateBomOut.innerHTML.includes(">BLOCKED<"), "BOM gate now correctly BLOCKS on a large NEGATIVE discrepancy (-50%), matching PO/Confirmation's existing Math.abs() behavior (was: silently PASS, identical to a benign +8%)", elements.gateBomOut.innerHTML);
+elements.gateBom.value = "8"; // restore default
+sandbox.calcGates();
+check(elements.gateBomOut.innerHTML.includes(">PASS<"), "restoring the BOM input to its default (8%) reproduces the original golden PASS state", elements.gateBomOut.innerHTML);
+
+console.log("--- Stress-test finding (2026-09-06): MDQS score wasn't floored, could exceed 100% with a negative input ---");
+// Pre-registered by hand: deduction = 0.30*(-50/300)*100 + 0.30*(15/500)*100 + 0.25*(4/80)*100 +
+// 0.15*(10/400)*100 = -5+0.9+1.25+0.375 = -2.475 -> score = 102.475%, a nonsensical value above the
+// page's own 0-100% assumption (bandFor treats >=98% as the best band).
+elements.mdqsRoutingErr.value = "-50";
+sandbox.calcMdqs();
+check(!elements.mdqsScore.textContent.includes("102"), "MDQS score no longer exceeds 100% with a negative routing-error count (was: '102.475%')", elements.mdqsScore.textContent);
+check(elements.mdqsScore.textContent === "97.475%", "negative routing-error count is floored to 0 (not just its deduction term), giving the pre-registered golden value for the remaining 3 real deductions (100% - 0.9 - 1.25 - 0.375 = 97.475%)", elements.mdqsScore.textContent);
+elements.mdqsRoutingErr.value = "6"; // restore default
+sandbox.calcMdqs();
+check(elements.mdqsScore.textContent === "96.875%", "restoring the routing-error input to its default (6) reproduces the original golden MDQS score exactly", elements.mdqsScore.textContent);
+
 console.log("--- MHR Build-Up Calculator: golden values (pre-registered via Python, verified before this file was written) ---");
 check(elements.mhrDepOut.textContent === "$82,857", "annual depreciation matches golden value ($580,000 / 7 yrs)", elements.mhrDepOut.textContent);
 check(elements.mhrFloorOut.textContent === "$12,160", "annual floor allocation matches golden value (320 sq ft x $38/sq ft)", elements.mhrFloorOut.textContent);
@@ -948,6 +970,23 @@ if (jumpFnMatch) {
   check(jumpFnMatch[0].includes("target.focus({ preventScroll: true })"), "jump() moves focus onto the target card itself after scrolling (preventScroll avoids fighting the smooth scrollIntoView already in flight)", jumpFnMatch[0]);
 }
 
+console.log("--- Stress-test finding (2026-09-06): reduced-motion now reaches the two JS-driven smooth-scroll calls too ---");
+// A stress-test found the CSS reduced-motion block disabled every transition/animation but missed
+// `html{scroll-behavior:smooth}` and 2 JS scrollIntoView({behavior:'smooth'}) calls -- an explicit JS
+// `behavior` option overrides the CSS property per spec, so the CSS fix alone can't reach these.
+check(/@media \(prefers-reduced-motion:reduce\)\{[\s\S]*?html\{scroll-behavior:auto\}/.test(html), "html{scroll-behavior:auto} is set inside the reduced-motion media block (covers native/anchor scrolling)");
+check(typeof sandbox.prefersReducedMotion === "function", "window.prefersReducedMotion is exposed as a function");
+check(sandbox.prefersReducedMotion() === false, "prefersReducedMotion() reads false with the stub's default (non-reduced) matchMedia state", sandbox.prefersReducedMotion());
+simulateViewportForcedNarrow(true); // reuses the existing controllable matchMedia stub -- its single
+                                     // shared `matches` flag doesn't distinguish query strings, so
+                                     // flipping it also exercises the reduced-motion path
+check(sandbox.prefersReducedMotion() === true, "prefersReducedMotion() correctly reads true once the stub's matchMedia reports matches:true", sandbox.prefersReducedMotion());
+simulateViewportForcedNarrow(false); // restore before any later test relies on the non-narrow default
+check(sandbox.prefersReducedMotion() === false, "restoring the stub's matchMedia state back to false is reflected immediately (not cached from the first call)", sandbox.prefersReducedMotion());
+const smoothScrollCalls = (html.match(/behavior: prefersReducedMotion\(\) \? 'auto' : 'smooth'/g) || []).length;
+check(smoothScrollCalls === 2, "both scrollIntoView call sites (Command Palette + KPI Interaction Map) now check prefersReducedMotion() instead of hardcoding 'smooth'", smoothScrollCalls);
+check(!html.includes("behavior: 'smooth', block: 'center'"), "no scrollIntoView call still hardcodes an unconditional 'smooth' behavior", "");
+
 console.log("--- Stress-test round (2026-09-05) fix: new factual claims (Pareto/ASQ, I-MR/SPC) added to the canonical sourced list ---");
 check(html.includes('Pareto charts as the standard root-cause-prioritization tool'), "the Pareto-chart claim is now in the Methodology tab's sourced REAL-tag list, consistent with how every other factual claim on this page is documented");
 check(html.includes('The Individuals (I-MR) control chart method'), "the SPC/I-MR claim is now in the Methodology tab's sourced REAL-tag list");
@@ -960,6 +999,24 @@ check(elements.lcTotalHours.textContent === "74.64 hrs", "total labor hours matc
 check(elements.lcAvgUnitTime.textContent === "1.87 hrs", "average unit time matches golden value", elements.lcAvgUnitTime.textContent);
 check(elements.lcTotalCost.textContent === "$3358.59", "total labor cost matches golden value (independently re-derived, NOT the source document's own $3,345.75 -- a real ~0.4% arithmetic slip found in their worked example)", elements.lcTotalCost.textContent);
 check(elements.lcDistortion.textContent === "-$7,441 (fake favorable)", "the static-standard distortion matches golden value and is correctly labeled a fake favorable variance, not real performance", elements.lcDistortion.textContent);
+
+console.log("--- Stress-test finding (2026-09-06): Learning Curve NaN/Infinity at reachable inputs ---");
+// Pre-registered by hand: at Learning Rate=50%, b=ln(0.5)/ln(2)=-1 EXACTLY (verified: -1===-1 in JS
+// double precision), so exp=b+1=0 exactly, hitting the (a/exp)*(...) formula's division by zero --
+// the fix replaces that one point with the true closed-form logarithmic limit, a*ln((M+N)/M), which
+// a numerical approach from both sides (49.9999%/50.0001%) confirms agrees with (~6.5917 either way).
+elements.lcLearningRate.value = "50";
+sandbox.calcLearningCurve();
+check(!elements.lcTotalHours.textContent.includes("NaN"), "Learning Rate=50% no longer produces a literal NaN (was: 'NaN hrs')", elements.lcTotalHours.textContent);
+check(elements.lcTotalHours.textContent === "6.59 hrs", "Learning Rate=50% uses the correct logarithmic limit (a*ln((M+N)/M) = 6*ln(60/20) = 6.5917, pre-registered via node -e)", elements.lcTotalHours.textContent);
+elements.lcLearningRate.value = "80"; // restore default before the M=0 probe below
+elements.lcBatchStart.value = "0";
+sandbox.calcLearningCurve();
+check(!elements.lcTotalHours.textContent.includes("Infinity"), "Batch Start=0 no longer produces a literal Infinity (was: 'Infinity hrs') -- floored to the model's real domain (Wright/Crawford unit numbering starts at 1, not 0)", elements.lcTotalHours.textContent);
+check(elements.lcTotalHours.textContent === "100.92 hrs", "Batch Start=0 floors to M=1 internally; result matches the independently pre-registered value for (a=6,phi=80%,M=1,N=40)", elements.lcTotalHours.textContent);
+elements.lcBatchStart.value = "20"; // restore default
+sandbox.calcLearningCurve();
+check(elements.lcTotalHours.textContent === "74.64 hrs", "restoring Batch Start to its default (20) reproduces the original golden value exactly, confirming the fix didn't disturb normal operation", elements.lcTotalHours.textContent);
 
 console.log("--- Cost Risk Register (CRPN): structural + arithmetic checks ---");
 check(Array.isArray(sandbox.RISK_REGISTER), "window.RISK_REGISTER is exposed as an array");
@@ -993,6 +1050,79 @@ console.log("--- Fabrication guard: Risk Register data ---");
 const riskBlob = JSON.stringify(sandbox.RISK_REGISTER);
 const foundBannedInRisk = bannedStrings.concat(wrongClaimStrings).filter((s) => riskBlob.includes(s));
 check(foundBannedInRisk.length === 0, "none of the banned/wrong-claim strings leaked into the risk register data itself", JSON.stringify(foundBannedInRisk));
+
+console.log("--- Stress-test finding (2026-09-06): badge/status-pill contrast now clears WCAG AA against the REAL composited background ---");
+// A stress-test found the status colors were checked against the wrong background (a flat card
+// color, not what actually renders once the badge's own 15%-opacity tint composites over it). This
+// is the WCAG relative-luminance/contrast math itself (matching the sibling repos' own fix this
+// round), reading the LIVE CSS token values out of index.html rather than hardcoding an assumption.
+function srgbToLin(c) { c = c / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function relLum(rgb) { return 0.2126 * srgbToLin(rgb[0]) + 0.7152 * srgbToLin(rgb[1]) + 0.0722 * srgbToLin(rgb[2]); }
+function wcagContrast(rgb1, rgb2) {
+  const l1 = relLum(rgb1), l2 = relLum(rgb2);
+  const lighter = Math.max(l1, l2), darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+function composite(fg, bg, alpha) { return fg.map((c, i) => c * alpha + bg[i] * (1 - alpha)); }
+function parseTriple(str) { return str.split(/\s+/).map(Number); }
+function tokenBlock(marker) {
+  const blockMatch = html.match(new RegExp(marker + "\\{([\\s\\S]*?)\\}"));
+  if (!blockMatch) return null;
+  const block = blockMatch[1];
+  const success = block.match(/--c-success:([\d\s]+);/);
+  const warning = block.match(/--c-warning:([\d\s]+);/);
+  const danger = block.match(/--c-danger:([\d\s]+);/);
+  const bgCard = block.match(/--c-bg-card:([\d\s]+);/);
+  if (!success || !warning || !danger || !bgCard) return null;
+  return {
+    success: parseTriple(success[1]), warning: parseTriple(warning[1]), danger: parseTriple(danger[1]),
+    bgCard: parseTriple(bgCard[1]),
+  };
+}
+const darkTokens = tokenBlock(":root");
+const lightTokens = tokenBlock(":root\\[data-theme=\"light\"\\]");
+check(!!darkTokens && !!lightTokens, "both dark and light theme token blocks were successfully extracted from the live CSS source", JSON.stringify({ darkTokens, lightTokens }));
+if (darkTokens && lightTokens) {
+  const BADGE_ALPHA = 0.15;
+  const dSuccessOnCard = wcagContrast(darkTokens.success, composite(darkTokens.success, darkTokens.bgCard, BADGE_ALPHA));
+  const dWarningOnCard = wcagContrast(darkTokens.warning, composite(darkTokens.warning, darkTokens.bgCard, BADGE_ALPHA));
+  const dDangerOnCard = wcagContrast(darkTokens.danger, composite(darkTokens.danger, darkTokens.bgCard, BADGE_ALPHA));
+  const lSuccessOnCard = wcagContrast(lightTokens.success, composite(lightTokens.success, lightTokens.bgCard, BADGE_ALPHA));
+  const lWarningOnCard = wcagContrast(lightTokens.warning, composite(lightTokens.warning, lightTokens.bgCard, BADGE_ALPHA));
+  const lDangerOnCard = wcagContrast(lightTokens.danger, composite(lightTokens.danger, lightTokens.bgCard, BADGE_ALPHA));
+  check(dSuccessOnCard >= 4.5, `dark-theme success badge clears WCAG AA (${dSuccessOnCard.toFixed(2)}:1, was 3.95:1)`, dSuccessOnCard);
+  check(dWarningOnCard >= 4.5, `dark-theme warning badge clears WCAG AA (${dWarningOnCard.toFixed(2)}:1, was 4.47:1)`, dWarningOnCard);
+  check(dDangerOnCard >= 4.5, `dark-theme danger badge clears WCAG AA (${dDangerOnCard.toFixed(2)}:1, was 3.76:1)`, dDangerOnCard);
+  check(lSuccessOnCard >= 4.5, `light-theme success badge clears WCAG AA (${lSuccessOnCard.toFixed(2)}:1, was 4.37:1)`, lSuccessOnCard);
+  check(lWarningOnCard >= 4.5, `light-theme warning badge already cleared WCAG AA and still does (${lWarningOnCard.toFixed(2)}:1)`, lWarningOnCard);
+  check(lDangerOnCard >= 4.5, `light-theme danger badge already cleared WCAG AA and still does (${lDangerOnCard.toFixed(2)}:1)`, lDangerOnCard);
+}
+// The 4 theme blocks (bare :root, @media light, [data-theme=dark], [data-theme=light]) must stay
+// byte-identical in pairs -- a drift here would mean only SOME entry points into a theme get the fix.
+const rootDarkMatch = html.match(/:root\{[\s\S]*?--c-success:([\d\s]+); --c-warning:([\d\s]+); --c-danger:([\d\s]+);/);
+const attrDarkMatch = html.match(/:root\[data-theme="dark"\]\{[\s\S]*?--c-success:([\d\s]+); --c-warning:([\d\s]+); --c-danger:([\d\s]+);/);
+check(!!rootDarkMatch && !!attrDarkMatch && rootDarkMatch[0].match(/--c-success:[\d\s]+/)[0] === attrDarkMatch[0].match(/--c-success:[\d\s]+/)[0], "bare :root and :root[data-theme=\"dark\"] carry the identical (fixed) success/warning/danger values, not just one of the two dark entry points");
+
+console.log("--- Stress-test finding (2026-09-06): every <label> now carries a for= pairing to a real control id ---");
+// Pre-registered by hand: this file had 81 <label> elements, none with a `for=` attribute and none
+// wrapping their control -- zero programmatic label-control association for every calculator input
+// on the page (only the two Playbook filter controls had an aria-label fallback). Fixed by pairing
+// each label to the nearest following <input>/<select> id (skipping any id inside a nested <b>, a
+// live-value display, not the control itself).
+const totalLabels = (html.match(/<label\b/g) || []).length;
+const labelsWithFor = html.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
+check(totalLabels === 81, "exactly 81 <label> elements exist on the page (unchanged count -- this fix pairs them, doesn't add/remove any)", totalLabels);
+check(labelsWithFor.length === totalLabels, "every single <label> now carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
+const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
+const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
+check(forTargets.every((id) => allIds.has(id)), "every for= target resolves to a real id= somewhere on the page (no dangling/typo'd pairing)", JSON.stringify(forTargets.filter((id) => !allIds.has(id))));
+check(new Set(forTargets).size === forTargets.length, "no two labels point at the same control (each of the 81 pairings is unique)", `${new Set(forTargets).size} unique targets / ${forTargets.length} labels`);
+// Spot-check the 8 trickiest cases by hand (a <b> live-value span inside the label, or the label and
+// its control on separate source lines) -- these are exactly the shapes a naive "next id on this
+// line" substitution would get wrong.
+check(html.includes('<label for="dfmThickness">Minimum wall thickness <b id="dfmThicknessLabel">'), "the DFM slider label correctly pairs with its <input>, not the nested <b> live-value span it also contains");
+check(html.includes('<label for="scProcess">Process / work center</label>'), "the Should-Cost process dropdown's label (on a separate line from its <select>) is correctly paired");
+check(html.includes('<label for="mvarConfidence">Confidence level</label>'), "the M-VaR confidence-level dropdown's label is correctly paired");
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
@@ -1159,6 +1289,35 @@ elements.bookmarksList.fire("click", fakeDeleteClickEvt);
 check(sandbox.loadBookmarks().length === 0, "clicking the delete control (delegated event) removes the bookmark from storage");
 sandbox.renderBookmarksList();
 check(elements.bookmarksList.innerHTML.includes("No saved scenarios yet"), "the empty state renders once the last bookmark is deleted");
+
+console.log("--- Stress-test finding (2026-09-06): README/UX_ROADMAP.md self-consistency with the live page ---");
+// A stress-test found the README's evergreen summary paragraph (not a dated changelog entry -- the
+// file's own living overview) still cited "17" explain modals / "21" indexed modules after the
+// nineteenth round (Variance Tug-of-War) shipped the 18th/22nd -- this repo had never previously
+// checked its OWN docs against the live page, unlike the sibling repos' established D62-style
+// self-check. Reading these files here, not duplicating a hand-maintained count elsewhere.
+const readmeSrc = fs.readFileSync(path.join(__dirname, "README.md"), "utf8");
+const uxRoadmapSrc = fs.readFileSync(path.join(__dirname, "UX_ROADMAP.md"), "utf8");
+const realExplainCount = (html.match(/data-explain="/g) || []).length;
+const realCommandIndexCount = sandbox.COMMAND_INDEX.length;
+check(!readmeSrc.includes(`modals (${realExplainCount - 1} of them)`), `README's evergreen summary doesn't cite the stale explain-modal count (${realExplainCount - 1}) anymore`, "");
+check((readmeSrc.match(new RegExp(`modals \\(${realExplainCount} of them\\)`, "g")) || []).length >= 1, `README's evergreen summary cites the current explain-modal count (${realExplainCount})`, "");
+check(!readmeSrc.includes(`any of the ${realCommandIndexCount - 1} indexed modules`), `README doesn't cite the stale command-index count (${realCommandIndexCount - 1}) anymore`, "");
+check((readmeSrc.match(new RegExp(`${realCommandIndexCount} indexed modules`, "g")) || []).length === 2, `README cites the current command-index count (${realCommandIndexCount}) in both places it appears (evergreen summary + feature-list prose)`, (readmeSrc.match(new RegExp(`${realCommandIndexCount} indexed modules`, "g")) || []).length);
+check(!uxRoadmapSrc.includes("highest-priority accessibility item not yet built"), "UX_ROADMAP.md no longer claims prefers-reduced-motion is unbuilt (it shipped in the tenth round and is live + tested)", "");
+check(/@media \(prefers-reduced-motion:reduce\)/.test(html), "sanity: the feature UX_ROADMAP.md now claims is built really is present in index.html, not just asserted in prose", "");
+
+console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
+// The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH
+// OTHER (N/N), not that N matches this file's actual running total -- exactly the gap that was just
+// found and fixed in the sibling manufacturing-project-controls-command-center repo (its fixer
+// updated stress.cjs and README but left a stale hand-typed badge number). Closing the same hole here
+// before it recurs, not after. Runs LAST, deliberately, matching that sibling's own D62-style pattern:
+// `passes` here is the exact count of every check before this one, and this check itself becomes one
+// more passing assertion -- so the badge must cite passes+1, not passes.
+const finalBadgeMatch = html.match(/id="verifyBadge"[^>]*>✓ (\d+)\/(\d+) CHECKS PASSING/);
+const expectedFinalBadgeCount = passes + 1;
+check(!!finalBadgeMatch && finalBadgeMatch[1] === String(expectedFinalBadgeCount) && finalBadgeMatch[2] === String(expectedFinalBadgeCount), "the #verifyBadge text matches this file's own final passing count exactly (no stale hand-updated number)", finalBadgeMatch ? `badge=${finalBadgeMatch[1]}/${finalBadgeMatch[2]} expected=${expectedFinalBadgeCount}` : "verifyBadge not found");
 
 console.log("");
 console.log(failures === 0 ? "All stress checks passed." : `${failures} stress check(s) FAILED (${passes} passed).`);

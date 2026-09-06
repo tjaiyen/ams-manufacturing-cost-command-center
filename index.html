@@ -12,27 +12,27 @@
   :root{
     --c-bg-primary:10 15 29; --c-bg-surface:15 21 38; --c-bg-card:30 41 59; --c-accent:6 182 212;
     --c-text-primary:241 245 249; --c-text-secondary:148 163 184; --c-text-code:34 211 238;
-    --c-success:9 170 124; --c-warning:218 146 11; --c-danger:242 93 13;
+    --c-success:79 194 161; --c-warning:224 162 48; --c-danger:246 149 96;
     --c-line:rgb(6 182 212 / .20); --c-amz:255 153 0;
   }
   @media (prefers-color-scheme: light){
     :root{
       --c-bg-primary:248 250 252; --c-bg-surface:255 255 255; --c-bg-card:255 255 255; --c-accent:14 116 144;
       --c-text-primary:15 23 42; --c-text-secondary:71 85 105; --c-text-code:14 116 144;
-      --c-success:6 121 89; --c-warning:131 87 7; --c-danger:170 65 9;
+      --c-success:5 106 78; --c-warning:131 87 7; --c-danger:170 65 9;
       --c-line:rgb(14 116 144 / .22); --c-amz:180 95 0;
     }
   }
   :root[data-theme="dark"]{
     --c-bg-primary:10 15 29; --c-bg-surface:15 21 38; --c-bg-card:30 41 59; --c-accent:6 182 212;
     --c-text-primary:241 245 249; --c-text-secondary:148 163 184; --c-text-code:34 211 238;
-    --c-success:9 170 124; --c-warning:218 146 11; --c-danger:242 93 13;
+    --c-success:79 194 161; --c-warning:224 162 48; --c-danger:246 149 96;
     --c-line:rgb(6 182 212 / .20); --c-amz:255 153 0;
   }
   :root[data-theme="light"]{
     --c-bg-primary:248 250 252; --c-bg-surface:255 255 255; --c-bg-card:255 255 255; --c-accent:14 116 144;
     --c-text-primary:15 23 42; --c-text-secondary:71 85 105; --c-text-code:14 116 144;
-    --c-success:6 121 89; --c-warning:131 87 7; --c-danger:170 65 9;
+    --c-success:5 106 78; --c-warning:131 87 7; --c-danger:170 65 9;
     --c-line:rgb(14 116 144 / .22); --c-amz:180 95 0;
   }
   /* High-Contrast Mode: an independent accessibility layer, not a third full theme -- boosts
@@ -278,6 +278,7 @@
     .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
     .skip-links,.sidenav-item,.sidenav-icon{transition:none}
     .tow-flag{animation:none}
+    html{scroll-behavior:auto}
   }
 </style>
 </head>
@@ -339,7 +340,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 601/601 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 640/640 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -467,25 +468,25 @@
       <div class="card">
         <div class="card-head"><h2>Parametric Should-Cost Calculator</h2></div>
         <div class="field-row">
-          <div class="field"><label>Process / work center</label>
+          <div class="field"><label for="scProcess">Process / work center</label>
             <select id="scProcess"><option value="cnc3">CNC 3-Axis Milling</option><option value="cnc5">CNC 5-Axis Milling</option><option value="dmls">Additive (DMLS)</option><option value="sheet">Sheet Metal / Press Brake</option></select></div>
-          <div class="field"><label>Batch quantity</label><input type="number" id="scBatch" value="24" min="1"></div>
+          <div class="field"><label for="scBatch">Batch quantity</label><input type="number" id="scBatch" value="24" min="1"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Raw stock mass (kg)</label><input type="number" id="scMass" value="3.8" step="0.1"></div>
-          <div class="field"><label>Material rate ($/kg)</label><input type="number" id="scMatRate" value="16.50" step="0.5"></div>
+          <div class="field"><label for="scMass">Raw stock mass (kg)</label><input type="number" id="scMass" value="3.8" step="0.1"></div>
+          <div class="field"><label for="scMatRate">Material rate ($/kg)</label><input type="number" id="scMatRate" value="16.50" step="0.5"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Buy-to-fly ratio</label><input type="number" id="scBtf" value="1.35" step="0.05"></div>
-          <div class="field"><label>Scrap reclaim credit (%)</label><input type="number" id="scReclaim" value="15" step="1"></div>
+          <div class="field"><label for="scBtf">Buy-to-fly ratio</label><input type="number" id="scBtf" value="1.35" step="0.05"></div>
+          <div class="field"><label for="scReclaim">Scrap reclaim credit (%)</label><input type="number" id="scReclaim" value="15" step="1"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Cycle time (min/unit)</label><input type="number" id="scRuntime" value="35" min="0"></div>
-          <div class="field"><label>Setup / batch (min)</label><input type="number" id="scSetup" value="40" min="0"></div>
+          <div class="field"><label for="scRuntime">Cycle time (min/unit)</label><input type="number" id="scRuntime" value="35" min="0"></div>
+          <div class="field"><label for="scSetup">Setup / batch (min)</label><input type="number" id="scSetup" value="40" min="0"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Loaded labor rate ($/hr)</label><input type="number" id="scLabor" value="34.00" step="0.5"></div>
-          <div class="field"><label>Overhead rate (% of mat+conv)</label><input type="number" id="scOh" value="14" step="1"></div>
+          <div class="field"><label for="scLabor">Loaded labor rate ($/hr)</label><input type="number" id="scLabor" value="34.00" step="0.5"></div>
+          <div class="field"><label for="scOh">Overhead rate (% of mat+conv)</label><input type="number" id="scOh" value="14" step="1"></div>
         </div>
         <div class="outline">
           <div class="line"><span>Machine-hour rate (from rate card →)</span><span class="mono" id="scOutMhr">$0.00/hr</span></div>
@@ -530,22 +531,22 @@
         Illustrative inputs below, deliberately distinct from any single work center on this page.</p>
       <div class="grid cols-3">
         <div>
-          <div class="field"><label>Capital acquisition cost ($)</label><input type="number" id="mhrCapital" value="580000" step="1000"></div>
-          <div class="field"><label>Useful life (years)</label><input type="number" id="mhrLife" value="7" min="1"></div>
-          <div class="field"><label>Floor footprint (sq ft)</label><input type="number" id="mhrFloor" value="320" step="10"></div>
+          <div class="field"><label for="mhrCapital">Capital acquisition cost ($)</label><input type="number" id="mhrCapital" value="580000" step="1000"></div>
+          <div class="field"><label for="mhrLife">Useful life (years)</label><input type="number" id="mhrLife" value="7" min="1"></div>
+          <div class="field"><label for="mhrFloor">Floor footprint (sq ft)</label><input type="number" id="mhrFloor" value="320" step="10"></div>
         </div>
         <div>
-          <div class="field"><label>Floor rate ($/sq ft/yr)</label><input type="number" id="mhrFloorRate" value="38" step="1"></div>
-          <div class="field"><label>Annual service contract ($)</label><input type="number" id="mhrService" value="22000" step="500"></div>
-          <div class="field"><label>Scheduled hours/year</label><input type="number" id="mhrSchedHrs" value="3800" step="50"></div>
+          <div class="field"><label for="mhrFloorRate">Floor rate ($/sq ft/yr)</label><input type="number" id="mhrFloorRate" value="38" step="1"></div>
+          <div class="field"><label for="mhrService">Annual service contract ($)</label><input type="number" id="mhrService" value="22000" step="500"></div>
+          <div class="field"><label for="mhrSchedHrs">Scheduled hours/year</label><input type="number" id="mhrSchedHrs" value="3800" step="50"></div>
         </div>
         <div>
-          <div class="field"><label>Target OEE (%)</label><input type="number" id="mhrOee" value="78" step="1"></div>
+          <div class="field"><label for="mhrOee">Target OEE (%)</label><input type="number" id="mhrOee" value="78" step="1"></div>
           <div class="field-row">
-            <div class="field"><label>Power draw (kW)</label><input type="number" id="mhrPower" value="20" step="1"></div>
-            <div class="field"><label>Utility rate ($/kWh)</label><input type="number" id="mhrUtilRate" value="0.12" step="0.01"></div>
+            <div class="field"><label for="mhrPower">Power draw (kW)</label><input type="number" id="mhrPower" value="20" step="1"></div>
+            <div class="field"><label for="mhrUtilRate">Utility rate ($/kWh)</label><input type="number" id="mhrUtilRate" value="0.12" step="0.01"></div>
           </div>
-          <div class="field"><label>Consumables ($/hr)</label><input type="number" id="mhrConsumables" value="11.75" step="0.25"></div>
+          <div class="field"><label for="mhrConsumables">Consumables ($/hr)</label><input type="number" id="mhrConsumables" value="11.75" step="0.25"></div>
         </div>
       </div>
       <div class="outline">
@@ -569,10 +570,10 @@
         simulation. Deterministically seeded so the same inputs always reproduce the same result.</p>
       <div class="grid cols-2">
         <div>
-          <div class="field"><label>Baseline material cost ($/unit)</label><input type="number" id="mcMatBaseline" value="85.00" step="1"></div>
-          <div class="field"><label>Material cost variation (±%)</label><input type="number" id="mcMatVariation" value="15" step="1"></div>
-          <div class="field"><label>Baseline conversion cost ($/unit)</label><input type="number" id="mcConvBaseline" value="65.00" step="1"></div>
-          <div class="field"><label>Conversion cost variation (±%)</label><input type="number" id="mcConvVariation" value="20" step="1"></div>
+          <div class="field"><label for="mcMatBaseline">Baseline material cost ($/unit)</label><input type="number" id="mcMatBaseline" value="85.00" step="1"></div>
+          <div class="field"><label for="mcMatVariation">Material cost variation (±%)</label><input type="number" id="mcMatVariation" value="15" step="1"></div>
+          <div class="field"><label for="mcConvBaseline">Baseline conversion cost ($/unit)</label><input type="number" id="mcConvBaseline" value="65.00" step="1"></div>
+          <div class="field"><label for="mcConvVariation">Conversion cost variation (±%)</label><input type="number" id="mcConvVariation" value="20" step="1"></div>
         </div>
         <div class="outline">
           <div class="line"><span>P50 — quoting target</span><span class="mono" id="mcP50Out">$0.00</span></div>
@@ -603,28 +604,28 @@
       <div class="card">
         <div class="card-head"><h2>Variance Inputs</h2></div>
         <div class="field-row">
-          <div class="field"><label>Std. material qty (kg)</label><input type="number" id="vMSQ" value="1250"></div>
-          <div class="field"><label>Act. material qty (kg)</label><input type="number" id="vMAQ" value="1210"></div>
+          <div class="field"><label for="vMSQ">Std. material qty (kg)</label><input type="number" id="vMSQ" value="1250"></div>
+          <div class="field"><label for="vMAQ">Act. material qty (kg)</label><input type="number" id="vMAQ" value="1210"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Std. material price ($/kg)</label><input type="number" id="vMSP" value="26.00" step="0.5"></div>
-          <div class="field"><label>Act. material price ($/kg)</label><input type="number" id="vMAP" value="28.50" step="0.5"></div>
+          <div class="field"><label for="vMSP">Std. material price ($/kg)</label><input type="number" id="vMSP" value="26.00" step="0.5"></div>
+          <div class="field"><label for="vMAP">Act. material price ($/kg)</label><input type="number" id="vMAP" value="28.50" step="0.5"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Std. labor hours</label><input type="number" id="vLSH" value="480"></div>
-          <div class="field"><label>Act. labor hours</label><input type="number" id="vLAH" value="540"></div>
+          <div class="field"><label for="vLSH">Std. labor hours</label><input type="number" id="vLSH" value="480"></div>
+          <div class="field"><label for="vLAH">Act. labor hours</label><input type="number" id="vLAH" value="540"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Std. labor rate ($/hr)</label><input type="number" id="vLSR" value="42.00" step="0.5"></div>
-          <div class="field"><label>Act. labor rate ($/hr)</label><input type="number" id="vLAR" value="44.50" step="0.5"></div>
+          <div class="field"><label for="vLSR">Std. labor rate ($/hr)</label><input type="number" id="vLSR" value="42.00" step="0.5"></div>
+          <div class="field"><label for="vLAR">Act. labor rate ($/hr)</label><input type="number" id="vLAR" value="44.50" step="0.5"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Std. variable OH rate ($/hr)</label><input type="number" id="vVOSR" value="8.00" step="0.5"></div>
-          <div class="field"><label>Actual variable OH spend</label><input type="number" id="vVOAct" value="4750"></div>
+          <div class="field"><label for="vVOSR">Std. variable OH rate ($/hr)</label><input type="number" id="vVOSR" value="8.00" step="0.5"></div>
+          <div class="field"><label for="vVOAct">Actual variable OH spend</label><input type="number" id="vVOAct" value="4750"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Budgeted volume (hrs)</label><input type="number" id="vBudHrs" value="500"></div>
-          <div class="field"><label>Std. fixed OH rate ($/hr)</label><input type="number" id="vFOHR" value="24.00" step="0.5"></div>
+          <div class="field"><label for="vBudHrs">Budgeted volume (hrs)</label><input type="number" id="vBudHrs" value="500"></div>
+          <div class="field"><label for="vFOHR">Std. fixed OH rate ($/hr)</label><input type="number" id="vFOHR" value="24.00" step="0.5"></div>
         </div>
       </div>
 
@@ -663,10 +664,10 @@
       <p class="lede" style="margin-bottom:12px">The forward-looking cousin of the MPV line above —
         a spot-price shift against open purchasing volume, before it becomes a realized variance.</p>
       <div class="field-row">
-        <div class="field"><label>Frozen standard price ($/kg)</label><input type="number" id="cpFrozen" value="26.00" step="0.5"></div>
-        <div class="field"><label>Current spot price ($/kg)</label><input type="number" id="cpSpot" value="29.50" step="0.5"></div>
+        <div class="field"><label for="cpFrozen">Frozen standard price ($/kg)</label><input type="number" id="cpFrozen" value="26.00" step="0.5"></div>
+        <div class="field"><label for="cpSpot">Current spot price ($/kg)</label><input type="number" id="cpSpot" value="29.50" step="0.5"></div>
       </div>
-      <div class="field" style="max-width:260px"><label>Open purchasing volume (kg)</label><input type="number" id="cpVolume" value="2200" step="50"></div>
+      <div class="field" style="max-width:260px"><label for="cpVolume">Open purchasing volume (kg)</label><input type="number" id="cpVolume" value="2200" step="50"></div>
       <div class="outline">
         <div class="line"><span>Price shift vs. frozen standard</span><span class="mono" id="cpShiftPct">0.0%</span></div>
         <div class="line total"><span>Projected MPV exposure</span><span class="mono" id="cpProjected">$0</span> <span id="cpStatus"></span></div>
@@ -680,12 +681,12 @@
         drift back to, and how wide the uncertainty band is — a real, independently-verified
         stochastic model (mean-reversion), not a claim about AMS's actual hedging program.</p>
       <div class="field-row">
-        <div class="field"><label>Long-run equilibrium price ($/kg)</label><input type="number" id="ouEquilibrium" value="27.00" step="0.5"></div>
-        <div class="field"><label>Mean-reversion rate θ (per month)</label><input type="number" id="ouTheta" value="0.15" step="0.01"></div>
+        <div class="field"><label for="ouEquilibrium">Long-run equilibrium price ($/kg)</label><input type="number" id="ouEquilibrium" value="27.00" step="0.5"></div>
+        <div class="field"><label for="ouTheta">Mean-reversion rate θ (per month)</label><input type="number" id="ouTheta" value="0.15" step="0.01"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Volatility σ ($/kg per √month)</label><input type="number" id="ouSigma" value="3.50" step="0.1"></div>
-        <div class="field"><label>Forecast horizon (months)</label><input type="number" id="ouHorizon" value="1" step="1" min="1"></div>
+        <div class="field"><label for="ouSigma">Volatility σ ($/kg per √month)</label><input type="number" id="ouSigma" value="3.50" step="0.1"></div>
+        <div class="field"><label for="ouHorizon">Forecast horizon (months)</label><input type="number" id="ouHorizon" value="1" step="1" min="1"></div>
       </div>
       <div class="outline">
         <div class="line"><span>Expected price at horizon</span><span class="mono" id="ouExpected">$0.00</span></div>
@@ -710,16 +711,16 @@
       <div class="card">
         <div class="card-head"><h2>Decision Inputs</h2></div>
         <div class="field-row">
-          <div class="field"><label>Internal should-cost ($/unit)</label><input type="number" id="bbInternal" value="95.78" step="0.01"></div>
-          <div class="field"><label>External quote ($/unit)</label><input type="number" id="bbExternal" value="186.00" step="0.01"></div>
+          <div class="field"><label for="bbInternal">Internal should-cost ($/unit)</label><input type="number" id="bbInternal" value="95.78" step="0.01"></div>
+          <div class="field"><label for="bbExternal">External quote ($/unit)</label><input type="number" id="bbExternal" value="186.00" step="0.01"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Annual volume (units)</label><input type="number" id="bbVolume" value="1800"></div>
-          <div class="field"><label>One-time transition cost</label><input type="number" id="bbTransition" value="38000"></div>
+          <div class="field"><label for="bbVolume">Annual volume (units)</label><input type="number" id="bbVolume" value="1800"></div>
+          <div class="field"><label for="bbTransition">One-time transition cost</label><input type="number" id="bbTransition" value="38000"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Discount rate (%)</label><input type="number" id="bbRate" value="10" step="0.5"></div>
-          <div class="field"><label>Analysis horizon (years)</label><input type="number" id="bbYears" value="3" min="1" max="10"></div>
+          <div class="field"><label for="bbRate">Discount rate (%)</label><input type="number" id="bbRate" value="10" step="0.5"></div>
+          <div class="field"><label for="bbYears">Analysis horizon (years)</label><input type="number" id="bbYears" value="3" min="1" max="10"></div>
         </div>
         <div class="outline">
           <div class="line"><span>Annual unit-cost saving</span><span class="mono" id="bbUnitSave">$0.00</span></div>
@@ -751,9 +752,9 @@
         below your own flat internal marginal cost?</p>
       <div class="grid cols-2">
         <div>
-          <div class="field"><label>Internal marginal cost ($/unit)</label><input type="number" id="qsInternalMc" value="180.00" step="1"></div>
-          <div class="field"><label>Vendor price at Q=1 ($/unit)</label><input type="number" id="qsVendorP0" value="420.00" step="1"></div>
-          <div class="field"><label>Vendor scale elasticity γ</label><input type="number" id="qsGamma" value="0.12" step="0.01" min="0.01"></div>
+          <div class="field"><label for="qsInternalMc">Internal marginal cost ($/unit)</label><input type="number" id="qsInternalMc" value="180.00" step="1"></div>
+          <div class="field"><label for="qsVendorP0">Vendor price at Q=1 ($/unit)</label><input type="number" id="qsVendorP0" value="420.00" step="1"></div>
+          <div class="field"><label for="qsGamma">Vendor scale elasticity γ</label><input type="number" id="qsGamma" value="0.12" step="0.01" min="0.01"></div>
         </div>
         <div class="outline">
           <div class="line total"><span>Crossover volume (Q*)</span><span class="mono" id="qsOut">0</span></div>
@@ -788,7 +789,7 @@
           <tfoot><tr class="total" id="capTotalRow"></tr></tfoot>
         </table>
       </div>
-      <div class="field" style="max-width:260px;margin-top:14px"><label>Fixed overhead rate ($/hr)</label><input type="number" id="capOhRate" value="28.00" step="1"></div>
+      <div class="field" style="max-width:260px;margin-top:14px"><label for="capOhRate">Fixed overhead rate ($/hr)</label><input type="number" id="capOhRate" value="28.00" step="1"></div>
       <p style="font-size:11.5px;color:rgb(var(--c-text-secondary))">Status bands: green ≥85% utilization,
         amber 70–85%, red &lt;70% — a utilization-specific band, distinct from the OEE bands on the
         Executive tab (utilization measures hours booked vs. available; OEE also factors in
@@ -817,10 +818,10 @@
     <div class="grid cols-2">
       <div class="card">
         <div class="card-head"><h2>Tooling Inputs</h2></div>
-        <div class="field"><label>Tooling / fixture cost ($)</label><input type="number" id="tlCost" value="18000" step="500"></div>
+        <div class="field"><label for="tlCost">Tooling / fixture cost ($)</label><input type="number" id="tlCost" value="18000" step="500"></div>
         <div class="field-row">
-          <div class="field"><label>Expected total production run (units)</label><input type="number" id="tlRun" value="2400" step="10"></div>
-          <div class="field"><label>First batch size (units)</label><input type="number" id="tlBatch" value="24" step="1"></div>
+          <div class="field"><label for="tlRun">Expected total production run (units)</label><input type="number" id="tlRun" value="2400" step="10"></div>
+          <div class="field"><label for="tlBatch">First batch size (units)</label><input type="number" id="tlBatch" value="24" step="1"></div>
         </div>
       </div>
       <div class="card">
@@ -851,15 +852,15 @@
       <div class="card">
         <div class="card-head"><h2>Design Parameters</h2></div>
         <div class="slider-row">
-          <label>Minimum wall thickness <b id="dfmThicknessLabel">1.5mm</b></label>
+          <label for="dfmThickness">Minimum wall thickness <b id="dfmThicknessLabel">1.5mm</b></label>
           <input type="range" id="dfmThickness" min="0.5" max="5" step="0.1" value="1.5">
         </div>
         <div class="slider-row">
-          <label>Pocket depth : diameter ratio <b id="dfmPocketLabel">5.0</b></label>
+          <label for="dfmPocket">Pocket depth : diameter ratio <b id="dfmPocketLabel">5.0</b></label>
           <input type="range" id="dfmPocket" min="1" max="8" step="0.5" value="5">
         </div>
         <div class="slider-row">
-          <label>Additive build height <b id="dfmHeightLabel">80mm</b></label>
+          <label for="dfmHeight">Additive build height <b id="dfmHeightLabel">80mm</b></label>
           <input type="range" id="dfmHeight" min="0" max="200" step="5" value="80">
         </div>
       </div>
@@ -889,20 +890,20 @@
       <div class="card">
         <div class="card-head"><h2>Master Data Quality Scorecard (MDQS)</h2><span class="tag">EDITABLE COUNTS</span></div>
         <div class="field-row">
-          <div class="field"><label>Routing errors</label><input type="number" id="mdqsRoutingErr" value="6"></div>
-          <div class="field"><label>Total routings</label><input type="number" id="mdqsTotalRoutings" value="300"></div>
+          <div class="field"><label for="mdqsRoutingErr">Routing errors</label><input type="number" id="mdqsRoutingErr" value="6" min="0"></div>
+          <div class="field"><label for="mdqsTotalRoutings">Total routings</label><input type="number" id="mdqsTotalRoutings" value="300"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Confirmation variances</label><input type="number" id="mdqsConfVar" value="15"></div>
-          <div class="field"><label>Total confirmations</label><input type="number" id="mdqsTotalConf" value="500"></div>
+          <div class="field"><label for="mdqsConfVar">Confirmation variances</label><input type="number" id="mdqsConfVar" value="15" min="0"></div>
+          <div class="field"><label for="mdqsTotalConf">Total confirmations</label><input type="number" id="mdqsTotalConf" value="500"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Unlinked scrap events</label><input type="number" id="mdqsUnlinkedScrap" value="4"></div>
-          <div class="field"><label>Total scrap events</label><input type="number" id="mdqsScrapEvents" value="80"></div>
+          <div class="field"><label for="mdqsUnlinkedScrap">Unlinked scrap events</label><input type="number" id="mdqsUnlinkedScrap" value="4" min="0"></div>
+          <div class="field"><label for="mdqsScrapEvents">Total scrap events</label><input type="number" id="mdqsScrapEvents" value="80"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Stale standards (&gt;180 days)</label><input type="number" id="mdqsStaleStandards" value="10"></div>
-          <div class="field"><label>Total active parts</label><input type="number" id="mdqsActiveParts" value="400"></div>
+          <div class="field"><label for="mdqsStaleStandards">Stale standards (&gt;180 days)</label><input type="number" id="mdqsStaleStandards" value="10" min="0"></div>
+          <div class="field"><label for="mdqsActiveParts">Total active parts</label><input type="number" id="mdqsActiveParts" value="400"></div>
         </div>
         <div class="outline">
           <div class="line"><span>MDQS = 100% − (30%·routing + 30%·confirmation + 25%·scrap + 15%·stale)</span><span></span></div>
@@ -914,9 +915,9 @@
 
       <div class="card">
         <div class="card-head"><h2>Guardrail Gate Simulator</h2><span class="tag">PASS / BLOCKED</span></div>
-        <div class="field"><label>BOM: CAD-vs-gross-mass discrepancy (%, threshold 15%)</label><input type="number" id="gateBom" value="8" step="1"></div>
-        <div class="field"><label>Procurement: PO price variance (%, threshold ±5%)</label><input type="number" id="gatePo" value="7" step="1"></div>
-        <div class="field"><label>Shop floor: confirmation-hours variance (%, threshold ±15%)</label><input type="number" id="gateConf" value="12" step="1"></div>
+        <div class="field"><label for="gateBom">BOM: CAD-vs-gross-mass discrepancy (%, threshold 15%)</label><input type="number" id="gateBom" value="8" step="1"></div>
+        <div class="field"><label for="gatePo">Procurement: PO price variance (%, threshold ±5%)</label><input type="number" id="gatePo" value="7" step="1"></div>
+        <div class="field"><label for="gateConf">Shop floor: confirmation-hours variance (%, threshold ±15%)</label><input type="number" id="gateConf" value="12" step="1"></div>
         <div class="outline">
           <div class="line"><span>BOM gate</span><span id="gateBomOut"></span></div>
           <div class="line"><span>PO gate</span><span id="gatePoOut"></span></div>
@@ -993,13 +994,13 @@
         LBR-AGE scenario).</p>
       <div class="grid cols-2">
         <div>
-          <div class="field"><label>First-article time (hrs)</label><input type="number" id="lcFirstArticle" value="6.0" step="0.1"></div>
-          <div class="field"><label>Learning rate φ (%)</label><input type="number" id="lcLearningRate" value="80" step="1"></div>
+          <div class="field"><label for="lcFirstArticle">First-article time (hrs)</label><input type="number" id="lcFirstArticle" value="6.0" step="0.1"></div>
+          <div class="field"><label for="lcLearningRate">Learning rate φ (%)</label><input type="number" id="lcLearningRate" value="80" step="1"></div>
           <div class="field-row">
-            <div class="field"><label>Batch start unit (M)</label><input type="number" id="lcBatchStart" value="20" step="1"></div>
-            <div class="field"><label>Batch size (N)</label><input type="number" id="lcBatchSize" value="40" step="1"></div>
+            <div class="field"><label for="lcBatchStart">Batch start unit (M)</label><input type="number" id="lcBatchStart" value="20" step="1" min="1"></div>
+            <div class="field"><label for="lcBatchSize">Batch size (N)</label><input type="number" id="lcBatchSize" value="40" step="1"></div>
           </div>
-          <div class="field"><label>Loaded labor rate ($/hr)</label><input type="number" id="lcLaborRate" value="45.00" step="0.5"></div>
+          <div class="field"><label for="lcLaborRate">Loaded labor rate ($/hr)</label><input type="number" id="lcLaborRate" value="45.00" step="0.5"></div>
         </div>
         <div class="outline">
           <div class="line"><span>Learning index (b)</span><span class="mono" id="lcB">0.000</span></div>
@@ -1025,7 +1026,7 @@
       </div>
       <div class="card-head" style="margin-top:18px"><h3 style="font-size:13px;margin:0">Score Your Own Risk</h3></div>
       <div class="field-row" style="margin-top:10px">
-        <div class="field"><label>Probability</label>
+        <div class="field"><label for="riskP">Probability</label>
           <select id="riskP">
             <option value="1">1 · Remote (&lt;2%)</option>
             <option value="2">2 · Low (2–5%)</option>
@@ -1034,7 +1035,7 @@
             <option value="5">5 · Chronic (&gt;30%)</option>
           </select>
         </div>
-        <div class="field"><label>Severity ($ impact)</label>
+        <div class="field"><label for="riskS">Severity ($ impact)</label>
           <select id="riskS">
             <option value="1">1 · Negligible (&lt;$1K)</option>
             <option value="2">2 · Minor ($1K–$5K)</option>
@@ -1043,7 +1044,7 @@
             <option value="5">5 · Critical (&gt;$50K)</option>
           </select>
         </div>
-        <div class="field"><label>Detection Latency</label>
+        <div class="field"><label for="riskD">Detection Latency</label>
           <select id="riskD">
             <option value="1">1 · Immediate (&lt;1hr)</option>
             <option value="2">2 · Near real-time (&lt;8hr)</option>
@@ -1068,10 +1069,10 @@
         already-signed "unfavorable = positive" variance metric, not textbook portfolio-returns VaR
         (see Methodology tab for the sign-convention nuance this required).</p>
       <div class="field-row">
-        <div class="field"><label>Mean periodic variance μ (Δ, $)</label><input type="number" id="mvarMu" value="8500" step="100"></div>
-        <div class="field"><label>Composite std. deviation σ (Δ, $)</label><input type="number" id="mvarSigma" value="6200" step="100"></div>
+        <div class="field"><label for="mvarMu">Mean periodic variance μ (Δ, $)</label><input type="number" id="mvarMu" value="8500" step="100"></div>
+        <div class="field"><label for="mvarSigma">Composite std. deviation σ (Δ, $)</label><input type="number" id="mvarSigma" value="6200" step="100"></div>
       </div>
-      <div class="field" style="max-width:220px"><label>Confidence level</label>
+      <div class="field" style="max-width:220px"><label for="mvarConfidence">Confidence level</label>
         <select id="mvarConfidence">
           <option value="95" selected>95%</option>
           <option value="99">99%</option>
@@ -1855,13 +1856,21 @@
     });
     paletteInput.setAttribute('aria-activedescendant', paletteSelectedIndex > -1 ? 'palette-item-' + paletteSelectedIndex : '');
   }
+  // A stress-test found the page's CSS-level reduced-motion rule doesn't reach these two
+  // JS-driven scrollIntoView calls: an explicit `behavior:'smooth'` option passed here overrides the
+  // `html{scroll-behavior:auto}` reduced-motion CSS rule above (per spec, the JS option wins), so
+  // this JS-level check is the only way to actually honor the OS preference for these two jumps.
+  function prefersReducedMotion(){
+    return typeof window !== "undefined" && typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
   function activatePaletteItem(item){
     if (!item) return;
     activateTab(item.tab);
     closePalette();
     if (item.scrollTo){
       var target = document.getElementById(item.scrollTo);
-      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }
   }
   function openPalette(){
@@ -1873,6 +1882,7 @@
   window.COMMAND_INDEX = COMMAND_INDEX;
   window.renderPaletteList = renderPaletteList;
   window.activatePaletteItem = activatePaletteItem;
+  window.prefersReducedMotion = prefersReducedMotion;
   window.openPalette = openPalette;
   window.closePalette = closePalette;
   document.getElementById('paletteBtn').addEventListener('click', openPalette);
@@ -2814,13 +2824,17 @@
   var MDQS_WEIGHTS = { routing: 0.30, confirmation: 0.30, scrap: 0.25, stale: 0.15 };
   function bandFor(pct){ return pct >= 98 ? 'green' : (pct >= 93 ? 'amber' : 'red'); }
   function calcMdqs(){
-    var routingErr = parseFloat(document.getElementById('mdqsRoutingErr').value) || 0;
+    // Floored to 0, not just via each input's min="0" attribute -- a defect count can't be negative,
+    // and (matching the Learning Curve fix above) a browser's number-input min doesn't stop a typed
+    // negative value from parsing; a stress-test found an unguarded negative count let the weighted
+    // deduction go negative, pushing the score above the 100% ceiling the rest of the page assumes.
+    var routingErr = Math.max(0, parseFloat(document.getElementById('mdqsRoutingErr').value) || 0);
     var totalRoutings = parseFloat(document.getElementById('mdqsTotalRoutings').value) || 1;
-    var confVar = parseFloat(document.getElementById('mdqsConfVar').value) || 0;
+    var confVar = Math.max(0, parseFloat(document.getElementById('mdqsConfVar').value) || 0);
     var totalConf = parseFloat(document.getElementById('mdqsTotalConf').value) || 1;
-    var unlinkedScrap = parseFloat(document.getElementById('mdqsUnlinkedScrap').value) || 0;
+    var unlinkedScrap = Math.max(0, parseFloat(document.getElementById('mdqsUnlinkedScrap').value) || 0);
     var scrapEvents = parseFloat(document.getElementById('mdqsScrapEvents').value) || 1;
-    var staleStandards = parseFloat(document.getElementById('mdqsStaleStandards').value) || 0;
+    var staleStandards = Math.max(0, parseFloat(document.getElementById('mdqsStaleStandards').value) || 0);
     var activeParts = parseFloat(document.getElementById('mdqsActiveParts').value) || 1;
 
     var deduction = MDQS_WEIGHTS.routing * (routingErr / totalRoutings) * 100 +
@@ -2844,7 +2858,7 @@
     var bom = parseFloat(document.getElementById('gateBom').value) || 0;
     var po = parseFloat(document.getElementById('gatePo').value) || 0;
     var conf = parseFloat(document.getElementById('gateConf').value) || 0;
-    var bomPass = bom <= 15;
+    var bomPass = Math.abs(bom) <= 15;
     var poPass = Math.abs(po) <= 5;
     var confPass = Math.abs(conf) <= 15;
     document.getElementById('gateBomOut').innerHTML = gatePill(bomPass);
@@ -3308,7 +3322,7 @@
         document.getElementById('pbSearch').value = '';
         renderPlaybook();
         var target = document.getElementById(targetId);
-        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' });
         if (target){
           if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
           if (target.focus) target.focus({ preventScroll: true });
@@ -3325,14 +3339,25 @@
   function calcLearningCurve(){
     var a = parseFloat(document.getElementById('lcFirstArticle').value) || 0;
     var phiPct = parseFloat(document.getElementById('lcLearningRate').value) || 0;
-    var M = parseFloat(document.getElementById('lcBatchStart').value) || 0;
+    // M=0 is out of the model's domain -- Wright/Crawford unit numbering starts at 1 (the "first
+    // article" above IS unit 1), and x^exp is singular at x=0 for the negative exponents this curve
+    // produces below a 50% learning rate. Floored here (not just via the input's min="1") because a
+    // stress-test found the HTML min attribute alone doesn't stop every path to M=0 (e.g. typing "0"
+    // directly still parses before any browser-level clamping is guaranteed).
+    var M = Math.max(1, parseFloat(document.getElementById('lcBatchStart').value) || 0);
     var N = parseFloat(document.getElementById('lcBatchSize').value) || 1;
     var rate = parseFloat(document.getElementById('lcLaborRate').value) || 0;
     var phi = phiPct / 100;
 
     var b = phi > 0 ? Math.log(phi) / Math.log(2) : 0;
     var exp = b + 1;
-    var totalHours = (a / exp) * (Math.pow(M + N, exp) - Math.pow(M, exp));
+    // At exactly a 50% learning rate, b=-1 and exp=0 -- the antiderivative x^exp/exp this formula
+    // otherwise uses is undefined there (0/0), but the TRUE closed-form integral of a*x^b at b=-1 is
+    // logarithmic (a*ln(x), not a*x^0/0), giving a real, continuous, non-NaN answer instead of the
+    // (a/exp)*(...) formula's division-by-zero. A stress-test found this was reachable with the
+    // page's own real default inputs just by typing "50" into Learning Rate, and confirmed the
+    // logarithmic form agrees with the numerical limit from both sides (49.9999%/50.0001%).
+    var totalHours = exp !== 0 ? (a / exp) * (Math.pow(M + N, exp) - Math.pow(M, exp)) : a * Math.log((M + N) / M);
     var avgUnitTime = N > 0 ? totalHours / N : 0;
     var totalCost = totalHours * rate;
     var distortion = (avgUnitTime - a) * rate * N; // negative = a fake "favorable" variance if a
