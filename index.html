@@ -202,6 +202,8 @@
 
   .explain-btn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1px solid var(--c-line);background:none;color:rgb(var(--c-text-secondary));font-size:10px;cursor:pointer;margin-left:6px;flex:none;font-family:inherit;padding:0;vertical-align:1px}
   .explain-btn:hover{border-color:rgb(var(--c-accent));color:rgb(var(--c-accent))}
+  .decomp-link{display:block;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:2px 0 0;font-family:inherit;text-align:right}
+  .decomp-link:hover{text-decoration:underline}
   .modal-overlay{display:none;position:fixed;inset:0;background:rgb(0 0 0/.6);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px}
   .modal-overlay.open{display:flex}
   .modal-box{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 20px 50px rgb(0 0 0/.45)}
@@ -374,7 +376,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 885/885 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 906/906 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
@@ -401,6 +403,8 @@
     <strong>None of it is real Amazon Manufacturing Services data</strong> — I have no access to
     AMS's actual costs, systems, or site names beyond what the posting itself states. The
     Methodology tab lists exactly what's independently sourced vs. invented for the exercise.</div>
+
+  <div class="frame" id="lastVisitBanner" hidden></div>
 
   <!-- ============ TAB 1: EXECUTIVE OVERVIEW ============ -->
   <section class="tabpanel active" id="tab-exec" role="tabpanel" aria-labelledby="navtab-exec">
@@ -561,6 +565,7 @@
           <div class="line"><span>Direct labor</span><span class="mono" id="scOutLabor">$0.00</span></div>
           <div class="line"><span>Overhead</span><span class="mono" id="scOutOh">$0.00</span></div>
           <div class="line total"><span>Should-cost per unit</span><span class="mono" id="scOutTotal">$0.00</span></div>
+          <button class="decomp-link" type="button" onclick="jumpToDecomposition('nestingDollWrap')">↓ See the breakdown: Nesting Doll Cost Peel</button>
         </div>
       </div>
 
@@ -640,6 +645,7 @@
         <div class="line"><span>Fixed OH allocation rate</span><span class="mono" id="mhrStandingOut">$0.00/hr</span></div>
         <div class="line"><span>Variable operating rate (power + consumables)</span><span class="mono" id="mhrRunningOut">$0.00/hr</span></div>
         <div class="line total"><span>Fully burdened MHR</span><span class="mono" id="mhrTotalOut">$0.00/hr</span></div>
+        <button class="decomp-link" type="button" onclick="jumpToDecomposition('suspensionBridgeWrap')">↓ See the breakdown: Suspension Bridge Load Monitor</button>
       </div>
     </div>
 
@@ -974,6 +980,7 @@
           <div class="line"><span>Per-unit amortized cost (correct)</span><span class="mono" id="tlPerUnit">$0.00</span></div>
           <div class="line"><span>Naive: tooling expensed to first batch only</span><span class="mono" id="tlNaive">$0.00/unit</span></div>
           <div class="line total"><span>First-batch unit cost overstated by</span><span class="mono" id="tlOverstate">0.0×</span></div>
+          <button class="decomp-link" type="button" onclick="jumpToDecomposition('glacialWrap')">↓ See the breakdown: Glacial Calving Event Tracker</button>
         </div>
         <p style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:10px">Expensing the
           full tooling cost against only the first batch makes that batch look this many times more
@@ -1023,6 +1030,7 @@
           <div class="line"><span>Pocket-depth penalty (above 4:1 reference)</span><span class="mono" id="dfmPocketOut">+0.0%</span></div>
           <div class="line"><span>Build-height penalty (additive only)</span><span class="mono" id="dfmHeightOut">+0.0%</span></div>
           <div class="line total"><span>Total cost uplift vs. reference design</span><span class="mono" id="dfmTotalOut">+0.0%</span></div>
+          <button class="decomp-link" type="button" onclick="jumpToDecomposition('kaleidophoneWrap')">↓ See the breakdown: Kaleidophone Resonance Chart</button>
         </div>
         <div class="outline" style="margin-top:10px">
           <div class="line"><span>$100 reference should-cost, as designed</span><span class="mono" id="dfmCostOut">$100.00</span></div>
@@ -1077,6 +1085,7 @@
         <div class="outline">
           <div class="line"><span>MDQS = 100% − (30%·routing + 30%·confirmation + 25%·scrap + 15%·stale)</span><span></span></div>
           <div class="line total"><span>Score <button class="explain-btn" data-explain="mdqs" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="mdqsScore">0.0%</span> <span id="mdqsBand"></span></div>
+          <button class="decomp-link" type="button" onclick="jumpToDecomposition('pressureVesselWrap')">↓ See the breakdown: Pressure-Vessel Cost Containment</button>
         </div>
         <p style="font-size:11px;color:rgb(var(--c-text-secondary))">Bands as stated in the source
           document: green ≥98%, amber 93–98%, red &lt;93%.</p>
@@ -1635,6 +1644,14 @@
       <p style="font-size:12.5px;color:rgb(var(--c-text-secondary));margin-top:10px">A drift that only
         shows up in one layer is worth watching; the same root cause confirmed independently in more
         than one layer is closer to a real signal than a single number ever is on its own.</p>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary));margin-top:10px"><b>Honest coverage,
+        not a round number:</b> this page has 19 calculator "total" outputs (every result marked with
+        the <code>.line.total</code> convention). <b>5 of 19</b> now link straight down to a genuinely
+        separate chart that further decomposes that same number (Should-Cost, MHR, Tooling, DFM, and
+        MDQS). Several more already sit right next to their own primary visualization on the same card
+        — that's a different relationship, not counted here as a "link." The rest don't have a
+        decomposition chart built yet — left alone rather than forcing a weak link to something that
+        doesn't exist.</p>
     </div>
 
     <div class="card">
@@ -1925,6 +1942,34 @@
   })();
   navTabs.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab'), { focus: false }); }); });
 
+  // UX_ROADMAP idea #32, Phase 4 batch B: "changed since your last visit" -- purely a factual diff,
+  // zero streak/count/badge/reward mechanics (the guardrail that distinguishes this from declined
+  // idea #27's streak counter). The check-count badge is the one number on this page guaranteed to
+  // change ONLY when the page's own content changed between visits, never from a viewer's own
+  // in-session input edits (those reset to defaults on reload by design, so they'd otherwise create
+  // false "changed" positives unrelated to an actual update).
+  function checkChangedSinceLastVisit(){
+    var banner = document.getElementById('lastVisitBanner');
+    var badge = document.getElementById('verifyBadge');
+    if (!banner || !badge) return;
+    var m = badge.textContent.match(/✓ (\d+)\/(\d+) CHECKS PASSING/);
+    if (!m) return;
+    var current = m[1];
+    var prev = null;
+    try{ prev = localStorage.getItem('ams-cc-last-visit-checks'); }catch(e){}
+    banner.hidden = false;
+    if (prev === null){
+      banner.textContent = 'First visit — nothing to compare yet. Come back later and this banner will say what changed.';
+    } else if (prev === current){
+      banner.textContent = 'No change since your last visit.';
+    } else {
+      banner.textContent = 'Changed since your last visit: this page has been updated (was passing ' + prev + ' checks, now ' + current + ' — see the README changelog for what shipped).';
+    }
+    try{ localStorage.setItem('ams-cc-last-visit-checks', current); }catch(e){}
+  }
+  window.checkChangedSinceLastVisit = checkChangedSinceLastVisit;
+  checkChangedSinceLastVisit();
+
   // Roving tabindex + arrow-key navigation, per the WAI-ARIA APG vertical Tabs pattern
   // (automatic activation: moving focus with the arrow keys also switches the panel).
   var sidenavList = document.querySelector('.sidenav-list');
@@ -2171,6 +2216,19 @@
     return typeof window !== "undefined" && typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
+  // UX_ROADMAP idea #6 (P1-adjacent honesty audit, Phase 4 batch B): a small number of calculator
+  // "total" outputs already have a REAL further-decomposition chart elsewhere on the same tab (not a
+  // co-located primary chart for the same number, which several other totals already have -- that's a
+  // different relationship and isn't claimed here). Same jump-and-focus pattern as the KPI Interaction
+  // Map's own node-click handler, minus the tab-switch (every pair here lives on one tab already).
+  function jumpToDecomposition(targetId){
+    var target = document.getElementById(targetId);
+    if (!target) return;
+    if (target.scrollIntoView) target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' });
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    if (target.focus) target.focus({ preventScroll: true });
+  }
+  window.jumpToDecomposition = jumpToDecomposition;
   function activatePaletteItem(item){
     if (!item) return;
     activateTab(item.tab);

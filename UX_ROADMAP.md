@@ -145,10 +145,25 @@ idea got — closing that gap here before building any of them.
 35. **Colorblind-safe status-pill symbol audit (idea #23, reaffirmed)** — this is the one already-P0
     idea the stress-test caught missing from the new plan entirely. Not a new idea; restored to its
     original P0 priority.
+36. **"One root cause, N instruments" showcase.** The inspiration dashboard shows one real event
+    surfacing independently across 5 different tabs of its own simulated program. ⛔ **declined
+    during Batch B's own build, not before** — checking for a genuine AMS analog found no real
+    numeric link to showcase: the one risk-register entry whose NAME echoes another tab's concept
+    (RSK-04 "Stale Routing Standard Drift" vs. the MDQS calculator's own "stale standards"
+    deduction) turned out to be pure naming coincidence — the risk register's p/s/d scores are
+    static, hand-assigned values with no mathematical tie to MDQS's live, separately-computed
+    deduction. Building a "cross-tab root cause" card on that pairing would have been exactly the
+    kind of fabricated-consistency claim this project exists to avoid. The one genuine, already-
+    computed cross-dimension finding this page has (Aurora's real Pearson r≈−0.71 between
+    Probability and Severity, both independently assigned across the same 10 risk entries) is
+    already the Aurora Layer Correlation Map's own headline result — a second "showcase" of the
+    identical fact would be redundant with a feature that already ships it, not additive.
 
 **Dropped, not built:** a live mini-recompute demo on the Executive Overview tab (proposed alongside
 #33 above) — the Site Accuracy Explorer already on that tab (live-editable CMAR/spread) is exactly
-this; building a second one would ship a near-duplicate.
+this; building a second one would ship a near-duplicate. A "one root cause, N instruments" showcase
+(idea #36) — the one candidate pairing checked out as naming coincidence, not a real numeric link;
+fabricating one to fill the slot was never on the table.
 
 ## Technical architecture & component breakdown
 

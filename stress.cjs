@@ -267,6 +267,17 @@ Object.keys(DEFAULTS).forEach((id) => {
   }
 });
 
+// Real static innerText for a small, explicit allowlist of ids whose page-load-time JS reads their
+// own already-rendered text (not written by any calc/render function first) -- the Phase 4 batch B
+// "changed since last visit" banner reads #verifyBadge's literal markup text at init, which this
+// stub's default textContent="" silently returned as empty, making its regex match fail-silent and
+// the whole feature look inert under test even though it worked live. Same fix shape as
+// NAVTAB_ARIA_LABELS above: a targeted, HTML-derived seed for the one id that actually needs it, not
+// a general HTML-parsing textContent engine this file has never needed before now.
+const STATIC_TEXT_CONTENT = {};
+const verifyBadgeMatch = html.match(/id="verifyBadge"[^>]*>([^<]*)</);
+if (verifyBadgeMatch) STATIC_TEXT_CONTENT.verifyBadge = verifyBadgeMatch[1];
+
 const elements = {};
 function makeElement(id) {
   if (elements[id]) return elements[id];
@@ -275,7 +286,7 @@ function makeElement(id) {
   const classes = new Set();
   const el = {
     id, value: DEFAULTS[id] !== undefined ? DEFAULTS[id] : "",
-    textContent: "", innerHTML: "", style: {}, className: "",
+    textContent: STATIC_TEXT_CONTENT[id] !== undefined ? STATIC_TEXT_CONTENT[id] : "", innerHTML: "", style: {}, className: "",
     // Real (not no-op) attribute/class tracking -- needed for the side-nav's roving-tabindex
     // logic (aria-selected/tabindex read back what was just set) and for asserting on the actual
     // resulting state, not just that a setter was called without throwing.
@@ -1339,7 +1350,7 @@ check(sandbox.prefersReducedMotion() === true, "prefersReducedMotion() correctly
 simulateViewportForcedNarrow(false); // restore before any later test relies on the non-narrow default
 check(sandbox.prefersReducedMotion() === false, "restoring the stub's matchMedia state back to false is reflected immediately (not cached from the first call)", sandbox.prefersReducedMotion());
 const smoothScrollCalls = (html.match(/behavior: prefersReducedMotion\(\) \? 'auto' : 'smooth'/g) || []).length;
-check(smoothScrollCalls === 2, "both scrollIntoView call sites (Command Palette + KPI Interaction Map) now check prefersReducedMotion() instead of hardcoding 'smooth'", smoothScrollCalls);
+check(smoothScrollCalls === 3, "all 3 scrollIntoView call sites (Command Palette + KPI Interaction Map + Phase 4 batch B's jumpToDecomposition) check prefersReducedMotion() instead of hardcoding 'smooth'", smoothScrollCalls);
 check(!html.includes("behavior: 'smooth', block: 'center'"), "no scrollIntoView call still hardcodes an unconditional 'smooth' behavior", "");
 
 console.log("--- Stress-test round (2026-09-05) fix: new factual claims (Pareto/ASQ, I-MR/SPC) added to the canonical sourced list ---");
@@ -1609,6 +1620,55 @@ check(!/\bEVM\b|Earned Value Management|Confirming EVM/i.test(html.slice(html.in
 check(!html.includes('id="tab-threelayers"') && !html.includes('id="navtab-threelayers"'), "this shipped as a Methodology-tab prose card, not a new top-level nav tab (matches the plan's revised scope)");
 const fourPillarHeadings = (html.match(/<h3>[1-4] · /g) || []).length;
 check(fourPillarHeadings === 4, "the Operating Framework tab really does have exactly 4 pillar headings (the count the reconciliation sentence above depends on)", fourPillarHeadings);
+
+console.log("--- Phase 4 batch B (2026-09-07): KPI-to-decomposition cross-link audit + honest coverage stat (idea #6, redefined) ---");
+// Golden counts pre-registered via grep before writing this check (B35): 19 real ".line total"
+// calculator headline outputs exist across the whole page; exactly 5 of them get a new decomp-link
+// to a genuinely SEPARATE chart that further decomposes that same number (not a chart merely
+// co-located with it, which several other totals already have and isn't counted here as a "link" --
+// see the prose's own explicit distinction). typeof check confirms the shared helper is exposed.
+check(typeof sandbox.jumpToDecomposition === "function", "jumpToDecomposition is exposed as a function");
+const lineTotalCount = (html.match(/class="line total"/g) || []).length;
+check(lineTotalCount === 19, "exactly 19 real calculator headline (.line.total) outputs exist (golden count, pre-registered via grep)", lineTotalCount);
+const decompLinkCount = (html.match(/class="decomp-link"/g) || []).length;
+check(decompLinkCount === 5, "exactly 5 decomposition links exist (golden count, pre-registered via grep)", decompLinkCount);
+check(html.includes("<b>5 of 19</b>"), "the coverage-stat prose cites the exact same count the actual markup contains, not a hand-typed number that could drift from it");
+function pageHasElementId(id){ return new RegExp(`id="${id}"`).test(html); }
+[
+  ["nestingDollWrap", "Nesting Doll Cost Peel"],
+  ["suspensionBridgeWrap", "Suspension Bridge Load Monitor"],
+  ["glacialWrap", "Glacial Calving Event Tracker"],
+  ["kaleidophoneWrap", "Kaleidophone Resonance Chart"],
+  ["pressureVesselWrap", "Pressure-Vessel Cost Containment"],
+].forEach(([targetId, label]) => {
+  check(html.includes(`jumpToDecomposition('${targetId}')`) && html.includes(label), `the decomp-link targeting #${targetId} exists and names the real "${label}" chart it jumps to`);
+  check(pageHasElementId(targetId), `the decomp-link's own target element #${targetId} really exists elsewhere on the page (not a broken/typo'd id)`, targetId);
+});
+// Behavioral note (not a stub-crash workaround): this stub has no scrollIntoView or hasAttribute on
+// its stub elements (the pre-existing KPI Interaction Map jump() function has the same two calls and
+// is, by the same established precedent, verified structurally here and behaviorally in a real
+// browser rather than invoked against this stub -- see README for that round's own live-verification).
+
+console.log("--- Phase 4 batch B (2026-09-07): \"changed since your last visit\" banner (idea #32, redefined) ---");
+check(typeof sandbox.checkChangedSinceLastVisit === "function", "checkChangedSinceLastVisit is exposed as a function");
+const currentBadgeMatch = html.match(/id="verifyBadge"[^>]*>✓ (\d+)\/\d+ CHECKS PASSING/);
+const currentChecksStr = currentBadgeMatch[1];
+// checkChangedSinceLastVisit() already ran once at page-load init (this file's own initial
+// vm.runInContext of the page's script), against this sandbox's fresh, empty localStorage -- so this
+// IS genuinely a first "visit" already, not a contrived setup.
+check(!elements.lastVisitBanner.hidden, "the banner is unhidden after the page's own init-time call");
+check(elements.lastVisitBanner.textContent.startsWith("First visit"), "a fresh (never-before-seen) localStorage correctly shows the first-visit message, not a false \"changed\"/\"no change\" claim", elements.lastVisitBanner.textContent);
+check(sandbox.localStorage._s["ams-cc-last-visit-checks"] === currentChecksStr, "the current checks-passing count was written to localStorage after the first visit", sandbox.localStorage._s["ams-cc-last-visit-checks"]);
+// Simulate a second visit with no change (localStorage now holds what the first visit just wrote).
+sandbox.checkChangedSinceLastVisit();
+check(elements.lastVisitBanner.textContent === "No change since your last visit.", "a second visit with an unchanged checks-count shows the plain \"no change\" message, matching this page's zero-gamification standard (no streak count, no reward copy)", elements.lastVisitBanner.textContent);
+// Simulate a real prior visit that predates a content update (a different checks-count stored).
+sandbox.localStorage.setItem("ams-cc-last-visit-checks", "857");
+sandbox.checkChangedSinceLastVisit();
+check(elements.lastVisitBanner.textContent.includes("was passing 857 checks, now " + currentChecksStr), "a genuinely different prior checks-count correctly triggers the \"changed\" message naming both real numbers", elements.lastVisitBanner.textContent);
+check(!/streak|badge earned|come back tomorrow|day \d+/i.test(elements.lastVisitBanner.textContent), "the changed-message copy never drifts into streak/reward language (the guardrail distinguishing this from declined idea #27)", elements.lastVisitBanner.textContent);
+// Restore localStorage to the current real count so no later check in this file could observe stale state.
+sandbox.localStorage.setItem("ams-cc-last-visit-checks", currentChecksStr);
 
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");
 ["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551", "Medallion Architecture"].forEach((term) => {

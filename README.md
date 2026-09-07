@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 885 checks, all passing as of this writing.
+Run: `node stress.cjs` — 906 checks, all passing as of this writing.
 
 ## Status
 
@@ -1073,3 +1073,43 @@ discipline), closes via both its own close button and Escape with focus correctl
 3 status-pill symbols (✓/▲/✗) render as expected at default values. 0 console errors. Checks:
 857 → 885 (+28). Committed locally — pending push with explicit confirmation, same discipline as
 every prior round. Batches B–E (6 more ideas) still to come.
+
+**2026-09-07, twenty-eighth round (Phase 4 batch B/5 — 2 built, 1 honestly declined mid-build):**
+
+1. **KPI-to-decomposition cross-link audit** (idea #6, redefined) — of this page's 19 real
+   calculator "total" outputs, exactly 5 already have a *genuinely separate* chart elsewhere that
+   further decomposes the same number (Should-Cost, MHR, Tooling, DFM, MDQS); added a small
+   `↓ See the breakdown` jump-link at each, and a Methodology-tab callout stating the real "5 of 19"
+   count plainly — including what the other 14 are (several already sit next to their own primary
+   chart, which is a different relationship; the rest don't have a decomposition chart built yet).
+2. **"Changed since your last visit" banner** (idea #32) — diffs the real checks-passing count
+   (the one number on this page guaranteed to change only when the page's own content changed, never
+   from a viewer's own in-session input edits, since those reset on reload by design) against a
+   localStorage snapshot from the visitor's prior session. Zero streak/count/badge/reward language —
+   guarded explicitly against drifting toward declined idea #27's shape.
+3. **"One root cause, N instruments" showcase — declined mid-build, not before.** Checking for a
+   real AMS analog of the inspiration dashboard's cross-tab pattern found the one promising-looking
+   candidate (risk-register entry RSK-04 "Stale Routing Standard Drift" vs. the MDQS calculator's own
+   "stale standards" deduction) was naming coincidence, not a real numeric link — the risk register's
+   scores are static, hand-assigned values with no mathematical tie to MDQS's live computation.
+   Building a card on that pairing would have been a fabricated-consistency claim. The one genuine
+   cross-dimension finding this page has (Aurora's real P/S correlation) is already that chart's own
+   headline result — a second showcase of the identical fact would be redundant, not additive.
+   Recorded as idea #36 in `UX_ROADMAP.md`, declined for cause.
+
+Two real bugs caught by the test stub, not the browser: this harness's stub always defaulted
+`textContent` to `""` for every element, which made the "changed since last visit" banner's own
+`badge.textContent.match(...)` fail silently against `#verifyBadge` (a value never written by any
+calc/render function — it's baked directly into the static markup) — every single check depending on
+it looked like the feature was inert, when it actually worked fine live; fixed at the root with a
+small, explicit-allowlist static-text seed (same shape as the earlier `NAVTAB_ARIA_LABELS` fix, not a
+general HTML-parsing engine this file has never needed before). And the new `jumpToDecomposition()`
+helper is this page's 3rd real `scrollIntoView` call site — an existing golden-count check
+(`smoothScrollCalls === 2`) needed updating to 3, not silently left stale.
+
+Live-verified in a real browser: a decomp-link click correctly moves focus to its real target
+(`nestingDollWrap`) with `tabindex="-1"` set exactly as the code intends; the banner shows the real
+first-visit message on a fresh load, "No change" on an actual same-session reload, and the correct
+"Changed... was passing 857 checks, now 906" message when a genuinely different prior visit is
+simulated. 0 console errors. Checks: 885 → 906 (+21). Committed locally — pending push with explicit
+confirmation, same discipline as every prior round. Batches C–E (4 more ideas) still to come.
