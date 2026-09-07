@@ -253,6 +253,8 @@ const DEFAULTS = {
   capAvail0: "160", capBooked0: "150", capAvail1: "160", capBooked1: "140",
   capAvail2: "160", capBooked2: "100", capAvail3: "160", capBooked3: "90",
   capAvail4: "160", capBooked4: "155", capAvail5: "160", capBooked5: "120",
+  arSiteAStd: "1420000", arSiteAAct: "1448200", arSiteBStd: "980000", arSiteBAct: "955400",
+  arSiteCStd: "1150000", arSiteCAct: "1178000",
 };
 // Cross-check DEFAULTS against the HTML's own value= attributes so this harness can't silently
 // drift from the real page if a default is ever changed there and not here.
@@ -446,6 +448,21 @@ check(elements.contrastBtn.getAttribute("aria-pressed") === "true", "the toggle'
 elements.contrastBtn.click();
 check(sandbox.document.documentElement.getAttribute("data-contrast") === "false", "clicking it again turns high-contrast back off", sandbox.document.documentElement.getAttribute("data-contrast"));
 
+console.log("--- viz-innovation batch 1: Site Accuracy Explorer (archery target) golden values, pre-registered via node -e ---");
+// CMAR per site: (1 - |actual-standard|/actual)*100. Site A: 1-28200/1448200=98.053%.
+// Site B: 1-24600/955400=97.425%. Site C: 1-28000/1178000=97.623%. Avg=(98.053+97.425+97.623)/3=97.7%
+// (toFixed(1)). Spread = max-min = 98.053-97.425 = 0.628 -> "0.6 pts" (toFixed(1)).
+check(typeof sandbox.calcCmar === "function", "window.calcCmar is exposed as a function");
+const archeryState = sandbox.calcArchery();
+check(Math.abs(archeryState.sites[0].cmar - 98.05275514431709) < 1e-9, "Site A CMAR matches golden value", archeryState.sites[0].cmar);
+check(Math.abs(archeryState.sites[1].cmar - 97.42516223571279) < 1e-9, "Site B CMAR matches golden value", archeryState.sites[1].cmar);
+check(Math.abs(archeryState.sites[2].cmar - 97.62308998302207) < 1e-9, "Site C CMAR matches golden value", archeryState.sites[2].cmar);
+check(elements.archeryAvgOut.textContent === "97.7%", "rendered average CMAR matches golden value", elements.archeryAvgOut.textContent);
+check(elements.archerySpreadOut.textContent === "0.6 pts", "rendered spread matches golden value", elements.archerySpreadOut.textContent);
+check(elements.archeryWrap.innerHTML.includes("<svg") && elements.archeryWrap.innerHTML.includes('role="img"'), "renderArchery() renders an actual accessible <svg>, not just text outputs");
+check((elements.archeryWrap.innerHTML.match(/<circle/g) || []).length === 4 + 3, "exactly 7 <circle> elements: 4 ring/bullseye circles (outer boundary, 90% ring, 95% ring, bullseye) + 3 arrow markers (one per site)", (elements.archeryWrap.innerHTML.match(/<circle/g) || []).length);
+check(!html.includes('font-size="9"') && !elements.archeryWrap.innerHTML.includes('font-size="9"'), "no 9px SVG text in the archery target (matches the page-wide minimum-legible-size convention)");
+
 console.log("--- Should-Cost calculator: golden values (verified live in-browser before this file existed) ---");
 // CNC-3-Axis/CNC-5-Axis rate-card values nudged on 2026-09-04 (a stress-test found $26.00/$46.00
 // sat 2.2%/3.9% from specific fabricated MHR figures in two of the downloaded documents) -- every
@@ -457,6 +474,22 @@ check(elements.scOutMach.textContent === "$14.67", "machine conversion cost matc
 check(elements.scOutLabor.textContent === "$10.39", "labor cost matches the browser-verified golden value", elements.scOutLabor.textContent);
 check(elements.scOutOh.textContent === "$14.90", "overhead cost matches the browser-verified golden value", elements.scOutOh.textContent);
 check(elements.scOutTotal.textContent === "$121.31", "should-cost TOTAL matches the browser-verified golden value (and equals the sum of the four lines above)", elements.scOutTotal.textContent);
+
+console.log("--- viz-innovation batch 1: Nesting Doll Cost Peel golden values (same 4 should-cost components above, ordered by size) ---");
+// Components sorted descending: Material 81.35 > Overhead 14.90 > Machine 14.67 > Labor 10.39.
+// Cumulative remainder after peeling each: [121.31 (total), 39.96 (total-material),
+// 25.06 (-overhead), 10.39 (-machine, = labor alone)] -- verified via node -e.
+check(typeof sandbox.calcNestingDoll === "function", "window.calcNestingDoll is exposed as a function");
+const dollState = sandbox.calcNestingDoll(81.35, 14.67, 10.39, 14.90, 121.31);
+check(dollState.components.map((c) => c.label).join(",") === "Material,Overhead,Machine,Labor", "components are sorted descending by value: Material, Overhead, Machine, Labor", dollState.components.map((c) => c.label).join(","));
+check(JSON.stringify(dollState.dolls.map((d) => Math.round(d.value * 100) / 100)) === JSON.stringify([121.31, 39.96, 25.06, 10.39]), "cumulative doll values (outer to inner) match golden values", JSON.stringify(dollState.dolls.map((d) => d.value)));
+check(Math.abs(dollState.dolls[3].value - 10.39) < 1e-9, "the innermost doll's value equals Labor's own cost exactly (internal consistency -- nothing left to peel)", dollState.dolls[3].value);
+sandbox.renderNestingDoll(dollState);
+check(elements.nestingDollWrap.innerHTML.includes("<svg") && elements.nestingDollWrap.innerHTML.includes('role="img"'), "renderNestingDoll() renders an actual accessible <svg>, not just numbers");
+check((elements.nestingDollWrap.innerHTML.match(/<ellipse/g) || []).length === 4, "exactly 4 nested doll ellipses are rendered, one per component", (elements.nestingDollWrap.innerHTML.match(/<ellipse/g) || []).length);
+check(elements.nestingDollWrap.innerHTML.includes("core: $10.39"), "the innermost doll's label states the exact core value", elements.nestingDollWrap.innerHTML);
+sandbox.calcShouldCost(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.nestingDollWrap.innerHTML.includes("<svg"), "calcShouldCost() itself re-renders the nesting-doll chart on every recalculation, not just at page load");
 
 console.log("--- Variance Waterfall: golden values ---");
 check(elements.outMPV.textContent === "+$3,025", "MPV matches golden value", elements.outMPV.textContent);
@@ -703,16 +736,16 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 22, "exactly 22 navigable items in the command index (+1: Variance Tug-of-War)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 22, "all 22 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 27, "exactly 27 navigable items in the command index (+5: viz-innovation batch 1 -- Pendulum, Tightrope, Archery, Honeycomb, Nesting Doll)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 27, "all 27 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 22, "empty-query search returns all 22 items", allMatch.length);
+check(allMatch.length === 27, "empty-query search returns all 27 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
-check(riskTabMatch.length === 4, "exactly 4 command index entries point at the Predictive & Risk Models tab", riskTabMatch.length);
+check(riskTabMatch.length === 5, "exactly 5 command index entries point at the Predictive & Risk Models tab (+1: Tightrope Confidence Walk)", riskTabMatch.length);
 sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
 
 console.log("--- Stress-test round (2026-09-05) fix 9: Command Palette exposes real ARIA combobox/listbox semantics ---");
@@ -771,6 +804,18 @@ sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel pa
 check(elements.capSpcWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the SPC chart on every recalculation, not just at page load");
 check(html.includes('cadence-badge operational') && html.includes('cadence-badge financial'), "both cadence badges (operational on Capacity, financial on Variance) exist, making the two-tier real-time-vs-period-close distinction visible, not just an internal design note");
 
+console.log("--- viz-innovation batch 1: Honeycomb Capacity Lattice golden values (same CAP_WEEKS data as the table/SPC chart above) ---");
+// util per week already pre-registered above: [93.75, 87.5, 62.5, 56.25, 96.875, 75]. Deltas (week N -
+// week N-1): [-6.25, -25, -6.25, 40.625, -21.875] (verified via node -e).
+check(typeof sandbox.calcHoneycomb === "function", "window.calcHoneycomb is exposed as a function");
+const honeycombState = sandbox.calcHoneycomb();
+check(JSON.stringify(honeycombState.weeks.map((w) => Math.round(w.util * 1000) / 1000)) === JSON.stringify([93.75, 87.5, 62.5, 56.25, 96.875, 75]), "calcHoneycomb's per-week utilization matches the same golden values as the SPC chart above (same underlying inputs)", JSON.stringify(honeycombState.weeks.map((w) => w.util)));
+check(JSON.stringify(honeycombState.deltas.map((d) => Math.round(d * 1000) / 1000)) === JSON.stringify([-6.25, -25, -6.25, 40.625, -21.875]), "calcHoneycomb's week-over-week deltas match golden values", JSON.stringify(honeycombState.deltas));
+check(honeycombState.weeks.map((w) => w.status).join(",") === "green,green,red,red,green,amber", "each week's status matches the same utilStatus() bands used by the table above", honeycombState.weeks.map((w) => w.status).join(","));
+check(elements.honeycombWrap.innerHTML.includes("<svg") && elements.honeycombWrap.innerHTML.includes('role="img"'), "renderHoneycomb() renders an actual accessible <svg>, not just numbers");
+check((elements.honeycombWrap.innerHTML.match(/<polygon/g) || []).length === 6, "exactly 6 hexagon cells are rendered, one per week", (elements.honeycombWrap.innerHTML.match(/<polygon/g) || []).length);
+check((elements.honeycombWrap.innerHTML.match(/<line/g) || []).length === 5, "exactly 5 connecting edges are rendered, one between each pair of the 6 adjacent weeks", (elements.honeycombWrap.innerHTML.match(/<line/g) || []).length);
+
 console.log("--- Stress-test round (2026-09-05) fix: Variance tab's copy no longer uses \"live\" for two different meanings in one paragraph ---");
 // A stress-test found "the bridge recalculates live" sitting right next to "not a real-time feed" --
 // two different senses of "live" (this demo tool's instant UI feedback vs. the real accounting
@@ -809,6 +854,18 @@ console.log("--- Mean-Reversion Forward Band (Ornstein-Uhlenbeck): golden values
 check(elements.ouExpected.textContent === "$29.15", "expected forward price matches golden value (P̄=27, Pt=29.50, θ=0.15, Δt=1)", elements.ouExpected.textContent);
 check(elements.ouStdDev.textContent === "$3.25", "forecast std. deviation matches golden value", elements.ouStdDev.textContent);
 check(elements.ouBand.textContent === "$22.78 – $35.53", "95% two-sided forward band matches golden value (expected ± 1.96×stddev)", elements.ouBand.textContent);
+
+console.log("--- viz-innovation batch 1: Equilibrium Pendulum golden values (same OU inputs, pre-registered by hand) ---");
+// displacement = Pt-Pbar = 29.5-27 = 2.5 -> fmtMoney rounds to the nearest dollar: "+$3".
+// settleTime = ln(20)/theta = ln(20)/0.15 = 19.97 -> "20.0 months" (toFixed(1)).
+check(typeof sandbox.calcPendulum === "function", "window.calcPendulum is exposed as a function");
+const pendState = sandbox.calcPendulum();
+check(Math.abs(pendState.displacement - 2.5) < 1e-9, "calcPendulum's displacement matches golden value", pendState.displacement);
+check(Math.abs(pendState.settleTime - Math.log(20) / 0.15) < 1e-9, "calcPendulum's settleTime matches ln(20)/theta exactly", pendState.settleTime);
+check(elements.pendDisplacementOut.textContent === "+$3", "rendered displacement matches golden value", elements.pendDisplacementOut.textContent);
+check(elements.pendSettleOut.textContent === "20.0 months", "rendered settle-time matches golden value", elements.pendSettleOut.textContent);
+check(elements.pendulumWrap.innerHTML.includes("<svg") && elements.pendulumWrap.innerHTML.includes('role="img"'), "renderPendulum() renders an actual accessible <svg>, not just text outputs");
+check(elements.pendulumWrap.innerHTML.includes('class="pendulum-bob"'), "the pendulum bob group is rendered with the class the reduced-motion CSS rule targets");
 
 console.log("--- Data Governance: MDQS + Guardrail Gate Simulator golden values ---");
 check(elements.mdqsScore.textContent === "96.875%", "MDQS score matches golden value (100% - weighted deductions)", elements.mdqsScore.textContent);
@@ -1046,6 +1103,27 @@ check(elements.mvarOut.textContent === "$22921.20", "M-VaR at 99% confidence mat
 elements.mvarConfidence.value = "95";
 sandbox.calcMVaR();
 
+console.log("--- viz-innovation batch 1: Tightrope Confidence Walk golden values (same M-VaR inputs, pre-registered by hand) ---");
+// buffer = z*sigma = 1.645*6200 = 10199 -> fmtMoney "+$10,199". CoV = sigma/mu = 6200/8500 = 0.729412
+// -> "72.9%" (toFixed(1) on the percentage).
+check(typeof sandbox.calcTightrope === "function", "window.calcTightrope is exposed as a function");
+const tightropeState = sandbox.calcTightrope();
+check(Math.abs(tightropeState.buffer - 10199) < 1e-9, "calcTightrope's buffer (z*sigma) matches golden value", tightropeState.buffer);
+check(Math.abs(tightropeState.cov - 6200 / 8500) < 1e-9, "calcTightrope's coefficient of variation matches golden value", tightropeState.cov);
+sandbox.renderTightrope(tightropeState);
+check(elements.tightropeBufferOut.textContent === "+$10,199", "rendered buffer matches golden value", elements.tightropeBufferOut.textContent);
+check(elements.tightropeCovOut.textContent === "72.9%", "rendered coefficient of variation matches golden value", elements.tightropeCovOut.textContent);
+check(elements.tightropeWrap.innerHTML.includes('class="tightrope-walker"'), "the walker group is rendered with the class the reduced-motion CSS rule targets");
+// Edge case: mu=0 makes CoV undefined (division by zero) -- confirm it's handled explicitly, not left as Infinity/NaN in the rendered text.
+elements.mvarMu.value = "0";
+const zeroMuState = sandbox.calcTightrope();
+check(zeroMuState.cov === Infinity, "calcTightrope's cov correctly resolves to Infinity, not NaN, when mu=0 and sigma>0", zeroMuState.cov);
+sandbox.renderTightrope(zeroMuState);
+check(elements.tightropeCovOut.textContent === "— (μ=0)", "the mu=0 edge case renders an explicit dash, not the literal string 'Infinity'", elements.tightropeCovOut.textContent);
+elements.mvarMu.value = "8500"; // restore default
+sandbox.renderTightrope(sandbox.calcTightrope());
+check(elements.tightropeBufferOut.textContent === "+$10,199", "restoring mu to its default reproduces the original golden buffer value", elements.tightropeBufferOut.textContent);
+
 console.log("--- Fabrication guard: Risk Register data ---");
 const riskBlob = JSON.stringify(sandbox.RISK_REGISTER);
 const foundBannedInRisk = bannedStrings.concat(wrongClaimStrings).filter((s) => riskBlob.includes(s));
@@ -1111,7 +1189,7 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // live-value display, not the control itself).
 const totalLabels = (html.match(/<label\b/g) || []).length;
 const labelsWithFor = html.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 81, "exactly 81 <label> elements exist on the page (unchanged count -- this fix pairs them, doesn't add/remove any)", totalLabels);
+check(totalLabels === 87, "exactly 87 <label> elements exist on the page (81 + 6 from viz-innovation batch 1's Site Accuracy Explorer inputs)", totalLabels);
 check(labelsWithFor.length === totalLabels, "every single <label> now carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
@@ -1126,12 +1204,12 @@ check(html.includes('<label for="mvarConfidence">Confidence level</label>'), "th
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 18, "exactly 18 explain buttons are wired in the HTML (17 from before + Variance Tug-of-War)", explainButtonCount);
+check(explainButtonCount === 23, "exactly 23 explain buttons are wired in the HTML (18 from before + viz-innovation batch 1's 5)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");

@@ -274,10 +274,23 @@
   @keyframes towTremble{0%,100%{transform:translateX(-1.5px)}50%{transform:translateX(1.5px)}}
   .tow-flag{animation-name:towTremble;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
 
+  /* Equilibrium Pendulum: a small, capped sway on the bob -- purely decorative (pendDisplacementOut
+     always states the same real displacement as exact text), switched off below under reduced-motion. */
+  @keyframes pendulumSway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+  .pendulum-bob{animation-name:pendulumSway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;transform-origin:center top}
+
+  /* Tightrope Confidence Walk: sway amplitude is a CSS custom property set inline per-render from the
+     real coefficient-of-variation value -- capped, decorative, and switched off under reduced-motion
+     (tightropeCovOut always states the same real percentage as exact text regardless). */
+  @keyframes tightropeSway{0%,100%{transform:rotate(calc(-1 * var(--sway-deg, 3deg)))}50%{transform:rotate(var(--sway-deg, 3deg))}}
+  .tightrope-walker{animation-name:tightropeSway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;transform-origin:center bottom}
+
   @media (prefers-reduced-motion:reduce){
     .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
     .skip-links,.sidenav-item,.sidenav-icon{transition:none}
     .tow-flag{animation:none}
+    .pendulum-bob{animation:none}
+    .tightrope-walker{animation:none}
     html{scroll-behavior:auto}
   }
 </style>
@@ -340,7 +353,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 640/640 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 691/691 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -415,6 +428,37 @@
         <a href="https://www.symestic.com/en-us/blog/oee/oee-benchmarks">Symestic</a>: 55–70% typical
         discrete manufacturing, 70–80% advanced, &gt;80% world-class (top 5–10% of plants) — a real,
         sourced classification applied to invented site figures, not a claim about AMS's actual OEE.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Site Accuracy Explorer <button class="explain-btn" data-explain="archery" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 3-SITE ROLLUP, LIVE-EDITABLE — CMAR AS ACCURACY + PRECISION</span></div>
+      <p class="lede" style="margin-bottom:12px">The rollup table above shows each site's variance in
+        isolation; this asks a different question of the same three numbers — are the sites
+        consistently close to standard (both accurate AND precise), or does a wide spread hide behind
+        a deceptively good AVERAGE? Edit any site's figures to see it move.</p>
+      <div class="grid cols-2">
+        <div>
+          <div class="field-row">
+            <div class="field"><label for="arSiteAStd">Site A standard COGS</label><input type="number" id="arSiteAStd" value="1420000" step="1000"></div>
+            <div class="field"><label for="arSiteAAct">Site A actual COGS</label><input type="number" id="arSiteAAct" value="1448200" step="1000"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="arSiteBStd">Site B standard COGS</label><input type="number" id="arSiteBStd" value="980000" step="1000"></div>
+            <div class="field"><label for="arSiteBAct">Site B actual COGS</label><input type="number" id="arSiteBAct" value="955400" step="1000"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="arSiteCStd">Site C standard COGS</label><input type="number" id="arSiteCStd" value="1150000" step="1000"></div>
+            <div class="field"><label for="arSiteCAct">Site C actual COGS</label><input type="number" id="arSiteCAct" value="1178000" step="1000"></div>
+          </div>
+        </div>
+        <div>
+          <div id="archeryWrap"></div>
+        </div>
+      </div>
+      <div class="outline" style="margin-top:10px">
+        <div class="line"><span>Average CMAR (accuracy)</span><span class="mono" id="archeryAvgOut">0.0%</span></div>
+        <div class="line total"><span>Spread across sites (precision)</span><span class="mono" id="archerySpreadOut">0.0 pts</span></div>
+      </div>
     </div>
 
     <div class="card" id="roleAlignmentCard" style="margin-top:16px">
@@ -520,6 +564,15 @@
           or Siemens — named here as illustrative examples of what a real rate card would specify,
           not a claim about which controllers AMS actually runs.</p>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Nesting Doll Cost Peel <button class="explain-btn" data-explain="nestingdoll" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 COMPONENTS ABOVE, ORDERED BY SIZE</span></div>
+      <p class="lede" style="margin-bottom:12px">The outline above lists the same 4 components in a
+        fixed order; this peels the should-cost total from largest component down to smallest, one
+        layer at a time, so "which single driver matters most" reads as an immediate visual instead of
+        a mental sort of 4 rows.</p>
+      <div id="nestingDollWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -697,6 +750,17 @@
         spot price above as the starting point. This band widens with the forecast horizon and
         volatility, and narrows toward the equilibrium price as θ (the reversion speed) increases —
         the reason blanket purchase agreements are timed off θ, not off the spot price alone.</p>
+
+      <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Equilibrium Pendulum <button class="explain-btn" data-explain="pendulum" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME OU MODEL, ABOVE — VISUALIZED AS DECAY, NOT A POINT ESTIMATE</span></div>
+      <p class="lede" style="margin-bottom:12px">The forward band above gives one horizon's answer;
+        this plots the model's own full decay path — how a spot price currently displaced from
+        equilibrium actually swings back over time, and exactly when it's "settled" (a real, derivable
+        number, not a guess).</p>
+      <div id="pendulumWrap"></div>
+      <div class="outline" style="margin-top:10px">
+        <div class="line"><span>Current displacement from equilibrium</span><span class="mono" id="pendDisplacementOut">$0.00</span></div>
+        <div class="line total"><span>Time to 95% settled (ln(20)/θ)</span><span class="mono" id="pendSettleOut">— months</span></div>
+      </div>
     </div>
   </section>
 
@@ -805,6 +869,14 @@
         them, even if it reads "red" on the policy band, is normal variation. With only 6 points the
         limits are wide (a known small-sample artifact — more history would tighten them).</p>
       <div id="capSpcWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Honeycomb Capacity Lattice <button class="explain-btn" data-explain="honeycomb" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6-WEEK DATA ABOVE — DENSITY VIEW, NOT A TREND LINE</span></div>
+      <p class="lede" style="margin-bottom:12px">The same 6 weeks above, laid out as cells instead of a
+        line, so utilization reads as density at a glance — and the connecting edges make each week's
+        change from the last immediately visible, not just implied by two adjacent table rows.</p>
+      <div id="honeycombWrap"></div>
     </div>
   </section>
 
@@ -1081,6 +1153,17 @@
       <div class="outline">
         <div class="line"><span>Z-score</span><span class="mono" id="mvarZ">0.000</span></div>
         <div class="line total"><span>M-VaR (upper bound this period)</span><span class="mono" id="mvarOut">$0</span></div>
+      </div>
+
+      <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Tightrope Confidence Walk <button class="explain-btn" data-explain="tightrope" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME M-VaR ABOVE — RELATIVE UNCERTAINTY, NOT JUST THE $ BOUND</span></div>
+      <p class="lede" style="margin-bottom:12px">The dollar figure above answers "how big is the
+        buffer"; this answers a different question — how PRECARIOUS is that buffer, relative to the
+        expected variance itself? A $10,199 buffer on a $8,500 mean is a much shakier walk than the
+        same buffer on an $85,000 mean.</p>
+      <div id="tightropeWrap"></div>
+      <div class="outline" style="margin-top:10px">
+        <div class="line"><span>Confidence buffer (z·σ)</span><span class="mono" id="tightropeBufferOut">$0</span></div>
+        <div class="line total"><span>Coefficient of variation (σ/μ)</span><span class="mono" id="tightropeCovOut">0%</span></div>
       </div>
     </div>
   </section>
@@ -1727,6 +1810,7 @@
   // ---------- Explain-the-Math modal ----------
   var EXPLAIN = {
     cmar: { title: 'Cost Model Accuracy Ratio (CMAR)', formula: 'CMAR = (1 − |COGS_actual − COGS_quoted| / COGS_actual) × 100', body: 'Measures how well the quoting engine predicts real shop-floor cost. Target ≥95%; below 90% signals the routing or nesting assumptions behind the quote need re-timing against closed work orders.' },
+    archery: { title: 'Site Accuracy Explorer (CMAR as accuracy + precision)', formula: 'Same CMAR formula as above, applied per-site: distance from bullseye = (100 − CMAR)', body: 'The same three sites\' Standard/Actual COGS shown as a static table in the rollup above, made live-editable, then plotted by CMAR distance from a bullseye instead of read row-by-row. This surfaces a question the table doesn\'t: are the sites consistently close to standard (tight cluster = both accurate AND precise), or does a good AVERAGE hide one site far off and another compensating? A borrowed statistical framing (accuracy vs. precision), not a new metric — arrow angle is purely for visual separation between the 3 sites and carries no data meaning, only distance from center does.' },
     oae: { title: 'Overhead Absorption Efficiency (OAE)', formula: 'OAE = (Absorbed Fixed OH / Budgeted Fixed OH) × 100', body: 'Absorbed Fixed OH = productive machine hours × the standard fixed-overhead rate. When machines sit idle, budgeted overhead outruns what production actually absorbs — the gap is the Fixed Overhead Volume Variance.' },
     mpv: { title: 'Material Price Variance (MPV)', formula: 'MPV = (Actual Price − Standard Price) × Actual Quantity', body: 'Isolates a pure price effect — usually procurement paying more or less than the standard catalog cost — independent of how much material was actually consumed.' },
     mqv: { title: 'Material Quantity Variance (MQV)', formula: 'MQV = (Actual Qty − Standard Qty) × Standard Price', body: 'Isolates a pure consumption effect — nesting waste, scrap, or an oversized billet — independent of the price paid per unit.' },
@@ -1740,9 +1824,13 @@
     learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
+    tightrope: { title: 'Tightrope Confidence Walk (Coefficient of Variation)', formula: 'CoV = σ / μ  (undefined when μ=0)', body: 'The M-VaR card above answers "how big is the dollar buffer" (z·σ); this asks a related but distinct question — how large is that uncertainty RELATIVE to the expected value itself? A $10,000 buffer means something very different on an $8,500 mean (CoV≈120%, a genuinely shaky forecast) than on an $85,000 mean (CoV≈12%, comfortably stable). Coefficient of variation is a standard, named statistics concept (unitless, so it\'s comparable across metrics with different scales), not this dashboard\'s own invention — used here to reframe the same already-computed M-VaR inputs, not new data.' },
     ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above. Commodity-finance literature typically cites this specific application by name — Schwartz (1997), "The Stochastic Behavior of Commodity Prices," *Journal of Finance* — rather than bare "Ornstein-Uhlenbeck," since the latter is a generic process name used across many unrelated domains.' },
+    pendulum: { title: 'Equilibrium Pendulum (OU decay path)', formula: 'settle time = ln(20) / θ  — the s solving (P_t−P̄)·e^(−θs) = 0.05·(P_t−P̄)', body: 'The same Ornstein-Uhlenbeck process as the Mean-Reversion Forward Band above, just plotted as a full curve instead of a single horizon\'s point estimate — the current spot price is a "displaced pendulum" that decays back toward equilibrium at rate θ. "Settle time" is a real, exactly-derivable number (not an animation cue): the time at which the expected price has closed 95% of its original gap to equilibrium. Not a named industry technique — an original visualization of this dashboard\'s own already-computed, already-verified OU formula, not a new claim about AMS.' },
     qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab). The chart\'s two dots are draggable: the left one directly sets P₀, the right one (holding P₀ fixed) implies a new γ from where you drop it — a pointer-driven second input surface on top of, not instead of, the number fields above, which remain the full keyboard/screen-reader path.' },
-    montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' }
+    montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' },
+    honeycomb: { title: 'Honeycomb Capacity Lattice', formula: 'Same util% per week as the table above; delta = util(week N) − util(week N−1)', body: 'The same 6-week Capacity table, laid out as a density grid instead of rows — utilization reads as cell color/fill at a glance, and the connecting edge between two adjacent weeks is colored/thickened by their real week-over-week delta, making a swing (like the week-4-to-5 jump) visible without cross-referencing two separate rows. Cell "adjacency" here is purely temporal (week N next to week N+1) — not a claim about cross-trained backup capacity between physical resources.' },
+    nestingdoll: { title: 'Nesting Doll Cost Peel', formula: 'doll[i] = total − sum(components larger than i-th), ordered descending by value', body: 'The same 4 should-cost components (material/machine/labor/overhead) shown in the outline above, re-ordered by size and nested so peeling off the largest reveals a smaller doll worth exactly the sum of what remains — down to the single smallest component at the core. These 4 components are siblings, not a true multi-level hierarchy, so this is a size-ordered peel of one flat breakdown, not a claim about deeper recursive cost structure that doesn\'t exist in this calculator.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1809,16 +1897,20 @@
   // ---------- Universal Command Palette (Cmd/Ctrl+K quick navigation) ----------
   var COMMAND_INDEX = [
     { label: 'Executive Overview', tab: 'exec' },
+    { label: 'Site Accuracy Explorer', tab: 'exec', scrollTo: 'archeryAvgOut' },
     { label: 'Should-Cost & MHR Simulator', tab: 'shouldcost' },
+    { label: 'Nesting Doll Cost Peel', tab: 'shouldcost', scrollTo: 'nestingDollWrap' },
     { label: 'MHR Build-Up Calculator', tab: 'shouldcost', scrollTo: 'mhrDepOut' },
     { label: 'Monte Carlo Should-Cost Explorer', tab: 'shouldcost', scrollTo: 'mcP50Out' },
     { label: 'Variance Waterfall', tab: 'variance' },
     { label: 'Variance Tug-of-War', tab: 'variance', scrollTo: 'towNetOut' },
     { label: 'Commodity Price Exposure Early Warning', tab: 'variance', scrollTo: 'cpShiftPct' },
     { label: 'Mean-Reversion Forward Band', tab: 'variance', scrollTo: 'ouExpected' },
+    { label: 'Equilibrium Pendulum', tab: 'variance', scrollTo: 'pendDisplacementOut' },
     { label: 'Build-vs-Buy / CapEx', tab: 'buildbuy' },
     { label: 'Volume Crossover Point (Q*)', tab: 'buildbuy', scrollTo: 'qsOut' },
     { label: 'Capacity & Absorption Forecast', tab: 'capacity' },
+    { label: 'Honeycomb Capacity Lattice', tab: 'capacity', scrollTo: 'honeycombWrap' },
     { label: 'Tooling Amortization Tracker', tab: 'tooling' },
     { label: 'Design-for-Cost Sensitivity', tab: 'dfm' },
     { label: 'Data Governance (MDQS)', tab: 'governance' },
@@ -1828,6 +1920,7 @@
     { label: 'Learning Curve Forecaster', tab: 'risk', scrollTo: 'lcB' },
     { label: 'Cost Risk Register (CRPN)', tab: 'risk', scrollTo: 'riskRegisterBody' },
     { label: 'Manufacturing Value at Risk (M-VaR)', tab: 'risk', scrollTo: 'mvarOut' },
+    { label: 'Tightrope Confidence Walk', tab: 'risk', scrollTo: 'tightropeBufferOut' },
     { label: 'Operating Framework', tab: 'framework' },
     { label: 'Methodology & Sourcing', tab: 'methodology' }
   ];
@@ -2119,6 +2212,70 @@
     document.getElementById(id).addEventListener('input', calcMonteCarlo);
   });
 
+  // ---------- Site Accuracy Explorer (Executive tab): CMAR per site, live-editable versions of the
+  // same 3 sites shown as static rows in the multi-site rollup table above. Pure state computation
+  // (no DOM reads beyond the 6 inputs) separated from renderArchery(), same pattern established by
+  // qsComputeState()/calcTugOfWar()/calcPendulum(). ----------
+  function calcCmar(standard, actual){ return actual !== 0 ? (1 - Math.abs(actual - standard) / actual) * 100 : 0; }
+  function calcArchery(){
+    var sites = [
+      { label: 'A', std: parseFloat(document.getElementById('arSiteAStd').value) || 0, act: parseFloat(document.getElementById('arSiteAAct').value) || 0 },
+      { label: 'B', std: parseFloat(document.getElementById('arSiteBStd').value) || 0, act: parseFloat(document.getElementById('arSiteBAct').value) || 0 },
+      { label: 'C', std: parseFloat(document.getElementById('arSiteCStd').value) || 0, act: parseFloat(document.getElementById('arSiteCAct').value) || 0 },
+    ];
+    sites.forEach(function(s){ s.cmar = calcCmar(s.std, s.act); });
+    var avg = sites.reduce(function(sum, s){ return sum + s.cmar; }, 0) / sites.length;
+    var spread = Math.max.apply(null, sites.map(function(s){ return s.cmar; })) - Math.min.apply(null, sites.map(function(s){ return s.cmar; }));
+    return { sites: sites, avg: avg, spread: spread };
+  }
+  window.calcArchery = calcArchery;
+  window.calcCmar = calcCmar;
+
+  function renderArchery(state){
+    var W = 260, H = 260, cx = W / 2, cy = H / 2, maxRadius = 105;
+    // Distance from bullseye = (100 - CMAR), i.e. how far off from perfectly accurate -- capped so a
+    // very low CMAR doesn't place an arrow off-canvas.
+    var scale = 3.2; // px per accuracy-point of miss, chosen so the real 90/95% CMAR bands land on
+                      // clearly distinct, labeled rings rather than bunching near the center
+    var rings = [
+      { radius: (100 - 100) * scale, label: '' },
+      { radius: (100 - 95) * scale, label: '95%' },
+      { radius: (100 - 90) * scale, label: '90%' },
+    ];
+    // Sites are placed at fixed, evenly-spaced angles purely to keep 3 arrows visually separated --
+    // angle carries no data meaning here, only radius (accuracy) does; stated explicitly in the
+    // aria-label so the spatial layout is never mistaken for an encoded dimension.
+    var angles = [-90, 30, 150]; // degrees, 120° apart
+    var ringSvg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + maxRadius + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (100 - 90) * scale + '" fill="rgb(var(--c-danger)/.08)" stroke="rgb(var(--c-danger)/.4)" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (100 - 95) * scale + '" fill="rgb(var(--c-warning)/.10)" stroke="rgb(var(--c-warning)/.5)" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="rgb(var(--c-success))"/>';
+    rings.filter(function(r){ return r.label; }).forEach(function(r){
+      ringSvg += '<text x="' + cx + '" y="' + (cy - r.radius - 4).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + r.label + ' CMAR</text>';
+    });
+    var arrowsSvg = '';
+    state.sites.forEach(function(s, i){
+      var missDistance = Math.min(maxRadius, Math.max(0, 100 - s.cmar) * scale);
+      var rad = angles[i] * Math.PI / 180;
+      var x = cx + missDistance * Math.cos(rad);
+      var y = cy + missDistance * Math.sin(rad);
+      arrowsSvg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="1.5"/>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y.toFixed(1) - 10) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + s.label + '</text>';
+    });
+    var ariaLabel = 'Site accuracy target. ' + state.sites.map(function(s){ return 'Site ' + s.label + ': ' + s.cmar.toFixed(1) + '% CMAR'; }).join(', ') +
+      '. Average ' + state.avg.toFixed(1) + '%, spread ' + state.spread.toFixed(1) + ' points across sites. Arrow angle is only for visual separation; distance from center is the real accuracy signal.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:260px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      ringSvg + arrowsSvg +
+      '</svg>';
+    document.getElementById('archeryWrap').innerHTML = svg;
+    document.getElementById('archeryAvgOut').textContent = state.avg.toFixed(1) + '%';
+    document.getElementById('archerySpreadOut').textContent = state.spread.toFixed(1) + ' pts';
+  }
+  window.renderArchery = renderArchery;
+  ['arSiteAStd', 'arSiteAAct', 'arSiteBStd', 'arSiteBAct', 'arSiteCStd', 'arSiteCAct'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(){ renderArchery(calcArchery()); });
+  });
+
   // ---------- Tab 2: Should-Cost calculator ----------
   function calcShouldCost(){
     var proc = document.getElementById('scProcess').value;
@@ -2149,9 +2306,62 @@
     document.getElementById('scOutLabor').textContent = '$' + laborCost.toFixed(2);
     document.getElementById('scOutOh').textContent = '$' + overheadCost.toFixed(2);
     document.getElementById('scOutTotal').textContent = '$' + totalCost.toFixed(2);
+    renderNestingDoll(calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost));
     return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };
   }
   window.calcShouldCost = calcShouldCost;
+
+  // ---------- Nesting Doll Cost Peel: the same 4 should-cost components above, re-framed as nested
+  // "dolls" ordered by size -- each doll's value is the cumulative REMAINDER after peeling off every
+  // larger component, so peeling one layer reveals exactly the sum of what's left, down to the
+  // single smallest component at the core. Pure state computation, same pattern as calcTugOfWar(). ----------
+  function calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost){
+    var components = [
+      { label: 'Material', value: matCost },
+      { label: 'Machine', value: machineCost },
+      { label: 'Labor', value: laborCost },
+      { label: 'Overhead', value: overheadCost },
+    ].sort(function(a, b){ return b.value - a.value; });
+    var remaining = totalCost;
+    var dolls = [{ label: 'Total', value: remaining, peeledLabel: null }];
+    components.forEach(function(c, i){
+      if (i < components.length - 1){
+        remaining -= c.value;
+        dolls.push({ value: remaining, peeledLabel: c.label, peeledValue: c.value });
+      }
+    });
+    return { components: components, dolls: dolls, totalCost: totalCost };
+  }
+  window.calcNestingDoll = calcNestingDoll;
+
+  function renderNestingDoll(state){
+    var W = 400, H = 260, cx = W / 2, cy = H / 2 + 10;
+    var maxRadius = 110;
+    var scale = state.totalCost > 0 ? maxRadius / state.totalCost : 0;
+    var colors = ['rgb(var(--c-accent)/.30)', 'rgb(var(--c-success)/.30)', 'rgb(var(--c-warning)/.30)', 'rgb(var(--c-danger)/.30)'];
+    var strokes = ['rgb(var(--c-accent))', 'rgb(var(--c-success))', 'rgb(var(--c-warning))', 'rgb(var(--c-danger))'];
+    var dollsSvg = '';
+    var labelsSvg = '';
+    state.dolls.forEach(function(d, i){
+      var r = Math.max(6, d.value * scale);
+      dollsSvg += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r.toFixed(1) + '" ry="' + (r * 1.15).toFixed(1) + '" fill="' + colors[i] + '" stroke="' + strokes[i] + '" stroke-width="2"/>';
+      if (i === 0){
+        labelsSvg += '<text x="' + cx + '" y="' + (cy - r * 1.15 - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Total $' + d.value.toFixed(2) + '</text>';
+      } else {
+        var prevR = Math.max(6, state.dolls[i - 1].value * scale);
+        var labelY = cy - (prevR + r) / 2 * 1.15;
+        labelsSvg += '<text x="' + cx + '" y="' + labelY.toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">peeled: ' + d.peeledLabel + ' $' + d.peeledValue.toFixed(2) + '</text>';
+      }
+    });
+    var innermost = state.dolls[state.dolls.length - 1];
+    labelsSvg += '<text x="' + cx + '" y="' + (cy + 4) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">core: $' + innermost.value.toFixed(2) + '</text>';
+    var ariaLabel = 'Nesting doll cost peel, largest to smallest: ' + state.components.map(function(c){ return c.label + ' $' + c.value.toFixed(2); }).join(', ') + '. Total $' + state.totalCost.toFixed(2) + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      dollsSvg + labelsSvg +
+      '</svg>';
+    document.getElementById('nestingDollWrap').innerHTML = svg;
+  }
+  window.renderNestingDoll = renderNestingDoll;
   ['scProcess','scBatch','scMass','scMatRate','scBtf','scReclaim','scRuntime','scSetup','scLabor','scOh'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcShouldCost);
     document.getElementById(id).addEventListener('change', calcShouldCost);
@@ -2406,7 +2616,99 @@
   window.calcOuForward = calcOuForward;
   ['cpSpot', 'ouEquilibrium', 'ouTheta', 'ouSigma', 'ouHorizon'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcOuForward);
+    document.getElementById(id).addEventListener('input', function(){ renderPendulum(calcPendulum()); });
   });
+
+  // ---------- Equilibrium Pendulum: same OU process above, rendered as a full decay path instead of
+  // a single-horizon point estimate. Pure state computation (no DOM reads beyond the 5 shared OU
+  // inputs), same separation-of-concerns pattern as qsComputeState()/calcTugOfWar(). ----------
+  function calcPendulum(){
+    var Pt = parseFloat(document.getElementById('cpSpot').value) || 0;
+    var Pbar = parseFloat(document.getElementById('ouEquilibrium').value) || 0;
+    var theta = parseFloat(document.getElementById('ouTheta').value) || 0;
+    var sigma = parseFloat(document.getElementById('ouSigma').value) || 0;
+    var horizon = parseFloat(document.getElementById('ouHorizon').value) || 1;
+    var displacement = Pt - Pbar;
+    // ln(20) solves (Pt-Pbar)*e^(-theta*s) = 0.05*(Pt-Pbar) for s -- the real, derivable time at
+    // which the process has decayed to within 5% of its starting displacement from equilibrium.
+    var settleTime = theta > 0 ? Math.log(20) / theta : Infinity;
+    function expectedAt(s){ return Pbar + displacement * Math.exp(-theta * s); }
+    function stdDevAt(s){
+      var v = theta > 0 ? (Math.pow(sigma, 2) / (2 * theta)) * (1 - Math.exp(-2 * theta * s)) : 0;
+      return Math.sqrt(v);
+    }
+    return { Pt: Pt, Pbar: Pbar, theta: theta, sigma: sigma, horizon: horizon, displacement: displacement, settleTime: settleTime, expectedAt: expectedAt, stdDevAt: stdDevAt };
+  }
+  window.calcPendulum = calcPendulum;
+
+  function renderPendulum(state){
+    var W = 640, H = 220, marginLeft = 55, marginRight = 20, marginTop = 20, marginBottom = 30;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    // Chart horizon: enough to show real settling when theta is large enough to settle soon, capped
+    // so a very small (near-zero) theta doesn't stretch the x-axis to an unreadable extreme.
+    var horizonMax = isFinite(state.settleTime) ? Math.min(Math.max(state.settleTime * 1.2, 3), 60) : 12;
+    var N = 48;
+    var samples = [];
+    for (var i = 0; i <= N; i++){
+      var s = (i / N) * horizonMax;
+      var e = state.expectedAt(s);
+      var sd = state.stdDevAt(s);
+      samples.push({ s: s, expected: e, lower: e - 1.96 * sd, upper: e + 1.96 * sd });
+    }
+    var allYs = [state.Pbar, state.Pt];
+    samples.forEach(function(pt){ allYs.push(pt.lower, pt.upper); });
+    var yMin = Math.min.apply(null, allYs), yMax = Math.max.apply(null, allYs);
+    if (yMin === yMax){ yMin -= 1; yMax += 1; }
+    var pad = (yMax - yMin) * 0.12;
+    yMin -= pad; yMax += pad;
+    function xAt(s){ return marginLeft + (s / horizonMax) * plotW; }
+    function yAt(v){ return marginTop + (1 - (v - yMin) / (yMax - yMin)) * plotH; }
+
+    var bandPoints = samples.map(function(pt){ return xAt(pt.s).toFixed(1) + ',' + yAt(pt.upper).toFixed(1); })
+      .concat(samples.slice().reverse().map(function(pt){ return xAt(pt.s).toFixed(1) + ',' + yAt(pt.lower).toFixed(1); }));
+    var expectedPoints = samples.map(function(pt){ return xAt(pt.s).toFixed(1) + ',' + yAt(pt.expected).toFixed(1); }).join(' ');
+    var restY = yAt(state.Pbar);
+    var bobX = xAt(0), bobY = yAt(state.Pt);
+
+    var horizonMarker = '';
+    if (state.horizon <= horizonMax){
+      var hx = xAt(state.horizon), hy = yAt(state.expectedAt(state.horizon));
+      horizonMarker = '<circle cx="' + hx.toFixed(1) + '" cy="' + hy.toFixed(1) + '" r="4" fill="rgb(var(--c-accent))"/>' +
+        '<text x="' + hx.toFixed(1) + '" y="' + (hy - 9).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">your horizon</text>';
+    }
+    var settleMarker = '';
+    if (isFinite(state.settleTime) && state.settleTime <= horizonMax){
+      var sx = xAt(state.settleTime);
+      settleMarker = '<line x1="' + sx.toFixed(1) + '" y1="' + marginTop + '" x2="' + sx.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="2,3"/>' +
+        '<text x="' + sx.toFixed(1) + '" y="' + (H - marginBottom + 14) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">~95% settled</text>';
+    }
+
+    // Sway is a purely decorative cue -- amplitude driven by the real displacement-to-volatility
+    // ratio (large, real, dimensionless number), never the only signal (the exact displacement and
+    // settle-time are always shown as text below regardless of animation state).
+    var displacementRatio = state.sigma > 0 ? Math.min(3, Math.abs(state.displacement) / state.sigma) : 0;
+    var swayDuration = (2.4 - Math.min(displacementRatio, 1) * 1.2).toFixed(2);
+
+    var ariaLabel = 'Equilibrium pendulum. Current price ' + fmtMoney(state.displacement) + ' relative to the ' + state.Pbar.toFixed(2) + ' equilibrium. ' +
+      (isFinite(state.settleTime) ? 'Settles to within 5% of that gap in about ' + state.settleTime.toFixed(1) + ' months.' : 'Reversion rate is zero, so it never settles.');
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:640px" role="img" aria-label="' + ariaLabel + '">' +
+      '<polygon points="' + bandPoints.join(' ') + '" fill="rgb(var(--c-accent)/.12)"/>' +
+      '<line x1="' + marginLeft + '" y1="' + restY.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + restY.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1" stroke-dasharray="4,3"/>' +
+      '<text x="' + (W - marginRight) + '" y="' + (restY - 6).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">equilibrium $' + state.Pbar.toFixed(2) + '</text>' +
+      settleMarker +
+      '<polyline points="' + expectedPoints + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
+      horizonMarker +
+      '<line x1="' + bobX.toFixed(1) + '" y1="' + bobY.toFixed(1) + '" x2="' + bobX.toFixed(1) + '" y2="' + restY.toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1"/>' +
+      '<g class="pendulum-bob" style="animation-duration:' + swayDuration + 's" aria-hidden="true">' +
+      '<circle cx="' + bobX.toFixed(1) + '" cy="' + bobY.toFixed(1) + '" r="7" fill="rgb(var(--c-accent))"/>' +
+      '</g>' +
+      '</svg>';
+    document.getElementById('pendulumWrap').innerHTML = svg;
+    document.getElementById('pendDisplacementOut').textContent = fmtMoney(state.displacement);
+    document.getElementById('pendSettleOut').textContent = isFinite(state.settleTime) ? state.settleTime.toFixed(1) + ' months' : 'never (θ=0)';
+  }
+  window.renderPendulum = renderPendulum;
 
   // ---------- Tab 4: Build-vs-Buy / NPV ----------
   function calcBuildBuy(){
@@ -2717,10 +3019,72 @@
       '<td class="mono">' + totalUnabHrs.toFixed(1) + '</td><td class="mono">$' + Math.round(totalUnabDollars).toLocaleString() + '</td>' +
       '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
     renderCapacitySPC();
+    renderHoneycomb(calcHoneycomb());
     return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
   }
   window.calcCapacity = calcCapacity;
   document.getElementById('capOhRate').addEventListener('input', calcCapacity);
+
+  // ---------- Honeycomb Capacity Lattice: same 6-week CAP_WEEKS data as the table/SPC chart above,
+  // re-read live from the same editable inputs -- no new fields, no new fabricated time series. Pure
+  // state computation separated from the render, same pattern as calcTugOfWar()/calcPendulum(). ----------
+  function calcHoneycomb(){
+    var weeks = CAP_WEEKS.map(function(w, i){
+      var avail = parseFloat(document.getElementById('capAvail' + i).value) || 0;
+      var booked = parseFloat(document.getElementById('capBooked' + i).value) || 0;
+      var util = avail > 0 ? (booked / avail) * 100 : 0;
+      return { week: i + 1, avail: avail, booked: booked, util: util, status: utilStatus(util) };
+    });
+    var deltas = [];
+    for (var i = 1; i < weeks.length; i++){ deltas.push(weeks[i].util - weeks[i - 1].util); }
+    return { weeks: weeks, deltas: deltas };
+  }
+  window.calcHoneycomb = calcHoneycomb;
+
+  function renderHoneycomb(state){
+    var r = 34; // hex "radius" (center to vertex)
+    var hexW = r * 2, hexH = Math.sqrt(3) * r;
+    var colSpacing = hexW * 0.75;
+    var n = state.weeks.length;
+    var W = colSpacing * (n - 1) + hexW + 20, H = hexH * 1.7 + 20;
+    var marginLeft = hexW / 2 + 10, topY = H / 2;
+    function hexPoints(cx, cy){
+      var pts = [];
+      for (var i = 0; i < 6; i++){
+        var ang = (60 * i) * Math.PI / 180;
+        pts.push((cx + r * Math.cos(ang)).toFixed(1) + ',' + (cy + r * Math.sin(ang)).toFixed(1));
+      }
+      return pts.join(' ');
+    }
+    var statusFill = { green: 'rgb(var(--c-success)/.35)', amber: 'rgb(var(--c-warning)/.35)', red: 'rgb(var(--c-danger)/.35)' };
+    var statusStroke = { green: 'rgb(var(--c-success))', amber: 'rgb(var(--c-warning))', red: 'rgb(var(--c-danger))' };
+    var centers = state.weeks.map(function(w, i){
+      var cx = marginLeft + i * colSpacing;
+      var cy = topY + (i % 2 === 1 ? hexH / 2 : 0); // alternate columns offset -- the real
+                                                     // flat-top-hex tessellation pattern
+      return { cx: cx, cy: cy };
+    });
+    var edgesSvg = '';
+    state.deltas.forEach(function(d, i){
+      var a = centers[i], b = centers[i + 1];
+      var strokeW = Math.min(5, 1 + Math.abs(d) / 10); // thickness scales with the real |delta|
+      var edgeColor = d > 5 ? 'rgb(var(--c-success))' : (d < -5 ? 'rgb(var(--c-danger))' : 'rgb(var(--c-line))');
+      edgesSvg += '<line x1="' + a.cx.toFixed(1) + '" y1="' + a.cy.toFixed(1) + '" x2="' + b.cx.toFixed(1) + '" y2="' + b.cy.toFixed(1) + '" stroke="' + edgeColor + '" stroke-width="' + strokeW.toFixed(1) + '"/>';
+    });
+    var hexSvg = '';
+    state.weeks.forEach(function(w, i){
+      var c = centers[i];
+      hexSvg += '<polygon points="' + hexPoints(c.cx, c.cy) + '" fill="' + statusFill[w.status] + '" stroke="' + statusStroke[w.status] + '" stroke-width="2"/>' +
+        '<text x="' + c.cx.toFixed(1) + '" y="' + (c.cy - 4).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">W' + w.week + '</text>' +
+        '<text x="' + c.cx.toFixed(1) + '" y="' + (c.cy + 10).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + w.util.toFixed(1) + '%</text>';
+    });
+    var ariaLabel = 'Honeycomb capacity lattice. ' + state.weeks.map(function(w){ return 'Week ' + w.week + ': ' + w.util.toFixed(1) + '% utilization, ' + w.status; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1) + '" style="width:100%;height:auto;max-width:520px" role="img" aria-label="' + ariaLabel + '">' +
+      edgesSvg + hexSvg +
+      '</svg>';
+    document.getElementById('honeycombWrap').innerHTML = svg;
+  }
+  window.renderHoneycomb = renderHoneycomb;
 
   // ---------- SPC control chart for weekly utilization (Pathway B "operational cadence" tier,
   // 2026-09-05 KPI research pass) ----------
@@ -3457,12 +3821,68 @@
   ['mvarMu', 'mvarSigma', 'mvarConfidence'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcMVaR);
     document.getElementById(id).addEventListener('change', calcMVaR);
+    document.getElementById(id).addEventListener('input', function(){ renderTightrope(calcTightrope()); });
+    document.getElementById(id).addEventListener('change', function(){ renderTightrope(calcTightrope()); });
   });
+
+  // ---------- Tightrope Confidence Walk: same M-VaR inputs above, re-framed around RELATIVE
+  // uncertainty (coefficient of variation) rather than the absolute dollar buffer alone. Pure state
+  // computation, same pattern as calcPendulum()/calcTugOfWar(). ----------
+  function calcTightrope(){
+    var mu = parseFloat(document.getElementById('mvarMu').value) || 0;
+    var sigma = parseFloat(document.getElementById('mvarSigma').value) || 0;
+    var confidence = document.getElementById('mvarConfidence').value;
+    var z = MVAR_Z[confidence] || 0;
+    var buffer = z * sigma;
+    var mvar = mu + buffer;
+    var cov = mu > 0 ? (sigma / mu) : (sigma > 0 ? Infinity : 0);
+    return { mu: mu, sigma: sigma, z: z, buffer: buffer, mvar: mvar, cov: cov };
+  }
+  window.calcTightrope = calcTightrope;
+
+  function renderTightrope(state){
+    var W = 640, H = 170, marginLeft = 60, marginRight = 60, marginTop = 30, marginBottom = 40;
+    var plotW = W - marginLeft - marginRight;
+    var startX = marginLeft, endX = W - marginRight;
+    var ropeY = marginTop + 25;
+    // Rope "thickness" (visual stability) is inversely related to CoV -- capped so an extreme CoV
+    // doesn't collapse the rope to nothing or blow it up past a sane maximum.
+    var covForWidth = isFinite(state.cov) ? state.cov : 3;
+    var ropeThickness = Math.max(1.5, 10 - covForWidth * 8);
+    var walkerX = startX; // the walker stands at the expected value (mu) -- the buffer extends AHEAD
+                          // of it toward the one-sided worst-case bound, not a position it has reached
+    var swayAmplitude = Math.min(6, covForWidth * 5); // degrees, capped
+    var swayDuration = Math.max(0.9, 2.6 - covForWidth * 1.2).toFixed(2);
+
+    var ariaLabel = 'Tightrope confidence walk. Mean ' + fmtMoney(state.mu) + ', one-sided bound ' + fmtMoney(state.mvar) +
+      ', a buffer of ' + fmtMoney(state.buffer) + '. Coefficient of variation ' + (isFinite(state.cov) ? (state.cov * 100).toFixed(1) + '%' : 'undefined (zero mean)') + ' -- ' +
+      (covForWidth > 0.6 ? 'a narrow, precarious rope' : 'a wide, stable plank') + '.';
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:640px" role="img" aria-label="' + ariaLabel + '">' +
+      // two parallel lines represent rope width -- an explicit visual encoding of thickness, not a
+      // single stroke-width line (which some renderers/zoom levels can make hard to compare precisely)
+      '<line x1="' + startX + '" y1="' + (ropeY - ropeThickness / 2).toFixed(1) + '" x2="' + endX + '" y2="' + (ropeY - ropeThickness / 2).toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1.5"/>' +
+      '<line x1="' + startX + '" y1="' + (ropeY + ropeThickness / 2).toFixed(1) + '" x2="' + endX + '" y2="' + (ropeY + ropeThickness / 2).toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1.5"/>' +
+      '<circle cx="' + startX + '" cy="' + ropeY + '" r="4" fill="rgb(var(--c-accent))"/>' +
+      '<text x="' + startX + '" y="' + (ropeY + 20) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">μ ' + fmtMoney(state.mu) + '</text>' +
+      '<circle cx="' + endX + '" cy="' + ropeY + '" r="4" fill="rgb(var(--c-danger))"/>' +
+      '<text x="' + endX + '" y="' + (ropeY + 20) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">bound ' + fmtMoney(state.mvar) + '</text>' +
+      '<g class="tightrope-walker" style="animation-duration:' + swayDuration + 's;--sway-deg:' + swayAmplitude.toFixed(1) + 'deg" aria-hidden="true">' +
+      '<line x1="' + walkerX + '" y1="' + (ropeY - ropeThickness / 2) + '" x2="' + walkerX + '" y2="' + (ropeY - 22) + '" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
+      '<circle cx="' + walkerX + '" cy="' + (ropeY - 26) + '" r="5" fill="rgb(var(--c-accent))"/>' +
+      '</g>' +
+      '</svg>';
+    document.getElementById('tightropeWrap').innerHTML = svg;
+    document.getElementById('tightropeBufferOut').textContent = fmtMoney(state.buffer);
+    document.getElementById('tightropeCovOut').textContent = isFinite(state.cov) ? (state.cov * 100).toFixed(1) + '%' : '— (μ=0)';
+  }
+  window.renderTightrope = renderTightrope;
 
   // ---------- Initial render ----------
   calcMhrBuildup();
   calcMonteCarlo();
   calcShouldCost();
+  renderArchery(calcArchery());
   calcVariance();
   calcBuildBuy();
   calcQStar();
@@ -3475,6 +3895,7 @@
   calcGates();
   calcCommodityExposure();
   calcOuForward();
+  renderPendulum(calcPendulum());
   renderPlaybook();
   renderQualityParetoChart();
   renderKpiInteractionMap();
@@ -3482,6 +3903,7 @@
   renderRiskRegister();
   calcRiskScorer();
   calcMVaR();
+  renderTightrope(calcTightrope());
 })();
 </script>
 </body>

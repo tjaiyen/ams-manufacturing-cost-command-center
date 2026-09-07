@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (18 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 22 indexed modules, and a **collapsible vertical side navigation** (real
+modals (23 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 27 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 22 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 27 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 640 checks, all passing as of this writing.
+Run: `node stress.cjs` — 691 checks, all passing as of this writing.
 
 ## Status
 
@@ -823,3 +823,37 @@ audit) were falsification-tested: temporarily reverted, confirmed each new check
 exact predicted broken values, restored, reconfirmed green. Checks: 601 → 640 (39 new: one golden-
 value block per finding + the proactive badge self-check). Committed locally — pending push with
 explicit confirmation, same discipline as every prior round.
+
+**2026-09-06, twenty-first round (viz-innovation batch 1 of 4 — 5 new visualizations, all reusing
+already-computed data, zero new fabrication):** picked from a 30-concept `/viz-innovation` catalog,
+curated down to the 5 with the cleanest 1:1 mappings to data this dashboard already computes:
+
+1. **Equilibrium Pendulum** (Variance tab) — the same Ornstein-Uhlenbeck mean-reversion model as the
+   Forward Band above, plotted as a full decay curve instead of a single-horizon point estimate.
+   "Time to 95% settled" is a real, exactly-derivable number (`ln(20)/θ`), not an animation cue.
+2. **Tightrope Confidence Walk** (Predictive & Risk tab) — the same M-VaR inputs, re-framed around
+   coefficient of variation (σ/μ) rather than the absolute dollar buffer, answering how PRECARIOUS
+   the buffer is relative to the mean it's protecting.
+3. **Site Accuracy Explorer** (Executive tab) — the same 3-site Standard/Actual COGS shown as a
+   static table row above, made live-editable and plotted as CMAR distance from a bullseye —
+   surfaces accuracy-vs-precision (are sites consistently close, or does a good average hide one
+   outlier?) in a way the table's row-by-row layout doesn't.
+4. **Honeycomb Capacity Lattice** (Capacity tab) — the same 6-week utilization table/SPC data,
+   laid out as a density grid with edges between adjacent weeks colored/thickened by the real
+   week-over-week delta.
+5. **Nesting Doll Cost Peel** (Should-Cost tab) — the same 4 should-cost components, ordered by size
+   and nested so peeling the largest off reveals a doll worth exactly the cumulative remainder —
+   down to the single smallest component at the core.
+
+All 5 pure state-computation functions (`calcPendulum`/`calcTightrope`/`calcArchery`/
+`calcHoneycomb`/`calcNestingDoll`) are separated from their render functions, matching the
+`qsComputeState()`/`calcTugOfWar()` pattern already established on this page. Every decorative
+animation (pendulum sway, tightrope wobble) is capped, driven by a real computed ratio (never
+arbitrary), and disabled under `prefers-reduced-motion`. Golden values pre-registered by hand via
+`node -e` before every check — caught and fixed two of my own draft mistakes this round: a wrong
+Learning-Curve-style placeholder value written before actually computing it, and a genuinely new
+`DEFAULTS` stub-registration gap (the archery target's 6 new inputs read as $0 until registered,
+producing real "0.0%" failures that traced directly back to the missing entries, not a page bug).
+Live-verified in a real browser: all 5 features' rendered output matched golden values exactly, a
+live input edit and restore worked correctly, 0 console errors. Checks: 640 → 691 (+51). Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.
