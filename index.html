@@ -297,6 +297,12 @@
   @keyframes kaleidophoneResonate{0%,100%{transform:rotate(calc(-1 * var(--rod-sway, 2deg)))}50%{transform:rotate(var(--rod-sway, 2deg))}}
   .kaleidophone-rod{animation-name:kaleidophoneResonate;animation-timing-function:ease-in-out;animation-duration:0.6s;animation-iteration-count:infinite}
 
+  /* Metronome Cadence Drift Tracker: swing PERIOD (not amplitude) is the real signal here, set inline
+     per-render from each cadence's real interval length -- switched off below under reduced-motion
+     (the "N× so far" tick-count label is always shown as exact text regardless of animation state). */
+  @keyframes metronomeSwing{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
+  .metronome-arm{animation-name:metronomeSwing;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+
   @media (prefers-reduced-motion:reduce){
     .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
     .skip-links,.sidenav-item,.sidenav-icon{transition:none}
@@ -305,6 +311,7 @@
     .tightrope-walker{animation:none}
     .circulatory-vessel{animation:none}
     .kaleidophone-rod{animation:none}
+    .metronome-arm{animation:none}
     html{scroll-behavior:auto}
   }
 </style>
@@ -367,7 +374,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 737/737 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 788/788 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -902,11 +909,28 @@
     </div>
 
     <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Sonar Ping Anomaly Sweep <button class="explain-btn" data-explain="sonar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME SPC CHART ABOVE — DISTANCE FROM THE MEAN</span></div>
+      <p class="lede" style="margin-bottom:12px">The control chart above plots utilization over time;
+        this plots the same 6 weeks by how far each sits from the mean, relative to the real control
+        limit — a ping past the outer ring would mean a genuine out-of-control signal, not just a
+        "red" policy-band reading.</p>
+      <div id="sonarWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Honeycomb Capacity Lattice <button class="explain-btn" data-explain="honeycomb" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6-WEEK DATA ABOVE — DENSITY VIEW, NOT A TREND LINE</span></div>
       <p class="lede" style="margin-bottom:12px">The same 6 weeks above, laid out as cells instead of a
         line, so utilization reads as density at a glance — and the connecting edges make each week's
         change from the last immediately visible, not just implied by two adjacent table rows.</p>
       <div id="honeycombWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Comet Tail Velocity Tracker <button class="explain-btn" data-explain="comettail" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6-WEEK DATA ABOVE — VELOCITY + ACCELERATION</span></div>
+      <p class="lede" style="margin-bottom:12px">Not level, and not just week-over-week delta (already
+        shown on the honeycomb) — this highlights WHICH single transition saw the sharpest change in
+        rate of change (acceleration), the flared segment in the tail below.</p>
+      <div id="cometTailWrap"></div>
     </div>
   </section>
 
@@ -1087,6 +1111,19 @@
         honestly have.</p>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><h2>Domino Effect Probability Cascade <button class="explain-btn" data-explain="domino" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ILLUSTRATIVE EXAMPLE PROBABILITIES — NOT AMS DATA</span></div>
+      <p class="lede" style="margin-bottom:10px">The map above confirms these two tradeoffs are real;
+        it doesn't say how OFTEN either one actually manifests. Set illustrative example
+        probabilities below to see how independent, real tradeoffs compound — the exact
+        binomial-style math, not a fabricated claim about how often these fire at AMS.</p>
+      <div class="field-row">
+        <div class="field"><label for="dominoP1">P(Recoater→Labor tradeoff fires) %</label><input type="number" id="dominoP1" value="35" min="0" max="100" step="5"></div>
+        <div class="field"><label for="dominoP2">P(Powder→Build-Failure tradeoff fires) %</label><input type="number" id="dominoP2" value="25" min="0" max="100" step="5"></div>
+      </div>
+      <div id="dominoWrap"></div>
+    </div>
+
     <div class="pb-controls">
       <select id="pbDomain" aria-label="Filter by domain">
         <option value="all">All domains (30)</option>
@@ -1188,6 +1225,19 @@
     </div>
 
     <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Aurora Layer Correlation Map <button class="explain-btn" data-explain="aurora" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 10 RISKS ABOVE — 3 INDEPENDENTLY-SCORED DIMENSIONS</span></div>
+      <p class="lede" style="margin-bottom:12px">Probability, Severity, and Detection are scored
+        independently for each of the 10 risks above — this asks whether they move together or
+        apart across the register, with the real Pearson correlation between each pair.</p>
+      <div id="auroraWrap"></div>
+      <div class="outline" style="margin-top:10px">
+        <div class="line"><span>corr(Probability, Severity)</span><span class="mono" id="auroraCorrPS">0.000</span></div>
+        <div class="line"><span>corr(Probability, Detection)</span><span class="mono" id="auroraCorrPD">0.000</span></div>
+        <div class="line total"><span>corr(Severity, Detection)</span><span class="mono" id="auroraCorrSD">0.000</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Manufacturing Value at Risk (M-VaR) <button class="explain-btn" data-explain="mvar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ONE-SIDED CONFIDENCE BOUND</span></div>
       <p class="lede" style="margin-bottom:12px">The upper bound total unfavorable cost variance is
         not expected to exceed at a given confidence level — a one-sided statistical bound on an
@@ -1253,6 +1303,16 @@
       <div class="cadence-row"><div><b>Weekly Business Review</b>Site leadership + cost engineering</div><div>Routing/labor-efficiency variances and capacity utilization while still fixable.</div></div>
       <div class="cadence-row"><div><b>Monthly Business Review</b>Finance + plant leadership</div><div>The variance walk and absorption reconciliation against the general ledger.</div></div>
       <div class="cadence-row"><div><b>OP1 / OP2 planning cycles</b>Leadership + cross-functional partners</div><div>Bottoms-up cost projections and CapEx justification, in Amazon's 6-page narrative format.</div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Metronome Cadence Drift Tracker <button class="explain-btn" data-explain="metronome" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 CADENCES ABOVE, AS NESTED RHYTHM</span></div>
+      <p class="lede" style="margin-bottom:12px">The rows above list 4 cadences; this shows them as
+        nested rhythms using each cadence NAME's own standard real-world interval (daily=1 day,
+        weekly=7, monthly=30, OP1/OP2≈182 as a semi-annual split) — a generic definition, not a claim
+        about AMS's actual calendar.</p>
+      <div class="field" style="max-width:260px"><label for="metroDays">Illustrative days elapsed</label><input type="number" id="metroDays" value="45" min="0" max="365" step="1"></div>
+      <div id="metronomeWrap"></div>
     </div>
   </section>
 
@@ -1888,7 +1948,12 @@
     glacial: { title: 'Glacial Calving Event Tracker', formula: 'naive chunk = (cost/batch)×batch = cost;  correct chunk = (cost/run)×batch', body: 'The same "First-batch unit cost overstated by N×" line above, decomposed into what each treatment actually attributes to that one first batch: the naive treatment dumps the ENTIRE tooling investment there (a one-time "calved iceberg"), while the correct treatment attributes only that batch\'s true share of the cost spread evenly across the whole run (a small, steady "ice cube"). Chunk area (not radius) is proportional to dollar value, so the visual size ratio is honest even at a 100:1 real-world scale difference.' },
     pressurevessel: { title: 'Pressure-Vessel Cost Containment', formula: 'pressure ratio = deduction / (100 − 93)  — 1.0 = exactly at the red threshold', body: 'The same MDQS deduction the score above computes, re-expressed as a fraction of the real 7-point gap between a perfect score and the red band (93%) this document defines. The "valve" is a static state indicator (open = currently in breach, closed = within tolerance) — not a claim that AMS runs an automated corrective mechanism; no such system is asserted or implied to exist.' },
     kaleidophone: { title: 'Kaleidophone Resonance Chart', formula: 'sensitivity = |d(penalty)/d(param)| × slider step, evaluated at the CURRENT value (0 once a threshold is crossed)', body: 'The same 3 DFM penalty formulas above, differentiated with respect to each slider and evaluated at exactly where it sits right now — "if I nudge this one slider by one step from here, how much does the total move?" Wall-thickness and pocket-depth are threshold formulas (their real derivative is 0 once thickness ≥ 3.0mm or pocket ≤ 4:1), so a rod can go fully silent; build-height has no threshold and always contributes. Not a claim about which lever "matters most" in general — only which one has leverage from the CURRENT design point.' },
-    compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' }
+    compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' },
+    domino: { title: 'Domino Effect Probability Cascade', formula: 'P(neither)=(1−p1)(1−p2), P(exactly one)=p1(1−p2)+(1−p1)p2, P(both)=p1×p2', body: 'The 2 real, literature-confirmed cross-KPI tradeoffs from the map above have no attached likelihood in the source research — this applies illustrative EXAMPLE probabilities (adjustable) to the exact, standard compound-probability formula for 2 independent events, teaching how real tradeoffs compound even without a claimed real-world frequency for either one. The 3 outcome bars always sum to exactly 100%.' },
+    aurora: { title: 'Aurora Layer Correlation Map', formula: 'Pearson r between each pair of {Probability, Severity, Detection} across the 10 real risk-register entries', body: 'Probability, Severity, and Detection are assigned independently for each of the 10 risks above — nothing here derives one from another — so a real Pearson correlation between any pair is a genuine finding, not a trivial identity. As of this writing: P and S correlate at ≈−0.71 (higher-probability risks in this register tend to carry lower dollar severity, a real and intuitive pattern), while P-D and S-D show little linear relationship.' },
+    sonar: { title: 'Sonar Ping Anomaly Sweep', formula: 'distance ratio = (util − mean) / (UCL − mean)  — exactly 1.0 at the control limit, by I-MR construction', body: 'The same 6-week SPC control-chart data above (center line and control limits derived from this shop\'s own history), re-plotted as distance from the mean instead of a time-ordered trend line — a ping that reaches the outer ring is genuinely out of statistical control, not just a fixed-band "red" reading. Angle around the sonar screen is purely for visual separation between the 6 weeks and carries no data meaning; only radial distance does.' },
+    metronome: { title: 'Metronome Cadence Drift Tracker', formula: 'tick count = floor(illustrative days elapsed / cadence interval)', body: 'The same 4 named cadences from the Operating Cadence card above, using each cadence NAME\'s own standard real-world interval (daily=1 day, weekly=7, monthly=30, a semi-annual OP1/OP2 split≈182) — a generic definition of what those words mean, not a claim about AMS\'s actual calendar dates. Swing PERIOD (not amplitude) is the real signal: the daily arm visibly swings fastest, OP1/OP2 slowest, directly encoding how often each cadence actually fires.' },
+    comettail: { title: 'Comet Tail Velocity Tracker', formula: 'velocity[i] = util[i]−util[i−1];  acceleration[k] = velocity[k+1]−velocity[k]', body: 'The same 6-week utilization series as the table/SPC/Honeycomb views above, extended one derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH single transition saw the sharpest swing in rate of change, not just which week had the biggest raw delta. The flared tail segment is whichever one carries the largest |acceleration| this period.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1970,7 +2035,9 @@
     { label: 'Compass Rose Scenario Navigator', tab: 'buildbuy', scrollTo: 'compassRoseWrap' },
     { label: 'Volume Crossover Point (Q*)', tab: 'buildbuy', scrollTo: 'qsOut' },
     { label: 'Capacity & Absorption Forecast', tab: 'capacity' },
+    { label: 'Sonar Ping Anomaly Sweep', tab: 'capacity', scrollTo: 'sonarWrap' },
     { label: 'Honeycomb Capacity Lattice', tab: 'capacity', scrollTo: 'honeycombWrap' },
+    { label: 'Comet Tail Velocity Tracker', tab: 'capacity', scrollTo: 'cometTailWrap' },
     { label: 'Tooling Amortization Tracker', tab: 'tooling' },
     { label: 'Glacial Calving Event Tracker', tab: 'tooling', scrollTo: 'glacialWrap' },
     { label: 'Design-for-Cost Sensitivity', tab: 'dfm' },
@@ -1979,12 +2046,15 @@
     { label: 'Pressure-Vessel Cost Containment', tab: 'governance', scrollTo: 'pressureVesselWrap' },
     { label: 'Guardrail Gate Simulator', tab: 'governance', scrollTo: 'gateBomOut' },
     { label: 'Cost Diagnostic Playbook', tab: 'playbook' },
+    { label: 'Domino Effect Probability Cascade', tab: 'playbook', scrollTo: 'dominoWrap' },
     { label: 'Predictive & Risk Models', tab: 'risk' },
     { label: 'Learning Curve Forecaster', tab: 'risk', scrollTo: 'lcB' },
     { label: 'Cost Risk Register (CRPN)', tab: 'risk', scrollTo: 'riskRegisterBody' },
+    { label: 'Aurora Layer Correlation Map', tab: 'risk', scrollTo: 'auroraWrap' },
     { label: 'Manufacturing Value at Risk (M-VaR)', tab: 'risk', scrollTo: 'mvarOut' },
     { label: 'Tightrope Confidence Walk', tab: 'risk', scrollTo: 'tightropeBufferOut' },
     { label: 'Operating Framework', tab: 'framework' },
+    { label: 'Metronome Cadence Drift Tracker', tab: 'framework', scrollTo: 'metronomeWrap' },
     { label: 'Methodology & Sourcing', tab: 'methodology' }
   ];
   var paletteModal = document.getElementById('paletteModal');
@@ -3170,6 +3240,7 @@
       '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
     renderCapacitySPC();
     renderHoneycomb(calcHoneycomb());
+    renderCometTail(calcCometTail());
     return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
   }
   window.calcCapacity = calcCapacity;
@@ -3236,6 +3307,60 @@
   }
   window.renderHoneycomb = renderHoneycomb;
 
+  // ---------- Comet Tail Velocity Tracker: same 6-week CAP_WEEKS utilization as Honeycomb above, a
+  // second derivative (acceleration -- the change in the week-over-week delta itself) highlights
+  // WHICH transition saw the sharpest swing, not just the raw level or the delta alone. Pure state
+  // computation separated from render. ----------
+  function calcCometTail(){
+    var weeks = CAP_WEEKS.map(function(w, i){
+      var avail = parseFloat(document.getElementById('capAvail' + i).value) || 0;
+      var booked = parseFloat(document.getElementById('capBooked' + i).value) || 0;
+      return avail > 0 ? (booked / avail) * 100 : 0;
+    });
+    var velocities = [];
+    for (var i = 1; i < weeks.length; i++) velocities.push(weeks[i] - weeks[i - 1]);
+    var accelerations = [];
+    for (var i = 1; i < velocities.length; i++) accelerations.push(velocities[i] - velocities[i - 1]);
+    // Index into `accelerations`, mapped back to which two velocities (i.e. which 3 consecutive
+    // weeks) it spans -- accelerations[k] = velocities[k+1]-velocities[k], so the flared TAIL
+    // SEGMENT is the one ending at week (k+3) (0-indexed weeks array -> week number k+3+1... see the
+    // exact mapping verified in stress.cjs before this was written).
+    var maxAccIdx = 0;
+    accelerations.forEach(function(a, i){ if (Math.abs(a) > Math.abs(accelerations[maxAccIdx])) maxAccIdx = i; });
+    // accelerations[k] = velocities[k+1]-velocities[k], and velocities[i] IS segment i's own slope
+    // (segment i connects weeks[i] to weeks[i+1]) -- so the "newer" segment capturing accelerations[k]
+    // is segment (k+1), verified against the exact pre-registered golden index before this was tested.
+    var flareSegment = maxAccIdx + 1; // 0-based segment index, valid range 0..weeks.length-2
+    return { weeks: weeks, velocities: velocities, accelerations: accelerations, flareSegment: flareSegment };
+  }
+  window.calcCometTail = calcCometTail;
+
+  function renderCometTail(state){
+    var W = 400, H = 160, marginLeft = 30, marginRight = 30, marginTop = 20, marginBottom = 20;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var n = state.weeks.length;
+    var yMin = Math.min.apply(null, state.weeks) - 5, yMax = Math.max.apply(null, state.weeks) + 5;
+    function xAt(i){ return marginLeft + (i / (n - 1)) * plotW; }
+    function yAt(v){ return marginTop + (1 - (v - yMin) / (yMax - yMin)) * plotH; }
+    var segmentsSvg = '';
+    for (var i = 0; i < n - 1; i++){
+      var isFlare = i === state.flareSegment;
+      var opacity = 0.3 + (i / (n - 2)) * 0.7; // fades toward the tail (older weeks), brightest at the comet head
+      segmentsSvg += '<line x1="' + xAt(i).toFixed(1) + '" y1="' + yAt(state.weeks[i]).toFixed(1) + '" x2="' + xAt(i + 1).toFixed(1) + '" y2="' + yAt(state.weeks[i + 1]).toFixed(1) + '" stroke="' + (isFlare ? 'rgb(var(--c-danger))' : 'rgb(var(--c-accent))') + '" stroke-width="' + (isFlare ? 4 : 2) + '" opacity="' + opacity.toFixed(2) + '"/>';
+    }
+    var dotsSvg = state.weeks.map(function(v, i){
+      var isHead = i === n - 1;
+      return '<circle cx="' + xAt(i).toFixed(1) + '" cy="' + yAt(v).toFixed(1) + '" r="' + (isHead ? 7 : 3) + '" fill="' + (isHead ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-secondary))') + '"/>';
+    }).join('');
+    var flareLabel = '<text x="' + xAt(state.flareSegment + 0.5).toFixed(1) + '" y="' + (yAt((state.weeks[state.flareSegment] + state.weeks[state.flareSegment + 1]) / 2) - 10).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-danger))" text-anchor="middle">flare: Δaccel ' + state.accelerations[state.flareSegment - 1].toFixed(1) + '</text>';
+    var ariaLabel = 'Comet tail velocity tracker. Utilization by week: ' + state.weeks.map(function(v, i){ return 'W' + (i + 1) + ' ' + v.toFixed(1) + '%'; }).join(', ') + '. Sharpest acceleration change between week ' + (state.flareSegment + 1) + ' and week ' + (state.flareSegment + 2) + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="' + ariaLabel + '">' +
+      segmentsSvg + dotsSvg + flareLabel +
+      '</svg>';
+    document.getElementById('cometTailWrap').innerHTML = svg;
+  }
+  window.renderCometTail = renderCometTail;
+
   // ---------- SPC control chart for weekly utilization (Pathway B "operational cadence" tier,
   // 2026-09-05 KPI research pass) ----------
   // A genuine Individuals (I) control chart -- standard Shewhart/Deming SPC methodology, one of
@@ -3288,9 +3413,49 @@
       '</svg>';
     document.getElementById('capSpcWrap').innerHTML = svg;
     setNavStatus('capacity', outOfControl.some(Boolean) ? 'red' : 'green');
+    renderSonar(calcSonar(util, mean, mrBar, ucl, outOfControl));
     return { util: util, mean: mean, mrBar: mrBar, ucl: ucl, lcl: lcl, outOfControl: outOfControl };
   }
   window.renderCapacitySPC = renderCapacitySPC;
+
+  // ---------- Sonar Ping Anomaly Sweep: the same SPC control-chart data above (util/mean/UCL), a
+  // second lens on the SAME I-MR statistics, not a new time series. distanceRatio bounded at exactly
+  // 1.0 = right at the control limit, by construction. Pure state computation. ----------
+  function calcSonar(util, mean, mrBar, ucl, outOfControl){
+    var halfWidth = ucl - mean; // == 2.66*mrBar, symmetric around the mean by I-MR construction
+    var pings = util.map(function(v, i){
+      return { week: i + 1, util: v, distanceRatio: halfWidth > 0 ? (v - mean) / halfWidth : 0, outOfControl: outOfControl[i] };
+    });
+    return { pings: pings, mean: mean };
+  }
+  window.calcSonar = calcSonar;
+
+  function renderSonar(state){
+    var W = 240, H = 240, cx = W / 2, cy = H / 2, maxRadius = 95;
+    var n = state.pings.length;
+    var ringsSvg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + maxRadius + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (maxRadius * 0.5).toFixed(1) + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="rgb(var(--c-text-secondary))"/>' +
+      '<text x="' + cx + '" y="' + (cy - maxRadius - 6) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">control limit</text>';
+    var pingsSvg = '';
+    state.pings.forEach(function(p, i){
+      // Angle is purely for visual separation between the 6 weeks (decorative, like the archery
+      // target above) -- only radial distance carries the real signal (distance from the mean,
+      // relative to the control limit).
+      var angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      var r = Math.min(maxRadius, Math.abs(p.distanceRatio) * maxRadius);
+      var x = cx + r * Math.cos(angle), y = cy + r * Math.sin(angle);
+      var fill = p.outOfControl ? 'rgb(var(--c-danger))' : 'rgb(var(--c-accent))';
+      pingsSvg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="' + fill + '" opacity="0.85"/>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (y - 10).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">W' + p.week + '</text>';
+    });
+    var ariaLabel = 'Sonar ping anomaly sweep. ' + state.pings.map(function(p){ return 'Week ' + p.week + ': ' + (p.distanceRatio * 100).toFixed(1) + '% of the way to the control limit' + (p.outOfControl ? ' (OUT OF CONTROL)' : ''); }).join(', ') + '. Angle is for visual separation only, not a data dimension.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:240px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      ringsSvg + pingsSvg +
+      '</svg>';
+    document.getElementById('sonarWrap').innerHTML = svg;
+  }
+  window.renderSonar = renderSonar;
 
   // ---------- Tooling Amortization ----------
   function calcTooling(){
@@ -3959,6 +4124,96 @@
   window.KPI_TRADEOFFS = KPI_TRADEOFFS;
   window.renderKpiInteractionMap = renderKpiInteractionMap;
 
+  // ---------- Domino Effect Probability Cascade: illustrative example probabilities (explicitly
+  // NOT derived from AMS risk data -- the real KPI_TRADEOFFS above are qualitative, with no attached
+  // likelihood) applied to real, exact compound-probability math for 2 independent events. Pure
+  // state computation separated from render. ----------
+  function calcDomino(p1Pct, p2Pct){
+    var p1 = p1Pct / 100, p2 = p2Pct / 100;
+    var pNone = (1 - p1) * (1 - p2);
+    var pOne = p1 * (1 - p2) + (1 - p1) * p2;
+    var pBoth = p1 * p2;
+    return { p1: p1, p2: p2, pNone: pNone, pOne: pOne, pBoth: pBoth };
+  }
+  window.calcDomino = calcDomino;
+
+  function renderDomino(state){
+    var W = 400, H = 150;
+    var bars = [
+      { label: 'Neither fires', value: state.pNone, color: 'rgb(var(--c-success))' },
+      { label: 'One fires', value: state.pOne, color: 'rgb(var(--c-warning))' },
+      { label: 'Both fire', value: state.pBoth, color: 'rgb(var(--c-danger))' },
+    ];
+    var barW = 100, gap = 20, x0 = 40, maxBarH = 90, baseY = 120;
+    var barsSvg = '';
+    bars.forEach(function(b, i){
+      var x = x0 + i * (barW + gap);
+      var h = b.value * maxBarH;
+      barsSvg += '<rect x="' + x + '" y="' + (baseY - h).toFixed(1) + '" width="' + barW + '" height="' + h.toFixed(1) + '" fill="' + b.color + '" opacity="0.6" stroke="' + b.color + '" stroke-width="1.5"/>' +
+        '<text x="' + (x + barW / 2) + '" y="' + (baseY - h - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + (b.value * 100).toFixed(1) + '%</text>' +
+        '<text x="' + (x + barW / 2) + '" y="' + (baseY + 16) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + b.label + '</text>';
+    });
+    var ariaLabel = 'Domino effect probability cascade, illustrative example values. P(neither fires)=' + (state.pNone * 100).toFixed(1) + '%, P(exactly one fires)=' + (state.pOne * 100).toFixed(1) + '%, P(both fire)=' + (state.pBoth * 100).toFixed(1) + '%.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="20" y1="' + baseY + '" x2="' + (W - 20) + '" y2="' + baseY + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      barsSvg +
+      '</svg>';
+    document.getElementById('dominoWrap').innerHTML = svg;
+  }
+  window.renderDomino = renderDomino;
+  ['dominoP1', 'dominoP2'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(){
+      renderDomino(calcDomino(parseFloat(document.getElementById('dominoP1').value) || 0, parseFloat(document.getElementById('dominoP2').value) || 0));
+    });
+  });
+
+  // ---------- Metronome Cadence Drift Tracker: the same 4 named cadences from the Operating Cadence
+  // card above, using each cadence NAME's own standard real-world interval length (a generic
+  // definition of what "daily/weekly/monthly/semi-annual" mean, not a claim about AMS's actual
+  // calendar). Pure state computation separated from render. ----------
+  var CADENCE_INTERVALS = [
+    { label: 'Daily standup', days: 1 },
+    { label: 'Weekly Business Review', days: 7 },
+    { label: 'Monthly Business Review', days: 30 },
+    { label: 'OP1/OP2 planning', days: 182 },
+  ];
+  function calcMetronome(daysElapsed){
+    var cadences = CADENCE_INTERVALS.map(function(c){
+      return { label: c.label, days: c.days, tickCount: Math.floor(daysElapsed / c.days) };
+    });
+    return { cadences: cadences, daysElapsed: daysElapsed };
+  }
+  window.calcMetronome = calcMetronome;
+
+  function renderMetronome(state){
+    var W = 400, H = 190, rowH = 45, x0 = 130;
+    var maxDays = Math.max.apply(null, CADENCE_INTERVALS.map(function(c){ return c.days; }));
+    var rowsSvg = '';
+    state.cadences.forEach(function(c, i){
+      var y = 20 + i * rowH;
+      var armLen = 24;
+      // Swing period is proportional to the real interval length -- the daily arm visibly swings
+      // fastest, OP1/OP2 slowest, a direct encoding of "how often does this cadence actually fire."
+      var swingDuration = Math.max(0.4, (c.days / maxDays) * 2.5);
+      rowsSvg += '<text x="10" y="' + (y + 5) + '" font-size="11" fill="rgb(var(--c-text-primary))" text-anchor="start">' + c.label + '</text>' +
+        '<line x1="' + x0 + '" y1="' + y + '" x2="' + (x0 + 80) + '" y2="' + y + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+        '<g class="metronome-arm" style="animation-duration:' + swingDuration.toFixed(2) + 's;transform-origin:' + x0 + 'px ' + y + 'px">' +
+        '<line x1="' + x0 + '" y1="' + y + '" x2="' + x0 + '" y2="' + (y - armLen) + '" stroke="rgb(var(--c-accent))" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="' + x0 + '" cy="' + (y - armLen) + '" r="4" fill="rgb(var(--c-accent))"/>' +
+        '</g>' +
+        '<text x="' + (x0 + 90) + '" y="' + (y + 5) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-secondary))" text-anchor="start">' + c.tickCount + '× so far</text>';
+    });
+    var ariaLabel = 'Metronome cadence drift tracker, ' + state.daysElapsed + ' illustrative days elapsed. ' + state.cadences.map(function(c){ return c.label + ': ' + c.tickCount + ' occurrences (every ' + c.days + ' days)'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="' + ariaLabel + '">' +
+      rowsSvg +
+      '</svg>';
+    document.getElementById('metronomeWrap').innerHTML = svg;
+  }
+  window.renderMetronome = renderMetronome;
+  document.getElementById('metroDays').addEventListener('input', function(){
+    renderMetronome(calcMetronome(parseFloat(document.getElementById('metroDays').value) || 0));
+  });
+
   // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
   function calcLearningCurve(){
     var a = parseFloat(document.getElementById('lcFirstArticle').value) || 0;
@@ -4047,6 +4302,56 @@
   }
   window.RISK_REGISTER = RISK_REGISTER;
   window.renderRiskRegister = renderRiskRegister;
+
+  // ---------- Aurora Layer Correlation Map: the SAME 10 risks' P/S/D scores above, correlated
+  // across the register -- 3 independently-assigned dimensions, not derived from each other, so a
+  // real Pearson correlation between any pair is a genuine (not trivial) statistic. Pure state
+  // computation separated from render. ----------
+  function pearsonCorr(a, b){
+    var n = a.length;
+    var ma = a.reduce(function(x, y){ return x + y; }, 0) / n;
+    var mb = b.reduce(function(x, y){ return x + y; }, 0) / n;
+    var num = 0, da = 0, db = 0;
+    for (var i = 0; i < n; i++){
+      num += (a[i] - ma) * (b[i] - mb);
+      da += (a[i] - ma) * (a[i] - ma);
+      db += (b[i] - mb) * (b[i] - mb);
+    }
+    return (da > 0 && db > 0) ? num / Math.sqrt(da * db) : 0;
+  }
+  function calcAurora(){
+    var P = RISK_REGISTER.map(function(r){ return r.p; });
+    var S = RISK_REGISTER.map(function(r){ return r.s; });
+    var D = RISK_REGISTER.map(function(r){ return r.d; });
+    return { P: P, S: S, D: D, corrPS: pearsonCorr(P, S), corrPD: pearsonCorr(P, D), corrSD: pearsonCorr(S, D) };
+  }
+  window.calcAurora = calcAurora;
+
+  function renderAurora(state){
+    var W = 500, H = 160, marginLeft = 30, marginRight = 20, marginTop = 15, marginBottom = 20;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var n = state.P.length;
+    function xAt(i){ return marginLeft + (i / (n - 1)) * plotW; }
+    function yAt(v){ return marginTop + (1 - (v - 1) / 4) * plotH; } // score domain is always 1-5
+    function pathFor(series){
+      return series.map(function(v, i){ return (i === 0 ? 'M ' : 'L ') + xAt(i).toFixed(1) + ' ' + yAt(v).toFixed(1); }).join(' ');
+    }
+    // Dual-encoded by dash pattern (not color alone) so the 3 bands stay distinguishable without
+    // color vision: P solid, S dashed, D dotted.
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:500px" role="img" aria-label="Aurora layer correlation map. Probability, Severity, and Detection scored 1-5 across the 10 risks. Correlation P-S=' + state.corrPS.toFixed(2) + ', P-D=' + state.corrPD.toFixed(2) + ', S-D=' + state.corrSD.toFixed(2) + '.">' +
+      '<path d="' + pathFor(state.P) + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2.5"/>' +
+      '<path d="' + pathFor(state.S) + '" fill="none" stroke="rgb(var(--c-danger))" stroke-width="2.5" stroke-dasharray="8,4"/>' +
+      '<path d="' + pathFor(state.D) + '" fill="none" stroke="rgb(var(--c-warning))" stroke-width="2.5" stroke-dasharray="2,3"/>' +
+      '<text x="' + (W - marginRight) + '" y="' + (marginTop + 10) + '" font-size="10" fill="rgb(var(--c-accent))" text-anchor="end">— Probability</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (marginTop + 24) + '" font-size="10" fill="rgb(var(--c-danger))" text-anchor="end">- - Severity</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (marginTop + 38) + '" font-size="10" fill="rgb(var(--c-warning))" text-anchor="end">··· Detection</text>' +
+      '</svg>';
+    document.getElementById('auroraWrap').innerHTML = svg;
+    document.getElementById('auroraCorrPS').textContent = state.corrPS.toFixed(3);
+    document.getElementById('auroraCorrPD').textContent = state.corrPD.toFixed(3);
+    document.getElementById('auroraCorrSD').textContent = state.corrSD.toFixed(3);
+  }
+  window.renderAurora = renderAurora;
 
   function calcRiskScorer(){
     var p = parseFloat(document.getElementById('riskP').value) || 0;
@@ -4159,8 +4464,11 @@
   renderPlaybook();
   renderQualityParetoChart();
   renderKpiInteractionMap();
+  renderDomino(calcDomino(35, 25));
+  renderMetronome(calcMetronome(45));
   calcLearningCurve();
   renderRiskRegister();
+  renderAurora(calcAurora());
   calcRiskScorer();
   calcMVaR();
   renderTightrope(calcTightrope());

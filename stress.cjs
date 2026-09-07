@@ -767,16 +767,16 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 32, "exactly 32 navigable items in the command index (+5: viz-innovation batch 2 -- Circulatory, Glacial, Pressure-Vessel, Kaleidophone, Compass Rose)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 32, "all 32 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 37, "exactly 37 navigable items in the command index (+5: viz-innovation batch 3 -- Domino, Aurora, Sonar, Metronome, Comet Tail)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 37, "all 37 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 32, "empty-query search returns all 32 items", allMatch.length);
+check(allMatch.length === 37, "empty-query search returns all 37 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
-check(riskTabMatch.length === 5, "exactly 5 command index entries point at the Predictive & Risk Models tab (+1: Tightrope Confidence Walk)", riskTabMatch.length);
+check(riskTabMatch.length === 6, "exactly 6 command index entries point at the Predictive & Risk Models tab (+1: Aurora Layer Correlation Map)", riskTabMatch.length);
 sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
 
 console.log("--- Stress-test round (2026-09-05) fix 9: Command Palette exposes real ARIA combobox/listbox semantics ---");
@@ -835,6 +835,22 @@ sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel pa
 check(elements.capSpcWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the SPC chart on every recalculation, not just at page load");
 check(html.includes('cadence-badge operational') && html.includes('cadence-badge financial'), "both cadence badges (operational on Capacity, financial on Variance) exist, making the two-tier real-time-vs-period-close distinction visible, not just an internal design note");
 
+console.log("--- viz-innovation batch 3: Sonar Ping Anomaly Sweep golden values (same SPC data above, as distance-to-control-limit) ---");
+// halfWidth = ucl-mean = 131.84583333333333-78.64583333333333 = 53.2. distanceRatio[i] = (util[i]-mean)/53.2
+// for util=[93.75,87.5,62.5,56.25,96.875,75] -- pre-registered via node -e.
+check(typeof sandbox.calcSonar === "function", "window.calcSonar is exposed as a function");
+const sonarState = sandbox.calcSonar([93.75, 87.5, 62.5, 56.25, 96.875, 75], 78.64583333333333, 20, 131.84583333333333, [false, false, false, false, false, false]);
+const expectedRatios = [0.2839129072681705, 0.1664317042606517, -0.30349310776942345, -0.42097431077694225, 0.3426535087719299, -0.06853070175438587];
+sonarState.pings.forEach(function(p, i){
+  check(Math.abs(p.distanceRatio - expectedRatios[i]) < 1e-9, `week ${i + 1} distance ratio matches golden value`, p.distanceRatio);
+});
+check(sonarState.pings.every(function(p){ return !p.outOfControl; }), "none of the 6 weeks are flagged out-of-control, matching the SPC chart's own result", JSON.stringify(sonarState.pings.map(function(p){ return p.outOfControl; })));
+sandbox.renderSonar(sonarState);
+check(elements.sonarWrap.innerHTML.includes("<svg") && elements.sonarWrap.innerHTML.includes('role="img"'), "renderSonar() renders an actual accessible <svg>, not just numbers");
+check((elements.sonarWrap.innerHTML.match(/<circle/g) || []).length === 3 + 6, "exactly 9 circles: 2 rings + center dot + 6 pings", (elements.sonarWrap.innerHTML.match(/<circle/g) || []).length);
+sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.sonarWrap.innerHTML.includes("<svg"), "renderCapacitySPC() itself re-renders the sonar sweep on every recalculation, not just at page load");
+
 console.log("--- viz-innovation batch 1: Honeycomb Capacity Lattice golden values (same CAP_WEEKS data as the table/SPC chart above) ---");
 // util per week already pre-registered above: [93.75, 87.5, 62.5, 56.25, 96.875, 75]. Deltas (week N -
 // week N-1): [-6.25, -25, -6.25, 40.625, -21.875] (verified via node -e).
@@ -846,6 +862,23 @@ check(honeycombState.weeks.map((w) => w.status).join(",") === "green,green,red,r
 check(elements.honeycombWrap.innerHTML.includes("<svg") && elements.honeycombWrap.innerHTML.includes('role="img"'), "renderHoneycomb() renders an actual accessible <svg>, not just numbers");
 check((elements.honeycombWrap.innerHTML.match(/<polygon/g) || []).length === 6, "exactly 6 hexagon cells are rendered, one per week", (elements.honeycombWrap.innerHTML.match(/<polygon/g) || []).length);
 check((elements.honeycombWrap.innerHTML.match(/<line/g) || []).length === 5, "exactly 5 connecting edges are rendered, one between each pair of the 6 adjacent weeks", (elements.honeycombWrap.innerHTML.match(/<line/g) || []).length);
+
+console.log("--- viz-innovation batch 3: Comet Tail Velocity Tracker golden values (same 6-week utilization, velocity + acceleration) ---");
+// velocities (already golden above): [-6.25,-25,-6.25,40.625,-21.875]. accelerations[k]=velocities[k+1]-velocities[k]:
+// [-18.75, 18.75, 46.875, -62.5]. Largest |accel| is index 3 (-62.5) -> flareSegment = 3+1 = 4 (the
+// segment connecting week5 to week6) -- an off-by-one in this exact mapping was caught and fixed via
+// a standalone node -e reproduction before this check was written.
+check(typeof sandbox.calcCometTail === "function", "window.calcCometTail is exposed as a function");
+const cometState = sandbox.calcCometTail();
+check(JSON.stringify(cometState.velocities.map((v) => Math.round(v * 1000) / 1000)) === JSON.stringify([-6.25, -25, -6.25, 40.625, -21.875]), "velocities match the same golden values as Honeycomb's deltas above", JSON.stringify(cometState.velocities));
+check(JSON.stringify(cometState.accelerations.map((a) => Math.round(a * 1000) / 1000)) === JSON.stringify([-18.75, 18.75, 46.875, -62.5]), "accelerations match golden values", JSON.stringify(cometState.accelerations));
+check(cometState.flareSegment === 4, "the flare segment correctly identifies index 4 (week5-to-week6), the transition with the largest |acceleration| (-62.5)", cometState.flareSegment);
+sandbox.renderCometTail(cometState);
+check(elements.cometTailWrap.innerHTML.includes("<svg") && elements.cometTailWrap.innerHTML.includes('role="img"'), "renderCometTail() renders an actual accessible <svg>, not just numbers");
+check(elements.cometTailWrap.innerHTML.includes("flare: Δaccel -62.5"), "the flare label states the exact golden acceleration value at the correct segment", elements.cometTailWrap.innerHTML);
+check((elements.cometTailWrap.innerHTML.match(/<circle/g) || []).length === 6, "exactly 6 dots are rendered, one per week", (elements.cometTailWrap.innerHTML.match(/<circle/g) || []).length);
+sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.cometTailWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the comet tail on every recalculation, not just at page load");
 
 console.log("--- Stress-test round (2026-09-05) fix: Variance tab's copy no longer uses \"live\" for two different meanings in one paragraph ---");
 // A stress-test found "the bridge recalculates live" sitting right next to "not a real-time feed" --
@@ -1107,6 +1140,33 @@ if (jumpFnMatch) {
   check(jumpFnMatch[0].includes("target.focus({ preventScroll: true })"), "jump() moves focus onto the target card itself after scrolling (preventScroll avoids fighting the smooth scrollIntoView already in flight)", jumpFnMatch[0]);
 }
 
+console.log("--- viz-innovation batch 3: Domino Effect Probability Cascade golden values (illustrative example probabilities, exact compound-probability math) ---");
+// p1=0.35, p2=0.25 (defaults): P(none)=(1-.35)(1-.25)=.65*.75=.4875; P(one)=.35*.75+.65*.25=.425;
+// P(both)=.35*.25=.0875. Sum must be exactly 1.
+check(typeof sandbox.calcDomino === "function", "window.calcDomino is exposed as a function");
+const dominoState = sandbox.calcDomino(35, 25);
+check(Math.abs(dominoState.pNone - 0.4875) < 1e-9, "P(neither fires) matches golden value", dominoState.pNone);
+check(Math.abs(dominoState.pOne - 0.425) < 1e-9, "P(exactly one fires) matches golden value", dominoState.pOne);
+check(Math.abs(dominoState.pBoth - 0.0875) < 1e-9, "P(both fire) matches golden value", dominoState.pBoth);
+check(Math.abs(dominoState.pNone + dominoState.pOne + dominoState.pBoth - 1) < 1e-9, "the 3 outcome probabilities sum to exactly 1", dominoState.pNone + dominoState.pOne + dominoState.pBoth);
+sandbox.renderDomino(dominoState);
+check(elements.dominoWrap.innerHTML.includes("<svg") && elements.dominoWrap.innerHTML.includes('role="img"'), "renderDomino() renders an actual accessible <svg>, not just numbers");
+check(elements.dominoWrap.innerHTML.includes("48.8%") && elements.dominoWrap.innerHTML.includes("42.5%") && elements.dominoWrap.innerHTML.includes("8.8%"), "all 3 rendered outcome percentages match golden values", elements.dominoWrap.innerHTML);
+
+console.log("--- viz-innovation batch 3: Metronome Cadence Drift Tracker golden values (each cadence's own standard interval, illustrative days elapsed) ---");
+// At 45 illustrative days: daily=floor(45/1)=45, weekly=floor(45/7)=6, monthly=floor(45/30)=1,
+// OP1/OP2=floor(45/182)=0 -- pre-registered via node -e.
+check(typeof sandbox.calcMetronome === "function", "window.calcMetronome is exposed as a function");
+const metroState = sandbox.calcMetronome(45);
+check(metroState.cadences[0].tickCount === 45, "daily standup tick count matches golden value", metroState.cadences[0].tickCount);
+check(metroState.cadences[1].tickCount === 6, "weekly business review tick count matches golden value", metroState.cadences[1].tickCount);
+check(metroState.cadences[2].tickCount === 1, "monthly business review tick count matches golden value", metroState.cadences[2].tickCount);
+check(metroState.cadences[3].tickCount === 0, "OP1/OP2 tick count matches golden value (fewer than 182 days elapsed)", metroState.cadences[3].tickCount);
+sandbox.renderMetronome(metroState);
+check(elements.metronomeWrap.innerHTML.includes("<svg") && elements.metronomeWrap.innerHTML.includes('role="img"'), "renderMetronome() renders an actual accessible <svg>, not just numbers");
+check((elements.metronomeWrap.innerHTML.match(/<g class="metronome-arm"/g) || []).length === 4, "exactly 4 metronome arms are rendered, one per cadence", (elements.metronomeWrap.innerHTML.match(/<g class="metronome-arm"/g) || []).length);
+check(elements.metronomeWrap.innerHTML.includes("45× so far"), "the daily standup's exact tick count is labeled on the chart", elements.metronomeWrap.innerHTML);
+
 console.log("--- Stress-test finding (2026-09-06): reduced-motion now reaches the two JS-driven smooth-scroll calls too ---");
 // A stress-test found the CSS reduced-motion block disabled every transition/animation but missed
 // `html{scroll-behavior:smooth}` and 2 JS scrollIntoView({behavior:'smooth'}) calls -- an explicit JS
@@ -1168,6 +1228,24 @@ const renderedRows = elements.riskRegisterBody.innerHTML.split("<tr>").length - 
 check(renderedRows === 10, "rendered exactly 10 risk register rows", renderedRows);
 const escalateCount = (elements.riskRegisterBody.innerHTML.match(/ESCALATE/g) || []).length;
 check(escalateCount === 6, "exactly 6 of 10 risks are correctly banded ESCALATE (CRPN >= 25, the document's own governance threshold)", escalateCount);
+
+console.log("--- viz-innovation batch 3: Aurora Layer Correlation Map golden values (real Pearson correlation across the 10 risks' independently-assigned P/S/D scores) ---");
+// P=[4,3,3,4,4,5,2,4,2,4], S=[4,5,4,3,2,2,4,3,4,3], D=[2,3,1,4,2,3,4,2,3,3] -- pre-registered via a
+// standalone node -e Pearson correlation script before this check was written.
+check(typeof sandbox.calcAurora === "function", "window.calcAurora is exposed as a function");
+const auroraState = sandbox.calcAurora();
+check(JSON.stringify(auroraState.P) === JSON.stringify([4, 3, 3, 4, 4, 5, 2, 4, 2, 4]), "the P series matches the real risk register's own values, in order", JSON.stringify(auroraState.P));
+check(JSON.stringify(auroraState.S) === JSON.stringify([4, 5, 4, 3, 2, 2, 4, 3, 4, 3]), "the S series matches the real risk register's own values, in order", JSON.stringify(auroraState.S));
+check(JSON.stringify(auroraState.D) === JSON.stringify([2, 3, 1, 4, 2, 3, 4, 2, 3, 3]), "the D series matches the real risk register's own values, in order", JSON.stringify(auroraState.D));
+check(Math.abs(auroraState.corrPS - (-0.7100716024967264)) < 1e-9, "corr(P,S) matches the pre-registered golden Pearson coefficient", auroraState.corrPS);
+check(Math.abs(auroraState.corrPD - (-0.18077538151554684)) < 1e-9, "corr(P,D) matches the pre-registered golden Pearson coefficient", auroraState.corrPD);
+check(Math.abs(auroraState.corrSD - 0.024246432248443615) < 1e-9, "corr(S,D) matches the pre-registered golden Pearson coefficient", auroraState.corrSD);
+sandbox.renderAurora(auroraState);
+check(elements.auroraWrap.innerHTML.includes("<svg") && elements.auroraWrap.innerHTML.includes('role="img"'), "renderAurora() renders an actual accessible <svg>, not just numbers");
+check((elements.auroraWrap.innerHTML.match(/<path/g) || []).length === 3, "exactly 3 band paths are rendered, one per dimension (P/S/D)", (elements.auroraWrap.innerHTML.match(/<path/g) || []).length);
+check(elements.auroraCorrPS.textContent === "-0.710", "rendered corr(P,S) text matches golden value", elements.auroraCorrPS.textContent);
+check(elements.auroraCorrPD.textContent === "-0.181", "rendered corr(P,D) text matches golden value", elements.auroraCorrPD.textContent);
+check(elements.auroraCorrSD.textContent === "0.024", "rendered corr(S,D) text matches golden value", elements.auroraCorrSD.textContent);
 
 console.log("--- Risk Scorer: golden values (default P=3, S=3, D=3) ---");
 check(elements.riskScoreOut.textContent === "27", "default risk score matches golden value (3x3x3)", elements.riskScoreOut.textContent);
@@ -1269,7 +1347,7 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // live-value display, not the control itself).
 const totalLabels = (html.match(/<label\b/g) || []).length;
 const labelsWithFor = html.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 87, "exactly 87 <label> elements exist on the page (81 + 6 from viz-innovation batch 1's Site Accuracy Explorer inputs)", totalLabels);
+check(totalLabels === 90, "exactly 90 <label> elements exist on the page (87 + 3 from viz-innovation batch 3's Domino/Metronome inputs)", totalLabels);
 check(labelsWithFor.length === totalLabels, "every single <label> now carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
@@ -1284,12 +1362,12 @@ check(html.includes('<label for="mvarConfidence">Confidence level</label>'), "th
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll", "circulatory", "glacial", "pressurevessel", "kaleidophone", "compassrose"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll", "circulatory", "glacial", "pressurevessel", "kaleidophone", "compassrose", "domino", "aurora", "sonar", "metronome", "comettail"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 28, "exactly 28 explain buttons are wired in the HTML (23 from before + viz-innovation batch 2's 5)", explainButtonCount);
+check(explainButtonCount === 33, "exactly 33 explain buttons are wired in the HTML (28 from before + viz-innovation batch 3's 5)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");

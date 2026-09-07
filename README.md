@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (28 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 32 indexed modules, and a **collapsible vertical side navigation** (real
+modals (33 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 37 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 32 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 37 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 737 checks, all passing as of this writing.
+Run: `node stress.cjs` — 788 checks, all passing as of this writing.
 
 ## Status
 
@@ -890,3 +890,41 @@ listeners to drift. Live-verified in a real browser: all 5 render correctly, exa
 confirmed, one live threshold-crossing interaction (DFM thickness → 3.0mm) correctly silenced the
 wall-sensitivity rod and restored cleanly, 0 console errors. Checks: 691 → 737 (+46). Committed
 locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-06, twenty-third round (viz-innovation batch 3 of 4 — 5 more visualizations):**
+
+1. **Domino Effect Probability Cascade** (Cost Diagnostic Playbook tab) — the 2 real,
+   literature-confirmed cross-KPI tradeoffs from the KPI Interaction Map have no attached likelihood
+   in the source research, so this applies illustrative EXAMPLE probabilities (clearly labeled as
+   such, adjustable) to the exact, standard compound-probability formula for 2 independent events —
+   teaching how real tradeoffs compound without claiming a real-world frequency for either one.
+2. **Aurora Layer Correlation Map** (Predictive & Risk tab) — Probability, Severity, and Detection
+   are assigned independently for each of the 10 real risk-register entries, so the real Pearson
+   correlation between any pair is a genuine finding: P and S correlate at ≈−0.71 (higher-probability
+   risks in this register tend to carry lower dollar severity), a real pattern in data this dashboard
+   already computes, not a new claim.
+3. **Sonar Ping Anomaly Sweep** (Capacity tab) — the same 6-week SPC control-chart data, re-plotted
+   as distance from the mean relative to the real control limit (exactly 1.0 = right at the limit, by
+   I-MR construction) instead of a time-ordered trend line.
+4. **Metronome Cadence Drift Tracker** (Operating Framework tab) — the 4 named cadences from the
+   Operating Cadence card, using each cadence NAME's own standard real-world interval (daily=1 day,
+   weekly=7, monthly=30, a semi-annual OP1/OP2 split≈182) — a generic definition of what those words
+   mean, not a claim about AMS's actual calendar. Swing period (not amplitude) is the real signal.
+5. **Comet Tail Velocity Tracker** (Capacity tab) — the same 6-week utilization series extended one
+   derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH
+   transition saw the sharpest swing, not just which week had the biggest raw delta.
+
+Caught and fixed a genuine off-by-one bug in Comet Tail's own segment-mapping arithmetic (mapping
+`accelerations[k]` to the wrong tail segment, which would have pointed the "flare" highlight one
+segment past the end of the array) via a standalone `node -e` reproduction before writing any check
+— caught by the arithmetic itself, not by symptom. Also caught and fixed a real font-size regression
+this round introduced (two `font-size="9"` labels in the new Sonar chart, below this page's own
+established 10px minimum-legible-size convention) via the existing page-wide check, not a new one.
+And caught three more hand-typed extra-precision decimals that turned out wrong the moment they were
+actually computed (a Pearson correlation, a sonar distance ratio) — same discipline as every prior
+round, never shipped uncomputed.
+
+Live-verified in a real browser: all 5 render correctly, exact golden text confirmed, one live
+interaction (Domino P1→100%) correctly zeroed out the "neither fires" bar and restored cleanly, 0
+console errors. Checks: 737 → 788 (+51). Committed locally — pending push with explicit
+confirmation, same discipline as every prior round.
