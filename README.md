@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 844 checks, all passing as of this writing.
+Run: `node stress.cjs` — 851 checks, all passing as of this writing.
 
 ## Status
 
@@ -964,3 +964,34 @@ of 30" → Prev restores "Card 1 of 30"), 0 console errors. Checks: 788 → 844 
 single-batch addition this session because Card Catalog's click-driven interaction needed more
 assertions than the other four features' pure-recompute wiring). Committed locally — pending push
 with explicit confirmation, same discipline as every prior round.
+
+**2026-09-07, twenty-fifth round (`/design-qa` pass on the live site, one fix):**
+
+A full `/design-qa` audit (layout geometry, nav-rail states, color/contrast math, dual-encoding,
+slider/edge-state behavior, motion timing, keyboard focus) ran against the published URL rather
+than the local file — dark/light/high-contrast themes, mobile (375px) and ultra-wide (2560px)
+viewports, and empirical edge-case injection (zero/extreme inputs, rapid slider drags, stacked-
+modal focus). Confirmed clean: WCAG contrast on every color token in both themes (weakest pair
+5.12:1, well above the 4.5:1 floor) and on the actual rendered status-pill text-on-tint blend
+(~5:1 both themes); the roving-tabindex nav pattern; `:focus-visible` rings with no `outline:none`
+suppressors anywhere in the stylesheet; the collapsed-nav tooltip's real position (confirmed via
+genuine keyboard focus, not `.focus()`, which correctly doesn't trigger `:focus-visible`); the
+already-documented stacked-modal focus-return fix; and the `productiveHrs>0?...:0` divide-by-zero
+guards under a forced OEE=0 edge case (Suspension Bridge correctly re-ranks its dominant cable to
+"Consumables" with zero NaN/Infinity leakage).
+
+One real, Minor-severity finding: the Should-Cost Calculator's 6 dollar outputs (`scOutMhr`,
+`scOutMat`, `scOutMach`, `scOutLabor`, `scOutOh`, `scOutTotal`) formatted via bare
+`'$'+val.toFixed(2)` — no thousands separator — while every other dollar output on the page
+(MHR Build-Up, Build-vs-Buy NPV, Capacity unabsorbed-cost) uses `.toLocaleString()`. Invisible at
+realistic per-unit defaults (all under $1,000) but a real formatting inconsistency, confirmed live
+by forcing an absurd raw-mass input to $21.4B and watching it render unseparated. Fixed by routing
+all 6 through `toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})` —
+identical output to the old code at every realistic value (verified: the exact original golden-
+value strings, "$81.35"/"$121.31"/etc., are unchanged), now comma-separated at extremes.
+
+Live-verified in a real browser: extreme mass (999,999,999kg) → `$21,408,749,978.59` /
+`$2,997,225,000.51` / `$24,405,975,004.16` (mass-dependent outputs, now separated), mass-independent
+outputs (`$14.67`/`$10.39`) correctly unaffected, restoring the mass input returns the exact
+original defaults, 0 console errors. Checks: 844 → 851 (+7). Committed locally — pending push with
+explicit confirmation, same discipline as every prior round.

@@ -374,7 +374,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 844/844 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 851/851 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -2533,12 +2533,13 @@
     var overheadCost = (matCost + machineCost + laborCost) * ohPct;
     var totalCost = matCost + machineCost + laborCost + overheadCost;
 
-    document.getElementById('scOutMhr').textContent = '$' + mhr.toFixed(2) + '/hr';
-    document.getElementById('scOutMat').textContent = '$' + matCost.toFixed(2);
-    document.getElementById('scOutMach').textContent = '$' + machineCost.toFixed(2);
-    document.getElementById('scOutLabor').textContent = '$' + laborCost.toFixed(2);
-    document.getElementById('scOutOh').textContent = '$' + overheadCost.toFixed(2);
-    document.getElementById('scOutTotal').textContent = '$' + totalCost.toFixed(2);
+    var fmt2 = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    document.getElementById('scOutMhr').textContent = '$' + mhr.toLocaleString(undefined, fmt2) + '/hr';
+    document.getElementById('scOutMat').textContent = '$' + matCost.toLocaleString(undefined, fmt2);
+    document.getElementById('scOutMach').textContent = '$' + machineCost.toLocaleString(undefined, fmt2);
+    document.getElementById('scOutLabor').textContent = '$' + laborCost.toLocaleString(undefined, fmt2);
+    document.getElementById('scOutOh').textContent = '$' + overheadCost.toLocaleString(undefined, fmt2);
+    document.getElementById('scOutTotal').textContent = '$' + totalCost.toLocaleString(undefined, fmt2);
     renderNestingDoll(calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost));
     renderCirculatory(calcCirculatory(matCost, machineCost, laborCost, overheadCost, totalCost));
     return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };

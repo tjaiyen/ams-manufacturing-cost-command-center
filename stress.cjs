@@ -475,6 +475,28 @@ check(elements.scOutLabor.textContent === "$10.39", "labor cost matches the brow
 check(elements.scOutOh.textContent === "$14.90", "overhead cost matches the browser-verified golden value", elements.scOutOh.textContent);
 check(elements.scOutTotal.textContent === "$121.31", "should-cost TOTAL matches the browser-verified golden value (and equals the sum of the four lines above)", elements.scOutTotal.textContent);
 
+console.log("--- design-qa fix (2026-09-07, QA-001): Should-Cost dollar outputs use toLocaleString, not bare toFixed(2) ---");
+// A live design-qa pass found these 5 outputs formatted via '$'+val.toFixed(2) -- no thousands
+// separator -- while every other dollar output on the page (MHR Build-Up, Build-vs-Buy NPV, etc.)
+// uses toLocaleString(). Invisible at realistic per-unit defaults (<$1,000) but a real inconsistency
+// at large values. Golden values pre-registered via a standalone node -e script (B35) before writing
+// this check: an extreme raw-mass input (999999999kg, all other inputs at default) drives matCost and
+// overheadCost past $1,000, so their formatted output must now show comma separators.
+elements.scMass.value = 999999999;
+sandbox.calcShouldCost();
+check(elements.scOutMat.textContent === "$21,408,749,978.59", "extreme material cost renders with thousands separators, not a bare toFixed(2) string", elements.scOutMat.textContent);
+check(elements.scOutOh.textContent === "$2,997,225,000.51", "extreme overhead cost renders with thousands separators", elements.scOutOh.textContent);
+check(elements.scOutTotal.textContent === "$24,405,975,004.16", "extreme should-cost TOTAL renders with thousands separators", elements.scOutTotal.textContent);
+// machine/labor cost don't depend on mass, so they stay under $1,000 even at this extreme --
+// confirms the fix didn't change formatting behavior for values that were already correct.
+check(elements.scOutMach.textContent === "$14.67", "machine conversion cost (mass-independent) is unaffected by the extreme mass input", elements.scOutMach.textContent);
+check(elements.scOutLabor.textContent === "$10.39", "labor cost (mass-independent) is unaffected by the extreme mass input", elements.scOutLabor.textContent);
+// restore to default and confirm the fix is a no-op at realistic values (same string as the golden checks above)
+elements.scMass.value = "3.8";
+sandbox.calcShouldCost();
+check(elements.scOutMat.textContent === "$81.35", "restoring the default mass returns the exact original golden-value string (no regression at realistic values)", elements.scOutMat.textContent);
+check(elements.scOutTotal.textContent === "$121.31", "restoring the default mass returns the exact original TOTAL golden-value string", elements.scOutTotal.textContent);
+
 console.log("--- viz-innovation batch 1: Nesting Doll Cost Peel golden values (same 4 should-cost components above, ordered by size) ---");
 // Components sorted descending: Material 81.35 > Overhead 14.90 > Machine 14.67 > Labor 10.39.
 // Cumulative remainder after peeling each: [121.31 (total), 39.96 (total-material),
