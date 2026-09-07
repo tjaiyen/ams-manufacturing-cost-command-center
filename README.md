@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 906 checks, all passing as of this writing.
+Run: `node stress.cjs` — 915 checks, all passing as of this writing.
 
 ## Status
 
@@ -1113,3 +1113,37 @@ first-visit message on a fresh load, "No change" on an actual same-session reloa
 "Changed... was passing 857 checks, now 906" message when a genuinely different prior visit is
 simulated. 0 console errors. Checks: 885 → 906 (+21). Committed locally — pending push with explicit
 confirmation, same discipline as every prior round. Batches C–E (4 more ideas) still to come.
+
+**2026-09-07, twenty-ninth round (Phase 4 batch C/5 — "View as: Role" nav-tab visibility):**
+
+The one item the plan's own stress-test flagged CRIT and redefined before any code was written
+(idea #33): the inspiration dashboard narrows a single unified 20-KPI grid to 6 tiles per role; this
+page has no such grid (only 4 real `.kpi-tile` elements, all on the Executive tab), so the real
+structural analog is this page's own 12 real tabs, not a KPI-tile filter. Shipped as a `<select id=
+"roleSelect">` in the sidenav header with 3 real tiers: **Executive** (4 tabs — Overview, Should-Cost
+& MHR, Variance Waterfall, Methodology & Sourcing), **Cost Engineer** (10 tabs — adds Build-vs-Buy,
+Capacity, Tooling, DFM, Data Governance, Diagnostic Playbook), **All** (all 12, including Predictive
+& Risk Models and Operating Framework). Framed explicitly as demonstrating audience-tailored
+communication — a real skill for the target role — not as serving genuinely different real viewers
+of what UX_ROADMAP's own audience section states is a one-hiring-panel-audience dashboard.
+
+A deliberate design choice, stated plainly rather than left implicit: the Command Palette (⌘K) and
+"g then letter" chord shortcuts are NOT restricted by the active role — both remain a full-access
+escape hatch for a power user who wants to jump straight to a role-hidden tab. This is a genuine
+narrowing of what's *browseable* by scrolling the sidenav, not an access-control feature.
+
+A real accessibility fix, not just a new feature: hiding sidenav buttons for a narrowed role would
+have silently broken the existing ArrowUp/Down/Home/End roving-tabindex keyboard navigation — the
+existing handler read a STATIC snapshot of all 12 tabs taken once at page load, so a keypress that
+landed on a now-hidden button would call `.focus()` on it, which is inert on a hidden element in a
+real browser (the keypress would appear to do nothing). Fixed by recomputing the visible-tab list
+fresh on every keypress inside the handler itself, not by touching the underlying `navTabs` snapshot.
+
+Live-verified in a real browser: narrowing to Executive correctly hides the other 8 tabs and shows
+the 4 real ones; the Command Palette still finds and jumps to a role-hidden tab (Diagnostic
+Playbook) exactly as designed; landing on a tab a newly-chosen role hides correctly redirects to that
+role's own first tab instead of stranding the user; and 4 consecutive ArrowDown presses under the
+Executive role cycle through exactly its 4 visible tabs and wrap back to the start, never landing on
+one of the 8 hidden ones. 0 console errors. Checks: 906 → 915 (+9). Committed locally — pending push
+with explicit confirmation, same discipline as every prior round. Batches D–E (the Attention & Triage
+tab, guided tour, and printable one-pager) still to come.

@@ -102,6 +102,10 @@
     opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;z-index:60;box-shadow:0 6px 16px rgb(0 0 0/.3)}
   .sidenav[data-collapsed="true"] .sidenav-item:hover::after,
   .sidenav[data-collapsed="true"] .sidenav-item:focus-visible::after{opacity:1;visibility:visible}
+  .sidenav-role{padding:8px 12px;border-bottom:1px solid var(--c-line);display:flex;flex-direction:column;gap:4px}
+  .sidenav-role-label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:rgb(var(--c-text-secondary))}
+  #roleSelect{background:rgb(var(--c-bg-card));color:rgb(var(--c-text-primary));border:1px solid var(--c-line);border-radius:6px;padding:4px 6px;font-size:11.5px;font-family:inherit}
+  .sidenav[data-collapsed="true"] .sidenav-role{display:none}
 
   .sidenav-footer{padding:10px;border-top:1px solid var(--c-line);display:flex;flex-direction:column;gap:6px;flex:none}
   .sidenav-footer .icobtn{position:relative}
@@ -332,6 +336,14 @@
     <span class="sidenav-brand-text"><b>AMS Cost Command Center</b><small>Sr. Manufacturing Cost Engineer</small></span>
     <button class="sidenav-collapse-btn" id="sidenavToggle" type="button" aria-label="Collapse navigation" aria-expanded="true" aria-controls="sidenav">‹</button>
   </div>
+  <div class="sidenav-role" id="sidenavRole">
+    <label for="roleSelect" class="sidenav-role-label">View as</label>
+    <select id="roleSelect" aria-label="Narrow the navigation to a role's own view">
+      <option value="all">All tabs (12)</option>
+      <option value="exec">Executive view (4)</option>
+      <option value="engineer">Cost Engineer view (10)</option>
+    </select>
+  </div>
   <div class="sidenav-list" role="tablist" aria-orientation="vertical" aria-label="Command center sections">
     <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview" aria-label="Executive Overview">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 15V9M10 15V5M16 15v-3"/></svg></span><span class="sidenav-label">Executive Overview</span>
@@ -376,7 +388,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 906/906 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 915/915 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
@@ -1970,20 +1982,64 @@
   window.checkChangedSinceLastVisit = checkChangedSinceLastVisit;
   checkChangedSinceLastVisit();
 
+  // UX_ROADMAP idea #33, Phase 4 batch C: "View as: Role" -- redefined during the plan's own
+  // stress-test from the inspiration dashboard's single-grid KPI filter (no structural analog here)
+  // to role-scoped NAV-TAB VISIBILITY, since this page's real analog to that dashboard's 20 KPI
+  // tiles is its 12 real tabs. Framed as demonstrating audience-tailored communication -- a real
+  // skill for the target role -- not as serving genuinely different real viewers of what is still a
+  // one-hiring-panel-audience dashboard (UX_ROADMAP's own stated audience constraint).
+  var ROLE_TABS = {
+    exec: ['exec', 'shouldcost', 'variance', 'methodology'],
+    engineer: ['exec', 'shouldcost', 'variance', 'methodology', 'buildbuy', 'capacity', 'tooling', 'dfm', 'governance', 'playbook'],
+    all: null // null = every tab visible, not a hand-maintained duplicate of all 12 names
+  };
+  function applyRoleView(role){
+    var allowed = ROLE_TABS[role];
+    navTabs.forEach(function(b){
+      var name = b.getAttribute('data-tab');
+      b.hidden = !!allowed && allowed.indexOf(name) === -1;
+    });
+    // If the currently-active tab just got hidden by this role, land on the role's own first tab
+    // instead of leaving the user on a tab their own nav can no longer reach.
+    var activeBtn = navTabs.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
+    if (activeBtn && activeBtn.hidden){
+      var fallback = allowed ? allowed[0] : 'exec';
+      activateTab(fallback, { focus: false });
+    }
+    try{ localStorage.setItem('ams-cc-role-view', role); }catch(e){}
+  }
+  window.applyRoleView = applyRoleView;
+  window.ROLE_TABS = ROLE_TABS; // exposed so stress.cjs checks the real map, not a hand-copied duplicate
+  var roleSelectEl = document.getElementById('roleSelect');
+  roleSelectEl.addEventListener('change', function(){ applyRoleView(roleSelectEl.value); });
+  (function restoreRoleView(){
+    var stored = null;
+    try{ stored = localStorage.getItem('ams-cc-role-view'); }catch(e){}
+    if (stored && ROLE_TABS.hasOwnProperty(stored)){
+      roleSelectEl.value = stored;
+      applyRoleView(stored);
+    }
+  })();
+
   // Roving tabindex + arrow-key navigation, per the WAI-ARIA APG vertical Tabs pattern
   // (automatic activation: moving focus with the arrow keys also switches the panel).
   var sidenavList = document.querySelector('.sidenav-list');
   sidenavList.addEventListener('keydown', function(ev){
-    var currentIndex = navTabs.findIndex(function(b){ return b.getAttribute('tabindex') === '0'; });
+    // Phase 4 batch C: recomputed fresh on every keypress (cheap, 12 items) rather than reading the
+    // outer navTabs directly, so a role-narrowed nav's ArrowUp/Down/Home/End only ever lands on a
+    // tab the current role view actually shows -- a stale full-list index would let a keypress
+    // silently no-op on a now-hidden button (.focus() on a hidden element is inert in a real browser).
+    var visibleTabs = navTabs.filter(function(b){ return !b.hidden; });
+    var currentIndex = visibleTabs.findIndex(function(b){ return b.getAttribute('tabindex') === '0'; });
     if (currentIndex === -1) currentIndex = 0;
     var nextIndex = null;
-    if (ev.key === 'ArrowDown') nextIndex = (currentIndex + 1) % navTabs.length;
-    else if (ev.key === 'ArrowUp') nextIndex = (currentIndex - 1 + navTabs.length) % navTabs.length;
+    if (ev.key === 'ArrowDown') nextIndex = (currentIndex + 1) % visibleTabs.length;
+    else if (ev.key === 'ArrowUp') nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length;
     else if (ev.key === 'Home') nextIndex = 0;
-    else if (ev.key === 'End') nextIndex = navTabs.length - 1;
+    else if (ev.key === 'End') nextIndex = visibleTabs.length - 1;
     if (nextIndex !== null){
       ev.preventDefault();
-      activateTab(navTabs[nextIndex].getAttribute('data-tab'));
+      activateTab(visibleTabs[nextIndex].getAttribute('data-tab'));
     }
   });
 

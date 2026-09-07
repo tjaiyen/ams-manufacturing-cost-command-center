@@ -433,6 +433,38 @@ sidenavListEl.fire("keydown", { key: "End", preventDefault() {} });
 check(elements["navtab-methodology"].getAttribute("aria-selected") === "true", "End jumps to the last item (Methodology & Sourcing)", elements["navtab-methodology"].getAttribute("aria-selected"));
 sandbox.activateTab("exec", { focus: false }); // restore the default starting tab before later checks
 
+console.log("--- Phase 4 batch C (2026-09-07): \"View as: Role\" nav-tab visibility (idea #33, redefined) ---");
+check(typeof sandbox.applyRoleView === "function", "applyRoleView is exposed as a function");
+// Golden ROLE_TABS content pre-registered by design decision before writing this check (B35): exec=4
+// tabs, engineer=10 (adds the 6 operational tabs to exec's 4), all=null (every tab, not a duplicated
+// 12-name list that could silently drift from the real navtab count).
+check(JSON.stringify(sandbox.ROLE_TABS.exec) === JSON.stringify(["exec", "shouldcost", "variance", "methodology"]), "ROLE_TABS.exec is exactly the 4 golden tab names", JSON.stringify(sandbox.ROLE_TABS.exec));
+check(sandbox.ROLE_TABS.engineer.length === 10, "ROLE_TABS.engineer has exactly 10 tab names", sandbox.ROLE_TABS.engineer.length);
+check(sandbox.ROLE_TABS.all === null, "ROLE_TABS.all is null (every tab), not a hand-duplicated 12-name array");
+sandbox.applyRoleView("exec");
+const hiddenUnderExecRole = ["buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework"].every((t) => elements["navtab-" + t].hidden === true);
+const visibleUnderExecRole = ["exec", "shouldcost", "variance", "methodology"].every((t) => !elements["navtab-" + t].hidden);
+check(hiddenUnderExecRole && visibleUnderExecRole, "applyRoleView('exec') hides exactly the 8 non-exec tabs and shows exactly the 4 exec tabs");
+check(sandbox.localStorage._s["ams-cc-role-view"] === "exec", "the chosen role persists to localStorage, same pattern as theme/contrast/last-tab");
+// The actual regression this guards: cycling ArrowDown through a role-narrowed nav must never land
+// on a hidden tab, even transiently -- a stale full-list index (pre-fix) would silently skip/no-op
+// on a hidden button instead of correctly landing on the next VISIBLE one.
+sandbox.activateTab("exec", { focus: false });
+const selectedSequence = [];
+for (let i = 0; i < 4; i++) {
+  sidenavListEl.fire("keydown", { key: "ArrowDown", preventDefault() {} });
+  selectedSequence.push(sandbox.ROLE_TABS.exec.find((t) => elements["navtab-" + t].getAttribute("aria-selected") === "true"));
+}
+check(selectedSequence.join(",") === "shouldcost,variance,methodology,exec", "4 ArrowDown presses under the exec role cycle through exactly the 4 visible tabs and wrap back to exec, never landing on a hidden one", selectedSequence.join(","));
+// Redirect-on-hide: landing on a tab, then narrowing the role so that tab is no longer visible,
+// must not strand the user on a now-invisible tab.
+sandbox.activateTab("playbook", { focus: false });
+sandbox.applyRoleView("exec");
+check(elements["tab-exec"].classList.contains("active"), "narrowing to the exec role while on a tab that role hides (playbook) redirects to the role's own first tab (exec), not stranding the user", elements["tab-exec"].classList.contains("active"));
+sandbox.applyRoleView("all");
+const allTwelveVisible = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"].every((t) => !elements["navtab-" + t].hidden);
+check(allTwelveVisible, "applyRoleView('all') restores every one of the 12 tabs to visible", allTwelveVisible);
+
 console.log("--- Vertical side navigation: collapse/expand toggle ---");
 check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "side-nav starts expanded by default in this stubbed run (no stored preference, and window.innerWidth is undefined in the stub -- not narrow)", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
 elements.sidenavToggle.click();
@@ -1517,7 +1549,7 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // live-value display, not the control itself).
 const totalLabels = (html.match(/<label\b/g) || []).length;
 const labelsWithFor = html.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 90, "exactly 90 <label> elements exist on the page (87 + 3 from viz-innovation batch 3's Domino/Metronome inputs)", totalLabels);
+check(totalLabels === 91, "exactly 91 <label> elements exist on the page (90 + 1 from Phase 4 batch C's roleSelect)", totalLabels);
 check(labelsWithFor.length === totalLabels, "every single <label> now carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
