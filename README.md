@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 851 checks, all passing as of this writing.
+Run: `node stress.cjs` — 857 checks, all passing as of this writing.
 
 ## Status
 
@@ -995,3 +995,34 @@ Live-verified in a real browser: extreme mass (999,999,999kg) → `$21,408,749,9
 outputs (`$14.67`/`$10.39`) correctly unaffected, restoring the mass input returns the exact
 original defaults, 0 console errors. Checks: 844 → 851 (+7). Committed locally — pending push with
 explicit confirmation, same discipline as every prior round.
+
+**2026-09-07, twenty-sixth round (Nesting Doll Cost Peel: real label-clipping fix, user-reported):**
+
+TJ flagged a screenshot of the Nesting Doll Cost Peel chart (Should-Cost tab) showing the "Total
+$121.31" label with its top visibly cut off ("otal $121.31"). Root-caused via a standalone `node -e`
+script before touching the code: the outer ellipse's radius is *always* exactly `maxRadius` (110) by
+construction (`scale = maxRadius/totalCost`, so `totalCost*scale = maxRadius` every time), giving a
+fixed `ry = 126.5` regardless of input — but the old canvas (`H=260`, `cy=140`) left only 13.5 units
+of headroom above it, less than an 11px bold label's own ascender needs. This reproduced on **every
+page load with the page's own shipped defaults**, not an edge case. While in the same function, also
+found the "peeled: Overhead $14.90" and "peeled: Machine $14.67" labels crowding to a bare 6-unit
+real gap (measured via the browser's own `getBBox()`, not an estimate) whenever two components'
+dollar values land close together, since the pure radius-midpoint label-placement formula has no
+minimum-spacing floor.
+
+Fixed both from first principles rather than patching symptoms: the canvas height and vertical
+center (`cy`) are now derived from the outer ellipse's own fixed extent (`topClearance` +
+`maxRadius*ryMult` for `cy`, plus `bottomClearance` for `H`) so the "Total" label can never clip
+regardless of `totalCost`, and a `minPeelGap` (18 units) is now enforced between consecutive peeled
+labels so two similarly-valued components can't crowd. Golden geometry pre-registered via a
+standalone `node -e` script before writing any check (B35) — viewBox grew from `0 0 400 260` to
+`0 0 400 287`, Total label y-position 5.5→14.0.
+
+Live-verified in a real browser using the browser's own text-layout engine (`getBBox()`), not an
+estimate: Total label's real bounding-box top is now `y=3` (positive, inside the viewBox — was
+clipping above `y=0` before the fix), the Overhead/Machine labels now have a real, non-overlapping
+6-unit gap, and — critically — re-ran the check at a *different* total cost ($228.69, via a live
+mass-input change) to confirm the fix is input-invariant, not tuned to just the default values: the
+Total label's bbox top stayed at `y=3` exactly, as the ellipse-radius invariant predicts. 0 console
+errors. Checks: 851 → 857 (+6). Committed locally — pending push with explicit confirmation, same
+discipline as every prior round.

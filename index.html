@@ -374,7 +374,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 851/851 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 857/857 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -2570,21 +2570,34 @@
   window.calcNestingDoll = calcNestingDoll;
 
   function renderNestingDoll(state){
-    var W = 400, H = 260, cx = W / 2, cy = H / 2 + 10;
-    var maxRadius = 110;
+    var W = 400, maxRadius = 110, ryMult = 1.15;
+    // The outer "Total" ellipse's radius is ALWAYS exactly maxRadius by construction (scale =
+    // maxRadius/totalCost, so totalCost*scale = maxRadius every time) -- so its ry is a fixed
+    // 126.5 regardless of input. A design-qa pass found the old H=260/cy=140 canvas gave the
+    // "Total $..." label above it only 13.5 units of headroom, clipping the label's own ascender
+    // above the viewBox top on every page load (not just an edge case). topClearance/bottomClearance
+    // are sized to the outer ellipse's fixed extent so this can't clip regardless of cost inputs.
+    var topClearance = 22, bottomClearance = 12;
+    var cx = W / 2, cy = topClearance + maxRadius * ryMult;
+    var H = cy + maxRadius * ryMult + bottomClearance;
     var scale = state.totalCost > 0 ? maxRadius / state.totalCost : 0;
     var colors = ['rgb(var(--c-accent)/.30)', 'rgb(var(--c-success)/.30)', 'rgb(var(--c-warning)/.30)', 'rgb(var(--c-danger)/.30)'];
     var strokes = ['rgb(var(--c-accent))', 'rgb(var(--c-success))', 'rgb(var(--c-warning))', 'rgb(var(--c-danger))'];
     var dollsSvg = '';
     var labelsSvg = '';
+    var minPeelGap = 18; // minimum baseline-to-baseline spacing between "peeled" labels so two
+    // similarly-sized components (e.g. Overhead $14.90 vs Machine $14.67) never crowd/overlap
+    var prevPeelY = null;
     state.dolls.forEach(function(d, i){
       var r = Math.max(6, d.value * scale);
-      dollsSvg += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r.toFixed(1) + '" ry="' + (r * 1.15).toFixed(1) + '" fill="' + colors[i] + '" stroke="' + strokes[i] + '" stroke-width="2"/>';
+      dollsSvg += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r.toFixed(1) + '" ry="' + (r * ryMult).toFixed(1) + '" fill="' + colors[i] + '" stroke="' + strokes[i] + '" stroke-width="2"/>';
       if (i === 0){
-        labelsSvg += '<text x="' + cx + '" y="' + (cy - r * 1.15 - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Total $' + d.value.toFixed(2) + '</text>';
+        labelsSvg += '<text x="' + cx + '" y="' + (cy - r * ryMult - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Total $' + d.value.toFixed(2) + '</text>';
       } else {
         var prevR = Math.max(6, state.dolls[i - 1].value * scale);
-        var labelY = cy - (prevR + r) / 2 * 1.15;
+        var labelY = cy - (prevR + r) / 2 * ryMult;
+        if (prevPeelY !== null && labelY - prevPeelY < minPeelGap) labelY = prevPeelY + minPeelGap;
+        prevPeelY = labelY;
         labelsSvg += '<text x="' + cx + '" y="' + labelY.toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">peeled: ' + d.peeledLabel + ' $' + d.peeledValue.toFixed(2) + '</text>';
       }
     });

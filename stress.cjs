@@ -510,6 +510,32 @@ sandbox.renderNestingDoll(dollState);
 check(elements.nestingDollWrap.innerHTML.includes("<svg") && elements.nestingDollWrap.innerHTML.includes('role="img"'), "renderNestingDoll() renders an actual accessible <svg>, not just numbers");
 check((elements.nestingDollWrap.innerHTML.match(/<ellipse/g) || []).length === 4, "exactly 4 nested doll ellipses are rendered, one per component", (elements.nestingDollWrap.innerHTML.match(/<ellipse/g) || []).length);
 check(elements.nestingDollWrap.innerHTML.includes("core: $10.39"), "the innermost doll's label states the exact core value", elements.nestingDollWrap.innerHTML);
+
+// design-qa fix (2026-09-07): the "Total $..." label's ascender was clipping above the SVG's own
+// viewBox top on every page load -- not an edge case, since the outer ellipse's radius is ALWAYS
+// exactly maxRadius(110) by construction, so this reproduced with the page's own shipped defaults
+// (confirmed via a user-supplied screenshot showing "otal $121.31" with the "T" visibly cut off).
+// Golden geometry pre-registered via a standalone node -e script (B35) before writing this check.
+const dollSvg = elements.nestingDollWrap.innerHTML;
+const dollViewBoxMatch = dollSvg.match(/viewBox="0 0 (\d+) (\d+(?:\.\d+)?)"/);
+check(!!dollViewBoxMatch && dollViewBoxMatch[1] === "400" && Math.abs(parseFloat(dollViewBoxMatch[2]) - 287) < 0.5, "nesting-doll viewBox height grew to 287 (was 260) to give the Total label real headroom", dollViewBoxMatch && dollViewBoxMatch[0]);
+const totalYMatch = dollSvg.match(/<text x="200" y="([\d.]+)" font-size="11"/);
+check(!!totalYMatch, "found the Total label's own y attribute to check for clipping");
+if (totalYMatch) {
+  const totalY = parseFloat(totalYMatch[1]);
+  check(Math.abs(totalY - 14.0) < 0.5, "Total label y-position matches the golden geometry (14.0, was 5.5 pre-fix)", totalY);
+  // an 11px bold label's ascender is roughly 0.8em above its baseline -- the fix must leave that
+  // clear of the viewBox's own y=0 top edge, which the old geometry (baseline y=5.5) did not.
+  check(totalY - 11 * 0.8 >= 0, "Total label's ascender (baseline - ~0.8em) stays within the viewBox, not clipped above y=0", (totalY - 11 * 0.8).toFixed(2));
+}
+// The Overhead/Machine peeled labels (values $14.90/$14.67, close enough to crowd under the old
+// pure-midpoint formula) must now be separated by at least the enforced 18-unit minimum gap.
+const peelYs = Array.from(dollSvg.matchAll(/<text x="200" y="([\d.]+)" font-size="10" fill="rgb\(var\(--c-text-primary\)\)" text-anchor="middle">peeled:/g)).map((m) => parseFloat(m[1]));
+check(peelYs.length === 3, "found all 3 peeled-label y-positions to check spacing", peelYs);
+if (peelYs.length === 3) {
+  check(peelYs[2] - peelYs[1] >= 18 - 0.5, "the two closest-valued peeled labels (Overhead $14.90, Machine $14.67) are separated by the enforced minimum gap, not crowded", peelYs[2] - peelYs[1]);
+}
+
 sandbox.calcShouldCost(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
 check(elements.nestingDollWrap.innerHTML.includes("<svg"), "calcShouldCost() itself re-renders the nesting-doll chart on every recalculation, not just at page load");
 
