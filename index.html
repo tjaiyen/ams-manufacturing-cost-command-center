@@ -211,6 +211,16 @@
   .triage-acked{opacity:.45}
   .source-link{display:inline;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:0;font-family:inherit}
   .source-link:hover{text-decoration:underline}
+  .print-only{display:none}
+  @media print{
+    body *{visibility:hidden}
+    .print-only, .print-only *{visibility:visible}
+    .print-only{display:block;position:absolute;top:0;left:0;width:100%;color:#000;background:#fff;padding:24px;font-family:Georgia,serif}
+    .print-only h1{font-size:20px;margin:0 0 12px}
+    .print-only table{width:100%;border-collapse:collapse;margin:14px 0}
+    .print-only td{border:1px solid #999;padding:6px 8px;font-size:13px}
+    .print-only p{font-size:12.5px;line-height:1.5}
+  }
   .modal-overlay{display:none;position:fixed;inset:0;background:rgb(0 0 0/.6);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px}
   .modal-overlay.open{display:flex}
   .modal-box{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 20px 50px rgb(0 0 0/.45)}
@@ -394,9 +404,11 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 932/932 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 956/956 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
+    <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
+    <button class="icobtn" id="tourBtn" type="button" aria-label="Take a guided tour of this dashboard" data-tooltip="Take the Tour"><span class="label-text">Take the Tour</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
@@ -423,6 +435,23 @@
     Methodology tab lists exactly what's independently sourced vs. invented for the exercise.</div>
 
   <div class="frame" id="lastVisitBanner" hidden></div>
+
+  <!-- UX_ROADMAP idea #14, Phase 4 batch E: printable "read this in 60 seconds" one-pager. Invisible
+       on screen; populated right before printing (window 'beforeprint') from whatever this page's
+       own live KPI tiles currently show, so it can never hand-drift from the real numbers -- see the
+       syncPrintSummary() function near the end of the script. -->
+  <div class="print-only" id="printOnePager">
+    <h1>AMS Cost Command Center — 60-Second Summary</h1>
+    <p><b>Every dollar figure and KPI reading on this page is a synthetic worked example</b>, built
+      to demonstrate the should-cost/MHR/variance methodology this role's own job posting asks for
+      (req 10512991). None of it is real Amazon Manufacturing Services data — see the Methodology
+      tab on the live page for exactly what's independently sourced vs. invented.</p>
+    <table id="printKpiTable">
+      <tbody></tbody>
+    </table>
+    <p id="printChecksLine"></p>
+    <p>Live, interactive version: tjaiyen.github.io/ams-manufacturing-cost-command-center</p>
+  </div>
 
   <!-- ============ TAB 1: EXECUTIVE OVERVIEW ============ -->
   <section class="tabpanel active" id="tab-exec" role="tabpanel" aria-labelledby="navtab-exec">
@@ -1800,6 +1829,18 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="tourModal" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <div class="modal-box">
+      <div class="modal-head"><h3 id="tourTitle">Take the Tour</h3><button class="modal-close" id="tourClose" type="button" aria-label="Close">×</button></div>
+      <div class="modal-body" id="tourBody"></div>
+      <div class="field-row" style="margin-top:12px;justify-content:space-between;align-items:center">
+        <button class="explain-btn" id="tourBackBtn" type="button" style="width:auto;padding:4px 12px;border-radius:6px" aria-label="Previous step">‹ Back</button>
+        <span class="mono" id="tourStepOut" style="font-size:11px">Step 1 of 6</span>
+        <button class="explain-btn" id="tourNextBtn" type="button" style="width:auto;padding:4px 12px;border-radius:6px" aria-label="Next step">Next ›</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="paletteModal" role="dialog" aria-modal="true" aria-label="Quick navigation">
     <div class="modal-box">
       <div class="modal-head"><h3>Quick Navigation</h3><button class="modal-close" id="paletteClose" type="button" aria-label="Close">×</button></div>
@@ -2054,6 +2095,81 @@
     }
   })();
 
+  // UX_ROADMAP idea #14, Phase 4 batch E: printable one-pager. Populated from whatever this page's
+  // own 4 Executive-tab KPI tiles currently show, synced right before the browser actually prints
+  // (the real 'beforeprint' event) so the printed summary can never hand-drift from the live page --
+  // if a viewer edited an input before printing, the printout reflects that, not a frozen default.
+  function syncPrintSummary(){
+    var rows = '';
+    Array.prototype.slice.call(document.querySelectorAll('#tab-exec .kpi-tile')).forEach(function(tile){
+      var label = tile.querySelector('.kpi-label');
+      var value = tile.querySelector('.kpi-value');
+      var foot = tile.querySelector('.kpi-foot');
+      if (!label || !value) return;
+      rows += '<tr><td>' + label.textContent.replace(/\?\s*$/, '').trim() + '</td><td>' + value.textContent + '</td><td>' + (foot ? foot.textContent : '') + '</td></tr>';
+    });
+    var kpiTbody = document.querySelector('#printKpiTable tbody');
+    if (kpiTbody) kpiTbody.innerHTML = rows;
+    var badge = document.getElementById('verifyBadge');
+    var m = badge ? badge.textContent.match(/✓ (\d+)\/(\d+) CHECKS PASSING/) : null;
+    var checksLine = document.getElementById('printChecksLine');
+    if (checksLine) checksLine.textContent = m ? ('Runtime integrity: ' + m[1] + '/' + m[2] + ' automated checks passing as of this snapshot.') : '';
+  }
+  window.syncPrintSummary = syncPrintSummary;
+  window.addEventListener('beforeprint', syncPrintSummary);
+  document.getElementById('printBriefBtn').addEventListener('click', function(){ syncPrintSummary(); window.print(); });
+
+  // UX_ROADMAP idea #9, Phase 4 batch E: first-visit guided tour -- built opt-in only, triggered
+  // solely by the visible "Take the Tour" button, deliberately NOT auto-shown on load. This
+  // dashboard's own stated audience (a hiring panel giving it one serious look, not a product's
+  // repeat users) is the same reasoning that declined the gamification ideas earlier in
+  // UX_ROADMAP.md -- an unrequested modal popping up on load would read as presumptuous for that
+  // audience, not helpful. Same generic modal shape as Explain/Palette/Shortcuts (openModal/
+  // closeModal reused), each step real content already elsewhere on this page, no new claims.
+  var TOUR_STEPS = [
+    { tab: 'exec', title: 'Welcome', body: 'Every dollar figure and KPI reading on this page is a synthetic worked example, built to demonstrate the should-cost/MHR/variance methodology this role\'s own job posting asks for. None of it is real Amazon Manufacturing Services data — the Methodology tab (last stop) lists exactly what is.' },
+    { tab: 'exec', title: 'Executive Overview', target: 'kpi-cmar', body: 'These 4 tiles are the headline numbers: Cost Model Accuracy, Overhead Absorption, a net cost-avoidance estimate, and the JD-stated site count. Below them, a live multi-site rollup and an editable accuracy explorer.' },
+    { tab: 'shouldcost', title: 'Should-Cost & MHR', target: 'scOutTotal', body: 'The core calculator. Change any input on this tab — material rate, batch quantity, labor rate — and every number below it, plus the charts, recompute live. Nothing on this page is typed twice.' },
+    { tab: 'triage', title: 'Attention & Triage', body: 'This tab pulls together every real threshold already computed elsewhere on the page — nothing new, just a different lens. Right now it shows whatever is actually in the red or amber band at current input values.' },
+    { tab: 'methodology', title: 'Methodology & Sourcing', body: 'Read this one closely: every claim on this page is tagged REAL (independently verified, cited) or ILLUSTRATIVE (invented for the exercise). This is also where you can find the full, unfiltered stress-test history — including the mistakes that were caught and fixed.' },
+    { tab: 'exec', title: 'Two more ways to move around', body: 'Press ⌘K (or Ctrl+K) anytime for the Command Palette — search across all 13 tabs and modules. Press ? for the full keyboard-shortcuts list. That\'s the tour — explore from here.' }
+  ];
+  var tourIndex = 0;
+  var tourModal = document.getElementById('tourModal');
+  var tourBody = document.getElementById('tourBody');
+  function renderTourStep(){
+    var step = TOUR_STEPS[tourIndex];
+    activateTab(step.tab, { focus: false });
+    if (step.target) jumpToDecomposition(step.target);
+    document.getElementById('tourTitle').textContent = 'Take the Tour — ' + step.title;
+    tourBody.innerHTML = '<p>' + step.body + '</p>';
+    document.getElementById('tourStepOut').textContent = 'Step ' + (tourIndex + 1) + ' of ' + TOUR_STEPS.length;
+    document.getElementById('tourBackBtn').hidden = tourIndex === 0;
+    document.getElementById('tourNextBtn').textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Done' : 'Next ›';
+  }
+  function openTour(){ tourIndex = 0; renderTourStep(); openModal(tourModal, document.getElementById('tourNextBtn')); }
+  function closeTour(){ closeModal(tourModal); }
+  function tourNext(){
+    if (tourIndex === TOUR_STEPS.length - 1){ closeTour(); return; }
+    tourIndex++;
+    renderTourStep();
+  }
+  function tourBack(){
+    if (tourIndex === 0) return;
+    tourIndex--;
+    renderTourStep();
+  }
+  window.openTour = openTour;
+  window.closeTour = closeTour;
+  window.tourNext = tourNext;
+  window.tourBack = tourBack;
+  window.TOUR_STEPS = TOUR_STEPS; // exposed so stress.cjs checks the real steps, not a hand-copied duplicate
+  document.getElementById('tourBtn').addEventListener('click', openTour);
+  document.getElementById('tourClose').addEventListener('click', closeTour);
+  document.getElementById('tourNextBtn').addEventListener('click', tourNext);
+  document.getElementById('tourBackBtn').addEventListener('click', tourBack);
+  tourModal.addEventListener('click', function(ev){ if (ev.target === tourModal) closeTour(); });
+
   // Roving tabindex + arrow-key navigation, per the WAI-ARIA APG vertical Tabs pattern
   // (automatic activation: moving focus with the arrow keys also switches the panel).
   var sidenavList = document.querySelector('.sidenav-list');
@@ -2196,8 +2312,8 @@
     // overwrite modalReturnFocusTo with the first modal's own now-closing control instead of the
     // real pre-modal trigger, stranding focus on a hidden element once the second modal closes
     // (reproduced: a stress-test check written to verify this very feature caught it).
-    var alreadyOpen = [explainModal, paletteModal, shortcutsModal].some(function(m){ return m && m.classList.contains('open'); });
-    [explainModal, paletteModal, shortcutsModal].forEach(function(m){ if (m && m !== modalEl) m.classList.remove('open'); });
+    var alreadyOpen = [explainModal, paletteModal, shortcutsModal, tourModal].some(function(m){ return m && m.classList.contains('open'); });
+    [explainModal, paletteModal, shortcutsModal, tourModal].forEach(function(m){ if (m && m !== modalEl) m.classList.remove('open'); });
     if (!alreadyOpen) modalReturnFocusTo = document.activeElement;
     modalEl.classList.add('open');
     if (focusTarget && focusTarget.focus) focusTarget.focus();
@@ -2355,12 +2471,13 @@
     else if (ev.key === 'Enter'){ ev.preventDefault(); if (paletteSelectedIndex > -1) activatePaletteItem(paletteFiltered[paletteSelectedIndex]); }
   });
   document.addEventListener('keydown', function(ev){
-    if (ev.key === 'Escape'){ closeExplain(); closePalette(); closeShortcuts(); }
+    if (ev.key === 'Escape'){ closeExplain(); closePalette(); closeShortcuts(); closeTour(); }
     else if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); openPalette(); }
     else if (ev.key === 'Tab'){
       if (explainModal.classList.contains('open')) trapModalTab(explainModal, ev);
       else if (paletteModal.classList.contains('open')) trapModalTab(paletteModal, ev);
       else if (shortcutsModal.classList.contains('open')) trapModalTab(shortcutsModal, ev);
+      else if (tourModal.classList.contains('open')) trapModalTab(tourModal, ev);
     }
   });
 

@@ -79,18 +79,18 @@ itself (not a reimplementation) — see the "Vertical side navigation" sections 
 
 **P0 — do next, highest leverage per effort:**
 - ~~`prefers-reduced-motion` support (idea #18)~~ — done, see #18 above.
-- `aria-live="polite"` on calculator outputs (idea #19)
-- Keyboard-shortcuts help overlay, `?` key (idea #22)
-- Colorblind-safe status-pill symbol audit (idea #23)
+- ~~`aria-live="polite"` on calculator outputs (idea #19)~~ — done, Phase 4 batch A.
+- ~~Keyboard-shortcuts help overlay, `?` key (idea #22)~~ — done, Phase 4 batch A.
+- ~~Colorblind-safe status-pill symbol audit (idea #23)~~ — done, Phase 4 batch A.
 
 **P1 — good value, moderate effort:**
 - URL deep-linking for shareable scenarios (idea #6)
 - Searchable glossary/term index (idea #12)
-- First-visit guided tour (idea #9)
+- ~~First-visit guided tour (idea #9)~~ — done, Phase 4 batch E (opt-in only, never auto-shown).
 - Progressive disclosure for advanced calculator inputs (idea #13)
 - Per-tab empty-state guidance (idea #10)
 - Full keyboard-nav audit beyond the side-nav itself (idea #17)
-- Printable one-pager (idea #14) — good-fit at Phase 1, never actually tiered until now (caught during the Phase 4 stress-test below)
+- ~~Printable one-pager (idea #14)~~ — done, Phase 4 batch E (synced live from the real KPI tiles at print time, not a hardcoded duplicate).
 
 **P2 — valuable but bigger lift or more speculative:**
 - KPI sparkline previews (idea #2)

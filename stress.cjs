@@ -325,6 +325,10 @@ function makeElement(id) {
     rows: [],
     addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); },
     getAttribute(name) { return Object.prototype.hasOwnProperty.call(attrs, name) ? attrs[name] : null; },
+    // Real DOM elements have this; this stub didn't, and 3 real call sites now need it
+    // (jumpToDecomposition, the KPI Interaction Map's own jump(), and the guided tour) -- fixed once
+    // here, at the root, rather than continuing to avoid directly invoking any of them under test.
+    hasAttribute(name) { return Object.prototype.hasOwnProperty.call(attrs, name); },
     setAttribute(name, v) { attrs[name] = String(v); },
     appendChild() {},
     click() { (listeners.click || []).forEach((fn) => fn.call(el)); },
@@ -420,7 +424,13 @@ const sandbox = { document: documentStub, localStorage: { _s: {}, getItem(k) { r
   // above. Deliberately NOT firing the callback: an eager/synchronous fire risks looping or
   // reordering relative to the surrounding synchronous code in ways a real 900ms/2s delay never
   // would, which would test a behavior the real page can't actually exhibit.
-  setTimeout: () => 0, clearTimeout: () => {} };
+  setTimeout: () => 0, clearTimeout: () => {},
+  // Phase 4 batch E: the printable one-pager listens for the real browser 'beforeprint' event to
+  // sync its summary right before printing -- same "accept the call without throwing, real behavior
+  // verified live in a real browser" pattern as document.addEventListener/setTimeout above. window
+  // IS this sandbox object itself (self-referential, see below), so this has to live here, not on a
+  // separate window-only stub.
+  addEventListener: () => {} };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 try {
@@ -1936,6 +1946,56 @@ const triageAfterFix = sandbox.calcTriage();
 check(!triageAfterFix.tier1.some((i) => i.id === "po-gate") && !triageAfterFix.tier2.some((i) => i.id === "po-gate"), "fixing the PO gate's real input (7% -> 2%, back under the 5% threshold) removes the po-gate item from calcTriage() entirely, in either tier", JSON.stringify(triageAfterFix.tier1.concat(triageAfterFix.tier2).map((i) => i.id)));
 elements.gatePo.value = "7";
 sandbox.calcGates(); // restore the default before any later check in this file relies on the gate's real state
+
+console.log("--- Phase 4 batch E (2026-09-07): printable one-pager (idea #14) ---");
+check(html.includes('class="print-only" id="printOnePager"'), "the print-only summary section exists in the static markup");
+check(html.includes("@media print"), "a real @media print block exists");
+check(html.includes("visibility:hidden") && html.includes(".print-only, .print-only *{visibility:visible}"), "the print CSS hides everything except the print-only section, the standard print-isolation pattern");
+check(typeof sandbox.syncPrintSummary === "function", "syncPrintSummary is exposed as a function");
+// This stub's querySelectorAll only special-cases 2 selectors (neither is '#tab-exec .kpi-tile'), so
+// it can't populate the print table under test -- same accepted-limitation shape as the KPI
+// Interaction Map's jump() and Phase 4 batch B's jumpToDecomposition. Verified here only that calling
+// it doesn't throw; the actual population is verified live in a real browser before this round ships.
+try {
+  sandbox.syncPrintSummary();
+  check(true, "syncPrintSummary() runs without throwing even though this stub can't resolve its query selector");
+} catch (e) {
+  check(false, "syncPrintSummary() runs without throwing even though this stub can't resolve its query selector", e.message);
+}
+check(html.includes("window.addEventListener('beforeprint', syncPrintSummary)"), "the summary is wired to sync on the real browser 'beforeprint' event, not just on a manual button click");
+check(html.includes("printBriefBtn") && html.includes("syncPrintSummary(); window.print();"), "the visible Print Brief button also syncs the summary before invoking window.print(), for the case a viewer prints via that button rather than Ctrl/Cmd+P");
+check(html.includes("tjaiyen.github.io/ams-manufacturing-cost-command-center"), "the printed summary states the real live URL so a paper copy can find its way back to the interactive version");
+
+console.log("--- Phase 4 batch E (2026-09-07): first-visit guided tour (idea #9) ---");
+check(typeof sandbox.openTour === "function" && typeof sandbox.closeTour === "function" && typeof sandbox.tourNext === "function" && typeof sandbox.tourBack === "function", "openTour/closeTour/tourNext/tourBack are all exposed as functions");
+check(sandbox.TOUR_STEPS.length === 6, "the tour has exactly 6 real steps (golden count)", sandbox.TOUR_STEPS.length);
+check(sandbox.TOUR_STEPS.map((s) => s.tab).join(",") === "exec,exec,shouldcost,triage,methodology,exec", "the 6 steps visit the real tabs in the intended order (welcome -> KPIs -> should-cost -> triage -> methodology -> wrap-up)", sandbox.TOUR_STEPS.map((s) => s.tab).join(","));
+// Deliberate design choice, checked directly: the tour is opt-in only, never auto-opened on load.
+// Checked by scoping to the real "Initial render" init block at the bottom of the script (the only
+// place a page-load auto-open could live) and confirming openTour() never appears as a bare call
+// there -- it's still fine for that same text to appear earlier, in the function's own definition.
+const initBlock = html.slice(html.indexOf("// ---------- Initial render ----------"));
+check(!/(?<!function )\bopenTour\(\);/.test(initBlock), "openTour() is never called from the page's own init sequence -- confirms it's opt-in only, not auto-shown on load", "");
+sandbox.openTour();
+check(elements.tourModal.classList.contains("open"), "openTour() opens tourModal");
+check(elements["tab-exec"].classList.contains("active"), "step 1 lands on the real Executive Overview tab");
+check(elements.tourStepOut.textContent === "Step 1 of 6", "the step counter shows the real current position");
+check(elements.tourBackBtn.hidden === true, "Back is hidden on the first step (nothing to go back to)");
+check(elements.tourNextBtn.textContent === "Next ›", "Next reads \"Next\" (not \"Done\") on a non-final step", elements.tourNextBtn.textContent);
+sandbox.tourNext();
+check(elements.tourStepOut.textContent === "Step 2 of 6", "tourNext() advances to step 2");
+check(elements.tourBackBtn.hidden === false, "Back becomes visible once past the first step");
+for (let i = 0; i < 3; i++) sandbox.tourNext(); // steps 3, 4, 5 -> lands on step 5 (methodology)
+check(elements["tab-methodology"].classList.contains("active"), "step 5 lands on the real Methodology & Sourcing tab", elements.tourStepOut.textContent);
+sandbox.tourBack();
+check(elements["tab-triage"].classList.contains("active"), "tourBack() from step 5 correctly returns to step 4's real tab (Attention & Triage), not just decrementing a counter with no matching navigation", elements.tourStepOut.textContent);
+sandbox.tourNext();
+sandbox.tourNext(); // back to step 5, then to the real final step 6
+check(elements.tourStepOut.textContent === "Step 6 of 6", "reaching the final step shows the real total", elements.tourStepOut.textContent);
+check(elements.tourNextBtn.textContent === "Done", "the final step's button reads \"Done\", not \"Next\"", elements.tourNextBtn.textContent);
+sandbox.tourNext(); // clicking "Done" on the final step
+check(!elements.tourModal.classList.contains("open"), "clicking \"Done\" on the final step closes the tour (tourNext doubles as the close action there), not stranding the user on a step with nowhere to go");
+sandbox.activateTab("exec", { focus: false }); // restore the default tab before any later check relies on it
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH

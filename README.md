@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 932 checks, all passing as of this writing.
+Run: `node stress.cjs` — 956 checks, all passing as of this writing.
 
 ## Status
 
@@ -1187,3 +1187,47 @@ PO gate's real input (7%→2%) removes that item from the list on the next open,
 errors. Checks: 915 → 932 (+17). Committed locally — pending push with explicit confirmation, same
 discipline as every prior round. Batch E (guided tour + printable one-pager) still to come, closing
 out all 10 Phase 4 ideas.
+
+**2026-09-07, thirty-first round (Phase 4 batch E/5 — final batch: guided tour + printable one-pager,
+all 10 Phase 4 ideas complete):**
+
+1. **Printable one-pager** (idea #14) — a dedicated `.print-only` section, invisible on screen,
+   populated from whatever this page's own 4 Executive-tab KPI tiles currently show, synced right
+   before the browser actually prints (the real `beforeprint` event, plus a visible "Print Brief"
+   button that syncs and calls `window.print()` directly). Reading live values at print time — not a
+   hardcoded duplicate — means the printout can never hand-drift from the page, and correctly reflects
+   whatever a viewer had edited before printing.
+2. **First-visit guided tour** (idea #9) — 6 real steps (Welcome → Executive KPIs → Should-Cost & MHR
+   → Attention & Triage → Methodology & Sourcing → wrap-up), each one really switching to that tab and
+   scrolling/focusing a real target element, not just narrating over a static screenshot. Built
+   **opt-in only**, triggered solely by a visible "Take the Tour" button — deliberately never
+   auto-shown on load. Same reasoning UX_ROADMAP already used to decline the gamification ideas: an
+   unrequested modal popping up for a hiring panel giving this page one serious look would read as
+   presumptuous, not helpful.
+
+Two real bugs caught by the test stub before either feature could be verified at all: `window` in
+this harness's sandbox is the sandbox object itself, which never had an `addEventListener` — the
+print summary's `beforeprint` wiring would have crashed the sandboxed script the instant it tried to
+register itself, taking down every other check in the file with it; fixed with a no-op, same
+"accept the call, verify real behavior live" pattern already used for `setTimeout`/`document.
+addEventListener`. Separately, `hasAttribute` had never existed on this stub's DOM elements at all —
+harmless for two years because both prior call sites (the KPI Interaction Map's `jump()` and batch
+B's `jumpToDecomposition()`) had only ever been checked structurally, never actually invoked under
+test. The guided tour's own step-3 jump was the third real call site to need it, at which point
+avoiding it stopped being reasonable — fixed once, at the root, so all three (and any future one) can
+now be exercised directly rather than perpetually worked around.
+
+Live-verified in a real browser: the tour's step 3 genuinely switches to Should-Cost & MHR and
+focuses the real `scOutTotal` element (not just updating a counter); Back correctly returns to the
+prior step's own tab; the final step's button reads "Done" and closes the tour; `syncPrintSummary()`
+correctly populates all 4 real KPI rows with their live text (including the real "▲ Amber" OAE
+footer) and the real "956/956" checks line. The literal `window.print()` call itself could not be
+exercised further in this automated environment — it opens a real native OS dialog that blocks the
+page's own JS thread with no way to dismiss it programmatically, an environment limitation stated
+here rather than silently skipped; the button's wiring and the data it prints were both verified by
+every other means available. 0 console errors elsewhere. Checks: 932 → 956 (+24).
+
+**All 10 Phase 4 ideas are now complete** (4 in batch A, 2 built + 1 declined-for-cause in batch B, 1
+in batch C, 1 in batch D, 2 in batch E), plus 2 CRIT plan-level course-corrections caught by the
+`/stress-test` pass before any of batches C/D were built. Committed locally — pending push with
+explicit confirmation, same discipline as every prior round.
