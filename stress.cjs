@@ -491,6 +491,21 @@ check(elements.nestingDollWrap.innerHTML.includes("core: $10.39"), "the innermos
 sandbox.calcShouldCost(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
 check(elements.nestingDollWrap.innerHTML.includes("<svg"), "calcShouldCost() itself re-renders the nesting-doll chart on every recalculation, not just at page load");
 
+console.log("--- viz-innovation batch 2: Circulatory Cost Flow golden values (same 4 should-cost components, as vessel width) ---");
+// maxValue = matCost (81.35, the largest). Vessel widths = max(MIN_WIDTH=2, (value/maxValue)*14):
+// material=14.0 (itself the max), machine=2.5246, labor=2.0 (floored, real value 1.787), overhead=2.5642.
+check(typeof sandbox.calcCirculatory === "function", "window.calcCirculatory is exposed as a function");
+const circState = sandbox.calcCirculatory(81.35, 14.67, 10.39, 14.90, 121.31);
+check(Math.abs(circState.components[0].vesselWidth - 14) < 1e-9, "Material vessel width matches golden value (itself the max)", circState.components[0].vesselWidth);
+check(Math.abs(circState.components[1].vesselWidth - 2.5246465888137677) < 1e-9, "Machine vessel width matches golden value", circState.components[1].vesselWidth);
+check(Math.abs(circState.components[2].vesselWidth - 2) < 1e-9, "Labor vessel width is floored to the minimum (real proportional value 1.787 < MIN_WIDTH=2)", circState.components[2].vesselWidth);
+check(Math.abs(circState.components[3].vesselWidth - 2.5642286416717885) < 1e-9, "Overhead vessel width matches golden value", circState.components[3].vesselWidth);
+check(circState.dominant.label === "Material", "the dominant driver is correctly identified as Material", circState.dominant.label);
+sandbox.renderCirculatory(circState);
+check(elements.circulatoryWrap.innerHTML.includes("<svg") && elements.circulatoryWrap.innerHTML.includes('role="img"'), "renderCirculatory() renders an actual accessible <svg>, not just numbers");
+check((elements.circulatoryWrap.innerHTML.match(/<path/g) || []).length === 4, "exactly 4 vessel paths are rendered, one per component", (elements.circulatoryWrap.innerHTML.match(/<path/g) || []).length);
+check(elements.circulatoryWrap.innerHTML.includes("Material $81.35 ★"), "the dominant vessel's label is marked with the star, distinguishing it from the other 3", elements.circulatoryWrap.innerHTML);
+
 console.log("--- Variance Waterfall: golden values ---");
 check(elements.outMPV.textContent === "+$3,025", "MPV matches golden value", elements.outMPV.textContent);
 check(elements.outMQV.textContent === "-$1,040", "MQV matches golden value", elements.outMQV.textContent);
@@ -579,6 +594,22 @@ check(elements.bbAnnualSave.textContent === "$162,396", "annual saving matches g
 check(elements.bbPayback.textContent === "0.23 years", "simple payback matches golden value", elements.bbPayback.textContent);
 check(elements.bbNpv.textContent === "$365,855", "3-year NPV @ 10% matches golden value", elements.bbNpv.textContent);
 check(elements.bbCashflowBody.innerHTML.split("<tr>").length - 1 === 4, "cash-flow table has exactly 4 rows (Year 0 + 3 years, matching the default horizon)", elements.bbCashflowBody.innerHTML.split("<tr>").length - 1);
+
+console.log("--- viz-innovation batch 2: Compass Rose Scenario Navigator golden values (same NPV/transition, as direction + magnitude) ---");
+// npv=365854.8159278737 (unrounded, from the golden $365,855 above), transition=38000.
+// magnitude = |npv|/(|npv|+transition) = 365854.816/(365854.816+38000) = 0.905907 -> "90.6%".
+check(typeof sandbox.calcCompassRose === "function", "window.calcCompassRose is exposed as a function");
+const compassState = sandbox.calcCompassRose(365854.8159278737, 38000);
+check(Math.abs(compassState.magnitude - 0.9059067801068724) < 1e-9, "compass magnitude matches golden value", compassState.magnitude);
+check(compassState.favorsBuild === true, "with a positive NPV, the compass correctly favors Build In-House", compassState.favorsBuild);
+sandbox.renderCompassRose(compassState);
+check(elements.compassRoseWrap.innerHTML.includes("<svg") && elements.compassRoseWrap.innerHTML.includes('role="img"'), "renderCompassRose() renders an actual accessible <svg>, not just numbers");
+check(elements.compassRoseWrap.innerHTML.includes("90.6% confidence"), "the rendered confidence percentage matches the golden value", elements.compassRoseWrap.innerHTML);
+// Edge case: a negative NPV should flip the needle to favor Outsource.
+const compassNegState = sandbox.calcCompassRose(-50000, 38000);
+check(compassNegState.favorsBuild === false, "with a negative NPV, the compass correctly favors Outsource", compassNegState.favorsBuild);
+sandbox.calcBuildBuy(); // re-trigger via the real calculator (not a parallel path) to restore the default rendered state
+check(elements.compassRoseWrap.innerHTML.includes("90.6% confidence"), "calcBuildBuy() itself re-renders the compass rose back to the default golden state on every recalculation", elements.compassRoseWrap.innerHTML);
 
 console.log("--- Volume Crossover Point (Q*): golden values (pre-registered via Python, confirms the closed-form model — NOT the source document's own broken total-cost script) ---");
 check(elements.qsOut.textContent === "1,165 units", "crossover volume matches golden value ((420/180)^(1/0.12))", elements.qsOut.textContent);
@@ -736,12 +767,12 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 27, "exactly 27 navigable items in the command index (+5: viz-innovation batch 1 -- Pendulum, Tightrope, Archery, Honeycomb, Nesting Doll)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 27, "all 27 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 32, "exactly 32 navigable items in the command index (+5: viz-innovation batch 2 -- Circulatory, Glacial, Pressure-Vessel, Kaleidophone, Compass Rose)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 32, "all 32 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 27, "empty-query search returns all 27 items", allMatch.length);
+check(allMatch.length === 32, "empty-query search returns all 32 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
@@ -838,12 +869,43 @@ check(elements.tlPerUnit.textContent === "$7.50", "per-unit amortized cost match
 check(elements.tlNaive.textContent === "$750.00/unit", "naive first-batch-only cost matches golden value ($18,000 / 24 units)", elements.tlNaive.textContent);
 check(elements.tlOverstate.textContent === "100.0×", "overstatement factor matches golden value (750 / 7.50 = 100x, also = expectedRun/firstBatch = 2400/24)", elements.tlOverstate.textContent);
 
+console.log("--- viz-innovation batch 2: Glacial Calving Event Tracker golden values (same naive-vs-amortized numbers, as first-batch attribution) ---");
+// naiveChunkValue = naive*batch = 750*24 = 18000 (== cost, by construction).
+// correctChunkValue = perUnit*batch = 7.50*24 = 180.
+check(typeof sandbox.calcGlacial === "function", "window.calcGlacial is exposed as a function");
+const glacialState = sandbox.calcGlacial(7.5, 750, 24, 18000);
+check(Math.abs(glacialState.naiveChunkValue - 18000) < 1e-9, "naive chunk value matches golden value (and equals the tooling cost exactly, by construction)", glacialState.naiveChunkValue);
+check(Math.abs(glacialState.correctChunkValue - 180) < 1e-9, "correct chunk value matches golden value", glacialState.correctChunkValue);
+sandbox.renderGlacial(glacialState);
+check(elements.glacialWrap.innerHTML.includes("<svg") && elements.glacialWrap.innerHTML.includes('role="img"'), "renderGlacial() renders an actual accessible <svg>, not just numbers");
+check(elements.glacialWrap.innerHTML.includes("Naive: $18,000"), "the naive chunk's label states the exact golden value", elements.glacialWrap.innerHTML);
+check(elements.glacialWrap.innerHTML.includes("Correct: $180.00"), "the correct chunk's label states the exact golden value", elements.glacialWrap.innerHTML);
+sandbox.calcTooling(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.glacialWrap.innerHTML.includes("<svg"), "calcTooling() itself re-renders the glacial chart on every recalculation, not just at page load");
+
 console.log("--- DFM/DFC Cost Sensitivity: golden values ---");
 check(elements.dfmWallOut.textContent === "+24.0%", "wall-thickness penalty matches golden value (1.5mm vs 3.0mm reference)", elements.dfmWallOut.textContent);
 check(elements.dfmPocketOut.textContent === "+5.0%", "pocket-depth penalty matches golden value (5:1 vs 4:1 reference)", elements.dfmPocketOut.textContent);
 check(elements.dfmHeightOut.textContent === "+24.0%", "build-height penalty matches golden value (80mm x 0.3%/mm)", elements.dfmHeightOut.textContent);
 check(elements.dfmTotalOut.textContent === "+53.0%", "total uplift matches golden value (sum of the three penalties above)", elements.dfmTotalOut.textContent);
 check(elements.dfmCostOut.textContent === "$153.00", "estimated cost matches golden value ($100 baseline x 1.53)", elements.dfmCostOut.textContent);
+
+console.log("--- viz-innovation batch 2: Kaleidophone Resonance Chart golden values (same 3 DFM penalties, as live per-step marginal sensitivity) ---");
+// At defaults (thickness=1.5<3, active; pocket=5>4, active): wallSens=(0.40/2.5)*0.1=0.016,
+// pocketSens=0.05*0.5=0.025, heightSens=0.003*5=0.015 (unconditional). Top lever: pocket (0.025).
+check(typeof sandbox.calcKaleidophone === "function", "window.calcKaleidophone is exposed as a function");
+const kaleidoState = sandbox.calcKaleidophone(1.5, 5);
+check(Math.abs(kaleidoState.rods[0].sens - 0.016) < 1e-9, "wall-thickness sensitivity matches golden value", kaleidoState.rods[0].sens);
+check(Math.abs(kaleidoState.rods[1].sens - 0.025) < 1e-9, "pocket-depth sensitivity matches golden value", kaleidoState.rods[1].sens);
+check(Math.abs(kaleidoState.rods[2].sens - 0.015) < 1e-9, "build-height sensitivity matches golden value", kaleidoState.rods[2].sens);
+check(kaleidoState.topLever.label === "Pocket depth", "the top lever at defaults is correctly identified as Pocket depth (0.025 > 0.016 > 0.015)", kaleidoState.topLever.label);
+// Edge case: pushing thickness to (or past) the 3.0mm reference should silence that rod entirely.
+const kaleidoAtRef = sandbox.calcKaleidophone(3.0, 5);
+check(kaleidoAtRef.rods[0].sens === 0, "wall-thickness sensitivity correctly drops to exactly 0 once thickness reaches the 3.0mm reference (no more leverage left)", kaleidoAtRef.rods[0].sens);
+sandbox.renderKaleidophone(kaleidoState);
+check(elements.kaleidophoneWrap.innerHTML.includes("<svg") && elements.kaleidophoneWrap.innerHTML.includes('role="img"'), "renderKaleidophone() renders an actual accessible <svg>, not just numbers");
+check((elements.kaleidophoneWrap.innerHTML.match(/<rect/g) || []).length === 3, "exactly 3 resonance rods are rendered, one per DFM parameter", (elements.kaleidophoneWrap.innerHTML.match(/<rect/g) || []).length);
+check(elements.kaleidophoneWrap.innerHTML.includes("2.50 pts/step"), "the top lever's exact per-step sensitivity value is labeled on the chart", elements.kaleidophoneWrap.innerHTML);
 
 console.log("--- Commodity Price Exposure Early Warning: golden values ---");
 check(elements.cpShiftPct.textContent === "13.46%", "price shift % matches golden value ($29.50 vs $26.00 frozen)", elements.cpShiftPct.textContent);
@@ -895,6 +957,24 @@ check(elements.mdqsScore.textContent === "97.475%", "negative routing-error coun
 elements.mdqsRoutingErr.value = "6"; // restore default
 sandbox.calcMdqs();
 check(elements.mdqsScore.textContent === "96.875%", "restoring the routing-error input to its default (6) reproduces the original golden MDQS score exactly", elements.mdqsScore.textContent);
+
+console.log("--- viz-innovation batch 2: Pressure-Vessel Cost Containment golden values (same MDQS deduction, as distance-to-breach) ---");
+// deduction = 100-96.875 = 3.125; pressureRatio = 3.125/7 = 0.446428571... -> "44.6%" (toFixed(1)).
+check(typeof sandbox.calcPressureVessel === "function", "window.calcPressureVessel is exposed as a function");
+const pvState = sandbox.calcPressureVessel(3.125, "amber");
+check(Math.abs(pvState.pressureRatio - 3.125 / 7) < 1e-9, "pressure ratio matches golden value", pvState.pressureRatio);
+check(pvState.valveOpen === false, "the valve is correctly closed at the amber band (not yet in breach)", pvState.valveOpen);
+sandbox.renderPressureVessel(pvState);
+check(elements.pressureVesselWrap.innerHTML.includes("<svg") && elements.pressureVesselWrap.innerHTML.includes('role="img"'), "renderPressureVessel() renders an actual accessible <svg>, not just numbers");
+check(elements.pressureVesselWrap.innerHTML.includes("44.6% of redline"), "the rendered pressure percentage matches the golden value", elements.pressureVesselWrap.innerHTML);
+check(elements.pressureVesselWrap.innerHTML.includes("valve: closed"), "the valve state text matches the closed golden state", elements.pressureVesselWrap.innerHTML);
+// Edge case: a real red-band score should open the valve.
+const pvRedState = sandbox.calcPressureVessel(8, "red");
+check(pvRedState.valveOpen === true, "the valve correctly opens once the band is red (deduction=8 > the 7-point redline)", pvRedState.valveOpen);
+sandbox.renderPressureVessel(pvRedState);
+check(elements.pressureVesselWrap.innerHTML.includes("valve: OPEN"), "the rendered valve state correctly shows OPEN for the red-band case", elements.pressureVesselWrap.innerHTML);
+sandbox.calcMdqs(); // re-trigger via the real calculator (not a parallel path) to restore the default rendered state
+check(elements.pressureVesselWrap.innerHTML.includes("44.6% of redline"), "calcMdqs() itself re-renders the pressure vessel back to the default golden state on every recalculation", elements.pressureVesselWrap.innerHTML);
 
 console.log("--- MHR Build-Up Calculator: golden values (pre-registered via Python, verified before this file was written) ---");
 check(elements.mhrDepOut.textContent === "$82,857", "annual depreciation matches golden value ($580,000 / 7 yrs)", elements.mhrDepOut.textContent);
@@ -1204,12 +1284,12 @@ check(html.includes('<label for="mvarConfidence">Confidence level</label>'), "th
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll", "circulatory", "glacial", "pressurevessel", "kaleidophone", "compassrose"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 23, "exactly 23 explain buttons are wired in the HTML (18 from before + viz-innovation batch 1's 5)", explainButtonCount);
+check(explainButtonCount === 28, "exactly 28 explain buttons are wired in the HTML (23 from before + viz-innovation batch 2's 5)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");

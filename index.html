@@ -285,12 +285,26 @@
   @keyframes tightropeSway{0%,100%{transform:rotate(calc(-1 * var(--sway-deg, 3deg)))}50%{transform:rotate(var(--sway-deg, 3deg))}}
   .tightrope-walker{animation-name:tightropeSway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;transform-origin:center bottom}
 
+  /* Circulatory Cost Flow: a flowing-dash effect along each vessel path (real, computed vessel width
+     already carries the actual data signal; this is purely decorative direction-of-flow cueing),
+     switched off below under reduced-motion. */
+  @keyframes circulatoryFlow{to{stroke-dashoffset:-24}}
+  .circulatory-vessel{stroke-dasharray:10,6;animation-name:circulatoryFlow;animation-duration:1.2s;animation-timing-function:linear;animation-iteration-count:infinite}
+
+  /* Kaleidophone Resonance Chart: rod sway amplitude is a CSS custom property set inline per-render
+     from the real per-step sensitivity value -- capped, decorative, switched off under reduced-motion
+     (the exact "X.XX pts/step" label above each rod always states the same real number regardless). */
+  @keyframes kaleidophoneResonate{0%,100%{transform:rotate(calc(-1 * var(--rod-sway, 2deg)))}50%{transform:rotate(var(--rod-sway, 2deg))}}
+  .kaleidophone-rod{animation-name:kaleidophoneResonate;animation-timing-function:ease-in-out;animation-duration:0.6s;animation-iteration-count:infinite}
+
   @media (prefers-reduced-motion:reduce){
     .sidenav,.sidenav[data-collapsed="true"] .sidenav-item::after,.sidenav-item::after,
     .skip-links,.sidenav-item,.sidenav-icon{transition:none}
     .tow-flag{animation:none}
     .pendulum-bob{animation:none}
     .tightrope-walker{animation:none}
+    .circulatory-vessel{animation:none}
+    .kaleidophone-rod{animation:none}
     html{scroll-behavior:auto}
   }
 </style>
@@ -353,7 +367,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 691/691 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 737/737 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -573,6 +587,14 @@
         layer at a time, so "which single driver matters most" reads as an immediate visual instead of
         a mental sort of 4 rows.</p>
       <div id="nestingDollWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Circulatory Cost Flow <button class="explain-btn" data-explain="circulatory" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 COMPONENTS ABOVE, AS CONVERGING FLOW</span></div>
+      <p class="lede" style="margin-bottom:12px">The same 4 components, one more way — as flow
+        converging into the should-cost total, vessel width proportional to dollar contribution, so
+        the dominant driver reads as the thickest line into the total, not just the tallest bar.</p>
+      <div id="circulatoryWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -809,6 +831,14 @@
     </div>
 
     <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Compass Rose Scenario Navigator <button class="explain-btn" data-explain="compassrose" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME NPV ABOVE, AS DIRECTION + MAGNITUDE</span></div>
+      <p class="lede" style="margin-bottom:12px">The dollar figure above states the answer; this reads
+        as a single needle driven by the same 6 inputs — which way it points is the decision (build
+        in-house vs. outsource), how far it swings is how confidently the numbers favor that side.</p>
+      <div id="compassRoseWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Volume Crossover Point (Q*) <button class="explain-btn" data-explain="qstar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">POWER-LAW VENDOR PRICING</span></div>
       <p class="lede" style="margin-bottom:12px">The NPV analyzer above assumes flat per-unit prices
         at one stated volume. This asks a different question: a commercial vendor's per-unit price
@@ -909,6 +939,14 @@
           Issue 17 in the source document describes, made visible instead of asserted.</p>
       </div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Glacial Calving Event Tracker <button class="explain-btn" data-explain="glacial" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME NAIVE-VS-AMORTIZED NUMBERS, AS ONE-TIME VS. ONGOING</span></div>
+      <p class="lede" style="margin-bottom:12px">The line above states the distortion as a multiple;
+        this compares what's actually attributed to the first batch under each treatment, sized so the
+        difference is felt, not just read as "100.0×".</p>
+      <div id="glacialWrap"></div>
+    </div>
   </section>
 
   <!-- ============ TAB: DFM/DFC COST SENSITIVITY ============ -->
@@ -949,6 +987,15 @@
         </div>
       </div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Kaleidophone Resonance Chart <button class="explain-btn" data-explain="kaleidophone" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 3 PENALTIES ABOVE, AS PER-STEP LEVERAGE</span></div>
+      <p class="lede" style="margin-bottom:12px">Not "which penalty is currently biggest" (the outline
+        above already shows that) but "which slider, nudged by one step from here, moves the total the
+        most" — a live marginal-sensitivity view. Note a parameter can go silent: past the 3.0mm
+        reference thickness, moving the slider further stops changing anything.</p>
+      <div id="kaleidophoneWrap"></div>
+    </div>
   </section>
 
   <!-- ============ TAB: DATA GOVERNANCE ============ -->
@@ -983,6 +1030,12 @@
         </div>
         <p style="font-size:11px;color:rgb(var(--c-text-secondary))">Bands as stated in the source
           document: green ≥98%, amber 93–98%, red &lt;93%.</p>
+
+        <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Pressure-Vessel Cost Containment <button class="explain-btn" data-explain="pressurevessel" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME MDQS SCORE ABOVE, AS DISTANCE-TO-BREACH</span></div>
+        <p class="lede" style="margin-bottom:12px">The score above states where you are; this shows
+          how much room is left before the red band — the same 4 weighted deductions, read as pressure
+          building toward a 93% failure threshold instead of a static percentage.</p>
+        <div id="pressureVesselWrap"></div>
       </div>
 
       <div class="card">
@@ -1830,7 +1883,12 @@
     qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab). The chart\'s two dots are draggable: the left one directly sets P₀, the right one (holding P₀ fixed) implies a new γ from where you drop it — a pointer-driven second input surface on top of, not instead of, the number fields above, which remain the full keyboard/screen-reader path.' },
     montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' },
     honeycomb: { title: 'Honeycomb Capacity Lattice', formula: 'Same util% per week as the table above; delta = util(week N) − util(week N−1)', body: 'The same 6-week Capacity table, laid out as a density grid instead of rows — utilization reads as cell color/fill at a glance, and the connecting edge between two adjacent weeks is colored/thickened by their real week-over-week delta, making a swing (like the week-4-to-5 jump) visible without cross-referencing two separate rows. Cell "adjacency" here is purely temporal (week N next to week N+1) — not a claim about cross-trained backup capacity between physical resources.' },
-    nestingdoll: { title: 'Nesting Doll Cost Peel', formula: 'doll[i] = total − sum(components larger than i-th), ordered descending by value', body: 'The same 4 should-cost components (material/machine/labor/overhead) shown in the outline above, re-ordered by size and nested so peeling off the largest reveals a smaller doll worth exactly the sum of what remains — down to the single smallest component at the core. These 4 components are siblings, not a true multi-level hierarchy, so this is a size-ordered peel of one flat breakdown, not a claim about deeper recursive cost structure that doesn\'t exist in this calculator.' }
+    nestingdoll: { title: 'Nesting Doll Cost Peel', formula: 'doll[i] = total − sum(components larger than i-th), ordered descending by value', body: 'The same 4 should-cost components (material/machine/labor/overhead) shown in the outline above, re-ordered by size and nested so peeling off the largest reveals a smaller doll worth exactly the sum of what remains — down to the single smallest component at the core. These 4 components are siblings, not a true multi-level hierarchy, so this is a size-ordered peel of one flat breakdown, not a claim about deeper recursive cost structure that doesn\'t exist in this calculator.' },
+    circulatory: { title: 'Circulatory Cost Flow', formula: 'vessel width ∝ component value / max(component values), floored at a minimum-visible width', body: 'The same 4 should-cost components as the outline and Nesting Doll above, a third way — as flow converging into the total, with each vessel\'s width directly proportional to its real dollar contribution. The dominant driver (marked ★) is whichever component is currently largest; this updates live as inputs change, so a shift in what drives cost most is visible as a change in which vessel is thickest, not just a re-sorted list.' },
+    glacial: { title: 'Glacial Calving Event Tracker', formula: 'naive chunk = (cost/batch)×batch = cost;  correct chunk = (cost/run)×batch', body: 'The same "First-batch unit cost overstated by N×" line above, decomposed into what each treatment actually attributes to that one first batch: the naive treatment dumps the ENTIRE tooling investment there (a one-time "calved iceberg"), while the correct treatment attributes only that batch\'s true share of the cost spread evenly across the whole run (a small, steady "ice cube"). Chunk area (not radius) is proportional to dollar value, so the visual size ratio is honest even at a 100:1 real-world scale difference.' },
+    pressurevessel: { title: 'Pressure-Vessel Cost Containment', formula: 'pressure ratio = deduction / (100 − 93)  — 1.0 = exactly at the red threshold', body: 'The same MDQS deduction the score above computes, re-expressed as a fraction of the real 7-point gap between a perfect score and the red band (93%) this document defines. The "valve" is a static state indicator (open = currently in breach, closed = within tolerance) — not a claim that AMS runs an automated corrective mechanism; no such system is asserted or implied to exist.' },
+    kaleidophone: { title: 'Kaleidophone Resonance Chart', formula: 'sensitivity = |d(penalty)/d(param)| × slider step, evaluated at the CURRENT value (0 once a threshold is crossed)', body: 'The same 3 DFM penalty formulas above, differentiated with respect to each slider and evaluated at exactly where it sits right now — "if I nudge this one slider by one step from here, how much does the total move?" Wall-thickness and pocket-depth are threshold formulas (their real derivative is 0 once thickness ≥ 3.0mm or pocket ≤ 4:1), so a rod can go fully silent; build-height has no threshold and always contributes. Not a claim about which lever "matters most" in general — only which one has leverage from the CURRENT design point.' },
+    compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -1900,6 +1958,7 @@
     { label: 'Site Accuracy Explorer', tab: 'exec', scrollTo: 'archeryAvgOut' },
     { label: 'Should-Cost & MHR Simulator', tab: 'shouldcost' },
     { label: 'Nesting Doll Cost Peel', tab: 'shouldcost', scrollTo: 'nestingDollWrap' },
+    { label: 'Circulatory Cost Flow', tab: 'shouldcost', scrollTo: 'circulatoryWrap' },
     { label: 'MHR Build-Up Calculator', tab: 'shouldcost', scrollTo: 'mhrDepOut' },
     { label: 'Monte Carlo Should-Cost Explorer', tab: 'shouldcost', scrollTo: 'mcP50Out' },
     { label: 'Variance Waterfall', tab: 'variance' },
@@ -1908,12 +1967,16 @@
     { label: 'Mean-Reversion Forward Band', tab: 'variance', scrollTo: 'ouExpected' },
     { label: 'Equilibrium Pendulum', tab: 'variance', scrollTo: 'pendDisplacementOut' },
     { label: 'Build-vs-Buy / CapEx', tab: 'buildbuy' },
+    { label: 'Compass Rose Scenario Navigator', tab: 'buildbuy', scrollTo: 'compassRoseWrap' },
     { label: 'Volume Crossover Point (Q*)', tab: 'buildbuy', scrollTo: 'qsOut' },
     { label: 'Capacity & Absorption Forecast', tab: 'capacity' },
     { label: 'Honeycomb Capacity Lattice', tab: 'capacity', scrollTo: 'honeycombWrap' },
     { label: 'Tooling Amortization Tracker', tab: 'tooling' },
+    { label: 'Glacial Calving Event Tracker', tab: 'tooling', scrollTo: 'glacialWrap' },
     { label: 'Design-for-Cost Sensitivity', tab: 'dfm' },
+    { label: 'Kaleidophone Resonance Chart', tab: 'dfm', scrollTo: 'kaleidophoneWrap' },
     { label: 'Data Governance (MDQS)', tab: 'governance' },
+    { label: 'Pressure-Vessel Cost Containment', tab: 'governance', scrollTo: 'pressureVesselWrap' },
     { label: 'Guardrail Gate Simulator', tab: 'governance', scrollTo: 'gateBomOut' },
     { label: 'Cost Diagnostic Playbook', tab: 'playbook' },
     { label: 'Predictive & Risk Models', tab: 'risk' },
@@ -2307,6 +2370,7 @@
     document.getElementById('scOutOh').textContent = '$' + overheadCost.toFixed(2);
     document.getElementById('scOutTotal').textContent = '$' + totalCost.toFixed(2);
     renderNestingDoll(calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost));
+    renderCirculatory(calcCirculatory(matCost, machineCost, laborCost, overheadCost, totalCost));
     return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };
   }
   window.calcShouldCost = calcShouldCost;
@@ -2362,6 +2426,55 @@
     document.getElementById('nestingDollWrap').innerHTML = svg;
   }
   window.renderNestingDoll = renderNestingDoll;
+
+  // ---------- Circulatory Cost Flow: the same 4 should-cost components as converging flow, vessel
+  // width proportional to dollar value. Pure state computation separated from render, same pattern
+  // as calcNestingDoll(). ----------
+  function calcCirculatory(matCost, machineCost, laborCost, overheadCost, totalCost){
+    var components = [
+      { label: 'Material', value: matCost },
+      { label: 'Machine', value: machineCost },
+      { label: 'Labor', value: laborCost },
+      { label: 'Overhead', value: overheadCost },
+    ];
+    var maxValue = Math.max.apply(null, components.map(function(c){ return c.value; }));
+    var MAX_WIDTH = 14, MIN_WIDTH = 2;
+    components.forEach(function(c){
+      c.vesselWidth = maxValue > 0 ? Math.max(MIN_WIDTH, (c.value / maxValue) * MAX_WIDTH) : MIN_WIDTH;
+      c.pct = totalCost > 0 ? (c.value / totalCost) * 100 : 0;
+    });
+    var dominant = components.reduce(function(a, b){ return b.value > a.value ? b : a; });
+    return { components: components, totalCost: totalCost, dominant: dominant };
+  }
+  window.calcCirculatory = calcCirculatory;
+
+  function renderCirculatory(state){
+    var W = 400, H = 200, sourceX = 40, heartX = 330, heartY = H / 2;
+    var n = state.components.length;
+    var rowH = H / n;
+    var colors = ['rgb(var(--c-accent))', 'rgb(var(--c-success))', 'rgb(var(--c-warning))', 'rgb(var(--c-danger))'];
+    var vesselsSvg = '', labelsSvg = '';
+    state.components.forEach(function(c, i){
+      var sourceY = rowH * i + rowH / 2;
+      var midX = (sourceX + heartX) / 2;
+      // A curved bezier converging every source toward the shared heart point -- a genuine flow
+      // shape, not a straight-line diagram.
+      var path = 'M ' + sourceX + ' ' + sourceY.toFixed(1) + ' C ' + midX.toFixed(1) + ' ' + sourceY.toFixed(1) + ', ' + midX.toFixed(1) + ' ' + heartY.toFixed(1) + ', ' + heartX + ' ' + heartY.toFixed(1);
+      var isDominant = c.label === state.dominant.label;
+      vesselsSvg += '<path d="' + path + '" fill="none" stroke="' + colors[i] + '" stroke-width="' + c.vesselWidth.toFixed(1) + '" stroke-linecap="round" opacity="' + (isDominant ? '0.9' : '0.55') + '" class="circulatory-vessel"/>';
+      labelsSvg += '<circle cx="' + sourceX + '" cy="' + sourceY.toFixed(1) + '" r="4" fill="' + colors[i] + '"/>' +
+        '<text x="' + (sourceX - 8) + '" y="' + (sourceY + 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="end">' + c.label + ' $' + c.value.toFixed(2) + (isDominant ? ' ★' : '') + '</text>';
+    });
+    labelsSvg += '<circle cx="' + heartX + '" cy="' + heartY + '" r="9" fill="rgb(var(--c-bg-card))" stroke="rgb(var(--c-text-primary))" stroke-width="2"/>' +
+      '<text x="' + (heartX + 14) + '" y="' + (heartY + 3) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="start">Total $' + state.totalCost.toFixed(2) + '</text>';
+    var ariaLabel = 'Circulatory cost flow. ' + state.components.map(function(c){ return c.label + ' $' + c.value.toFixed(2) + ' (' + c.pct.toFixed(1) + '%)'; }).join(', ') +
+      '. Dominant driver: ' + state.dominant.label + '. Total $' + state.totalCost.toFixed(2) + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="' + ariaLabel + '">' +
+      vesselsSvg + labelsSvg +
+      '</svg>';
+    document.getElementById('circulatoryWrap').innerHTML = svg;
+  }
+  window.renderCirculatory = renderCirculatory;
   ['scProcess','scBatch','scMass','scMatRate','scBtf','scReclaim','scRuntime','scSetup','scLabor','scOh'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcShouldCost);
     document.getElementById(id).addEventListener('change', calcShouldCost);
@@ -2737,10 +2850,47 @@
     document.getElementById('bbPayback').textContent = isFinite(payback) ? payback.toFixed(2) + ' years' : 'never (no positive saving)';
     document.getElementById('bbNpv').textContent = '$' + Math.round(npv).toLocaleString();
     document.getElementById('bbNpv').style.color = npv >= 0 ? 'rgb(var(--c-success))' : 'rgb(var(--c-danger))';
+    renderCompassRose(calcCompassRose(npv, transition));
 
     return { unitSave: unitSave, annualSave: annualSave, payback: payback, npv: npv };
   }
   window.calcBuildBuy = calcBuildBuy;
+
+  // ---------- Compass Rose Scenario Navigator: same NPV/transition inputs above, re-framed as a
+  // single needle -- direction (build vs. outsource) and magnitude (how dominant the return is
+  // relative to the up-front investment). Pure state computation separated from render. ----------
+  function calcCompassRose(npv, transition){
+    // Bounded in [0,1) by construction: 0 as npv->0, approaching 1 as |npv| dominates the transition
+    // cost -- no arbitrary cap needed, unlike a raw ratio against a fixed reference scale.
+    var magnitude = (Math.abs(npv) + transition) > 0 ? Math.abs(npv) / (Math.abs(npv) + transition) : 0;
+    var favorsBuild = npv >= 0;
+    return { npv: npv, transition: transition, magnitude: magnitude, favorsBuild: favorsBuild };
+  }
+  window.calcCompassRose = calcCompassRose;
+
+  function renderCompassRose(state){
+    var W = 220, H = 220, cx = W / 2, cy = H / 2, outerR = 90, maxNeedle = 78;
+    var needleLen = state.magnitude * maxNeedle;
+    // North = build in-house wins (npv>=0), South = outsource wins -- the ONLY two directions with
+    // real meaning here; East/West are decorative compass-rose dressing only, stated explicitly in
+    // the aria-label so they're never mistaken for a second encoded dimension.
+    var tipY = state.favorsBuild ? cy - needleLen : cy + needleLen;
+    var compassSvg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + outerR + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + cx + '" y1="' + (cy - outerR) + '" x2="' + cx + '" y2="' + (cy + outerR) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + (cx - outerR) + '" y1="' + cy + '" x2="' + (cx + outerR) + '" y2="' + cy + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<text x="' + cx + '" y="' + (cy - outerR - 8) + '" font-size="10" font-weight="700" fill="rgb(var(--c-success))" text-anchor="middle">BUILD IN-HOUSE</text>' +
+      '<text x="' + cx + '" y="' + (cy + outerR + 16) + '" font-size="10" font-weight="700" fill="rgb(var(--c-danger))" text-anchor="middle">OUTSOURCE</text>';
+    var needleColor = state.favorsBuild ? 'rgb(var(--c-success))' : 'rgb(var(--c-danger))';
+    var needleSvg = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY.toFixed(1) + '" stroke="' + needleColor + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="' + needleColor + '"/>';
+    var labelSvg = '<text x="' + cx + '" y="' + (H - 4) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + (state.magnitude * 100).toFixed(1) + '% confidence</text>';
+    var ariaLabel = 'Compass rose scenario navigator. NPV ' + fmtMoney(state.npv) + '. Needle points ' + (state.favorsBuild ? 'toward Build In-House' : 'toward Outsource') + ' at ' + (state.magnitude * 100).toFixed(1) + '% of full swing (how dominant the return is relative to the transition cost). East/West are decorative compass dressing only, not a second encoded dimension.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:220px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      compassSvg + needleSvg + labelSvg +
+      '</svg>';
+    document.getElementById('compassRoseWrap').innerHTML = svg;
+  }
+  window.renderCompassRose = renderCompassRose;
   ['bbInternal','bbExternal','bbVolume','bbTransition','bbRate','bbYears'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcBuildBuy);
   });
@@ -3153,10 +3303,42 @@
     document.getElementById('tlPerUnit').textContent = '$' + perUnit.toFixed(2);
     document.getElementById('tlNaive').textContent = '$' + naive.toFixed(2) + '/unit';
     document.getElementById('tlOverstate').textContent = overstate.toFixed(1) + '×';
+    renderGlacial(calcGlacial(perUnit, naive, batch, cost));
     return { perUnit: perUnit, naive: naive, overstate: overstate };
   }
   window.calcTooling = calcTooling;
   ['tlCost', 'tlRun', 'tlBatch'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcTooling); });
+
+  // ---------- Glacial Calving Event Tracker: the same naive-vs-amortized tooling numbers above,
+  // compared as what's actually attributed to the FIRST BATCH under each treatment -- naive
+  // (one-time "calved" lump = the full tooling cost) vs. correct (the batch's true, small share of
+  // the ongoing per-unit trickle). Pure state computation separated from render. ----------
+  function calcGlacial(perUnit, naive, batch, cost){
+    var naiveChunkValue = naive * batch; // == cost, by construction (naive = cost/batch)
+    var correctChunkValue = perUnit * batch;
+    return { naiveChunkValue: naiveChunkValue, correctChunkValue: correctChunkValue, cost: cost, batch: batch };
+  }
+  window.calcGlacial = calcGlacial;
+
+  function renderGlacial(state){
+    var W = 400, H = 180, waterY = 130;
+    var maxRadius = 70;
+    var radiusNaive = maxRadius;
+    var radiusCorrect = state.naiveChunkValue > 0 ? maxRadius * Math.sqrt(state.correctChunkValue / state.naiveChunkValue) : 0;
+    radiusCorrect = Math.max(3, radiusCorrect); // floor so a tiny-but-nonzero chunk stays visible
+    var naiveCx = 110, correctCx = 300;
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="First-batch cost, naive treatment: $' + state.naiveChunkValue.toFixed(2) + '. Correct amortized treatment: $' + state.correctChunkValue.toFixed(2) + '. Batch size ' + state.batch + ' units.">' +
+      '<line x1="0" y1="' + waterY + '" x2="' + W + '" y2="' + waterY + '" stroke="rgb(var(--c-accent)/.3)" stroke-width="2"/>' +
+      '<polygon points="' + (naiveCx - radiusNaive * 0.9).toFixed(1) + ',' + (waterY).toFixed(1) + ' ' + (naiveCx - radiusNaive * 0.5).toFixed(1) + ',' + (waterY - radiusNaive * 1.3).toFixed(1) + ' ' + naiveCx + ',' + (waterY - radiusNaive * 0.9).toFixed(1) + ' ' + (naiveCx + radiusNaive * 0.6).toFixed(1) + ',' + (waterY - radiusNaive * 1.1).toFixed(1) + ' ' + (naiveCx + radiusNaive * 0.9).toFixed(1) + ',' + waterY.toFixed(1) + '" fill="rgb(var(--c-danger)/.35)" stroke="rgb(var(--c-danger))" stroke-width="2"/>' +
+      '<text x="' + naiveCx + '" y="' + (waterY + 20) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Naive: $' + state.naiveChunkValue.toLocaleString() + '</text>' +
+      '<text x="' + naiveCx + '" y="' + (waterY + 34) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">(the whole calved iceberg)</text>' +
+      '<circle cx="' + correctCx + '" cy="' + (waterY - radiusCorrect).toFixed(1) + '" r="' + radiusCorrect.toFixed(1) + '" fill="rgb(var(--c-success)/.4)" stroke="rgb(var(--c-success))" stroke-width="2"/>' +
+      '<text x="' + correctCx + '" y="' + (waterY + 20) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Correct: $' + state.correctChunkValue.toFixed(2) + '</text>' +
+      '<text x="' + correctCx + '" y="' + (waterY + 34) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">(one small ice cube)</text>' +
+      '</svg>';
+    document.getElementById('glacialWrap').innerHTML = svg;
+  }
+  window.renderGlacial = renderGlacial;
 
   // ---------- DFM/DFC Cost Sensitivity ----------
   var DFM_REF_THICKNESS = 3.0, DFM_REF_POCKET = 4, DFM_BASELINE = 100.0;
@@ -3179,10 +3361,54 @@
     document.getElementById('dfmHeightOut').textContent = '+' + (heightFactor * 100).toFixed(1) + '%';
     document.getElementById('dfmTotalOut').textContent = '+' + (total * 100).toFixed(1) + '%';
     document.getElementById('dfmCostOut').textContent = '$' + estCost.toFixed(2);
+    renderKaleidophone(calcKaleidophone(thickness, pocket));
     return { wallFactor: wallFactor, pocketFactor: pocketFactor, heightFactor: heightFactor, total: total, estCost: estCost };
   }
   window.calcDfm = calcDfm;
   ['dfmThickness', 'dfmPocket', 'dfmHeight'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcDfm); });
+
+  // ---------- Kaleidophone Resonance Chart: same 3 DFM penalty formulas above, re-framed as live
+  // marginal sensitivity -- how much the total would move if THIS slider were nudged by one step,
+  // from exactly where it sits right now (0 once a parameter passes its own threshold and stops
+  // contributing). Pure state computation separated from render. ----------
+  function calcKaleidophone(thickness, pocket){
+    var thicknessStep = 0.1, pocketStep = 0.5, heightStep = 5;
+    var wallSens = thickness < DFM_REF_THICKNESS ? (0.40 / 2.5) * thicknessStep : 0;
+    var pocketSens = pocket > DFM_REF_POCKET ? 0.05 * pocketStep : 0;
+    var heightSens = 0.003 * heightStep; // unconditional -- additive-only, no threshold to cross
+    var rods = [
+      { label: 'Wall thickness', sens: wallSens },
+      { label: 'Pocket depth', sens: pocketSens },
+      { label: 'Build height', sens: heightSens },
+    ];
+    var maxSens = Math.max.apply(null, rods.map(function(r){ return r.sens; }));
+    var topLever = rods.reduce(function(a, b){ return b.sens > a.sens ? b : a; });
+    return { rods: rods, maxSens: maxSens, topLever: topLever };
+  }
+  window.calcKaleidophone = calcKaleidophone;
+
+  function renderKaleidophone(state){
+    var W = 360, H = 160, baseY = 140, rodSpacing = 100, rodX0 = 60;
+    var maxBarHeight = 100;
+    var rodsSvg = '', labelsSvg = '';
+    state.rods.forEach(function(r, i){
+      var x = rodX0 + i * rodSpacing;
+      var barH = state.maxSens > 0 ? (r.sens / state.maxSens) * maxBarHeight : 0;
+      var isTop = r.label === state.topLever.label && r.sens > 0;
+      var swayDeg = state.maxSens > 0 ? Math.min(4, (r.sens / state.maxSens) * 4) : 0;
+      rodsSvg += '<rect x="' + (x - 8) + '" y="' + (baseY - barH).toFixed(1) + '" width="16" height="' + barH.toFixed(1) + '" fill="' + (isTop ? 'rgb(var(--c-accent)/.6)' : 'rgb(var(--c-text-secondary)/.4)') + '" stroke="' + (isTop ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-secondary))') + '" stroke-width="1.5" class="kaleidophone-rod" style="--rod-sway:' + swayDeg.toFixed(2) + 'deg;transform-origin:' + x + 'px ' + baseY + 'px"/>' +
+        '<text x="' + x + '" y="' + (baseY - barH - 8).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + (r.sens * 100).toFixed(2) + ' pts/step</text>';
+      labelsSvg += '<text x="' + x + '" y="' + (baseY + 16) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + r.label + (r.sens === 0 ? ' (maxed out)' : '') + '</text>';
+    });
+    var ariaLabel = 'Kaleidophone resonance chart. ' + state.rods.map(function(r){ return r.label + ': ' + (r.sens * 100).toFixed(2) + ' points of cost uplift per one slider step'; }).join(', ') +
+      '. Top lever right now: ' + state.topLever.label + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:360px" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="20" y1="' + baseY + '" x2="' + (W - 20) + '" y2="' + baseY + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      rodsSvg + labelsSvg +
+      '</svg>';
+    document.getElementById('kaleidophoneWrap').innerHTML = svg;
+  }
+  window.renderKaleidophone = renderKaleidophone;
 
   // ---------- Data Governance: MDQS + Guardrail Gate Simulator ----------
   var MDQS_WEIGHTS = { routing: 0.30, confirmation: 0.30, scrap: 0.25, stale: 0.15 };
@@ -3210,9 +3436,43 @@
     document.getElementById('mdqsScore').textContent = score.toFixed(3) + '%';
     document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + band.toUpperCase() + '</span>';
     updateGovernanceNavStatus();
+    renderPressureVessel(calcPressureVessel(deduction, band));
     return { score: score, band: band };
   }
   window.calcMdqs = calcMdqs;
+
+  // ---------- Pressure-Vessel Cost Containment: same MDQS deduction as above, re-framed as pressure
+  // building toward the real 93%-red failure threshold instead of a static percentage. Pure state
+  // computation separated from render. ----------
+  var MDQS_RED_DEDUCTION = 7; // 100 - 93, the red-band threshold already defined by bandFor()
+  function calcPressureVessel(deduction, band){
+    var pressureRatio = deduction / MDQS_RED_DEDUCTION; // 1.0 = right at the red threshold
+    return { deduction: deduction, pressureRatio: pressureRatio, band: band, valveOpen: band === 'red' };
+  }
+  window.calcPressureVessel = calcPressureVessel;
+
+  function renderPressureVessel(state){
+    var W = 200, H = 220, vesselX = 60, vesselW = 80, vesselTop = 20, vesselBottom = 190;
+    var vesselH = vesselBottom - vesselTop;
+    var fillRatio = Math.min(1, Math.max(0, state.pressureRatio));
+    var fillH = fillRatio * vesselH;
+    var fillY = vesselBottom - fillH;
+    var fillColor = state.band === 'green' ? 'rgb(var(--c-success)/.5)' : (state.band === 'amber' ? 'rgb(var(--c-warning)/.5)' : 'rgb(var(--c-danger)/.6)');
+    var valveSvg = state.valveOpen
+      ? '<line x1="' + (vesselX + vesselW) + '" y1="' + (vesselTop + 10) + '" x2="' + (vesselX + vesselW + 30) + '" y2="' + (vesselTop - 5) + '" stroke="rgb(var(--c-danger))" stroke-width="4" stroke-linecap="round"/>' +
+        '<text x="' + (vesselX + vesselW + 35) + '" y="' + (vesselTop - 5) + '" font-size="10" fill="rgb(var(--c-danger))" text-anchor="start">valve: OPEN (in breach)</text>'
+      : '<text x="' + (vesselX + vesselW + 10) + '" y="' + (vesselTop + 10) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="start">valve: closed</text>';
+    var ariaLabel = 'Pressure vessel. Current pressure ' + (state.pressureRatio * 100).toFixed(1) + '% of the red threshold, band ' + state.band + '. ' + (state.valveOpen ? 'Valve open -- already in breach territory.' : 'Valve closed -- within tolerance.');
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:200px" role="img" aria-label="' + ariaLabel + '">' +
+      '<rect x="' + vesselX + '" y="' + vesselTop + '" width="' + vesselW + '" height="' + vesselH + '" fill="none" stroke="rgb(var(--c-text-secondary))" stroke-width="2" rx="8"/>' +
+      '<rect x="' + vesselX + '" y="' + fillY.toFixed(1) + '" width="' + vesselW + '" height="' + fillH.toFixed(1) + '" fill="' + fillColor + '" rx="4"/>' +
+      '<line x1="' + (vesselX - 6) + '" y1="' + vesselTop + '" x2="' + (vesselX + vesselW + 6) + '" y2="' + vesselTop + '" stroke="rgb(var(--c-danger))" stroke-width="1" stroke-dasharray="3,2"/>' +
+      '<text x="' + (vesselX + vesselW / 2) + '" y="' + (vesselBottom + 16) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + (state.pressureRatio * 100).toFixed(1) + '% of redline</text>' +
+      valveSvg +
+      '</svg>';
+    document.getElementById('pressureVesselWrap').innerHTML = svg;
+  }
+  window.renderPressureVessel = renderPressureVessel;
   ['mdqsRoutingErr', 'mdqsTotalRoutings', 'mdqsConfVar', 'mdqsTotalConf', 'mdqsUnlinkedScrap', 'mdqsScrapEvents', 'mdqsStaleStandards', 'mdqsActiveParts'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcMdqs);
   });

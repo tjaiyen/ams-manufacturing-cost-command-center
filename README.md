@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (23 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 27 indexed modules, and a **collapsible vertical side navigation** (real
+modals (28 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 32 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 27 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 32 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 691 checks, all passing as of this writing.
+Run: `node stress.cjs` — 737 checks, all passing as of this writing.
 
 ## Status
 
@@ -856,4 +856,37 @@ Learning-Curve-style placeholder value written before actually computing it, and
 producing real "0.0%" failures that traced directly back to the missing entries, not a page bug).
 Live-verified in a real browser: all 5 features' rendered output matched golden values exactly, a
 live input edit and restore worked correctly, 0 console errors. Checks: 640 → 691 (+51). Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-06, twenty-second round (viz-innovation batch 2 of 4 — 5 more visualizations, zero new
+fabrication):**
+
+1. **Circulatory Cost Flow** (Should-Cost tab) — the same 4 should-cost components as the outline
+   and Nesting Doll, a third way: as flow converging into the total, vessel width proportional to
+   dollar contribution, the dominant driver marked ★ and updating live as inputs change.
+2. **Glacial Calving Event Tracker** (Tooling tab) — the same naive-vs-amortized numbers,
+   decomposed into what each treatment actually attributes to the first batch: a one-time "calved
+   iceberg" ($18,000, the naive lump) next to a small, steady "ice cube" ($180, the correct share) —
+   chunk AREA (not radius) proportional to dollar value, honest even at a 100:1 scale difference.
+3. **Pressure-Vessel Cost Containment** (Data Governance tab) — the same MDQS deduction, expressed
+   as a fraction of the real 7-point gap to the red band (93%). The "valve" is a static state
+   indicator only — never implied to be a real automated corrective mechanism AMS runs.
+4. **Kaleidophone Resonance Chart** (DFM tab) — the same 3 DFM penalty formulas, differentiated and
+   evaluated at the CURRENT slider position: "if I nudge this one slider by one step, how much does
+   the total move, right now?" A rod can go fully silent once its threshold is crossed (e.g.
+   wall-thickness sensitivity hits exactly 0 once thickness reaches the 3.0mm reference) — live-
+   verified this state transition in a real browser.
+5. **Compass Rose Scenario Navigator** (Build-vs-Buy tab) — the same NPV/transition-cost inputs,
+   split into direction (North = build in-house wins, South = outsource wins) and magnitude (how
+   dominant the return is relative to the up-front investment, bounded in [0,1) by construction:
+   `|NPV| / (|NPV| + transition)`). East/West are decorative compass dressing only, stated explicitly.
+
+Caught and fixed two more of my own draft mistakes via `node -e` pre-registration before finalizing
+checks — both times a hand-typed extra-precision decimal (a compass magnitude, an earlier CMAR
+value in batch 1) turned out wrong the moment it was actually computed, never shipped. All 5 pure
+state-computation functions wired directly into their host calculator (e.g. `renderCirculatory()`
+called from inside `calcShouldCost()`), so they stay in sync automatically with no separate event
+listeners to drift. Live-verified in a real browser: all 5 render correctly, exact golden text
+confirmed, one live threshold-crossing interaction (DFM thickness → 3.0mm) correctly silenced the
+wall-sensitivity rod and restored cleanly, 0 console errors. Checks: 691 → 737 (+46). Committed
 locally — pending push with explicit confirmation, same discipline as every prior round.
