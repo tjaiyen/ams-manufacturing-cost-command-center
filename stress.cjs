@@ -767,12 +767,12 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 37, "exactly 37 navigable items in the command index (+5: viz-innovation batch 3 -- Domino, Aurora, Sonar, Metronome, Comet Tail)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 37, "all 37 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 42, "exactly 42 navigable items in the command index (+5: viz-innovation batch 4 -- Suspension Bridge, Shadow Puppet, Relay Race, Thermostat, Card Catalog)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 42, "all 42 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 37, "empty-query search returns all 37 items", allMatch.length);
+check(allMatch.length === 42, "empty-query search returns all 42 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
@@ -880,6 +880,24 @@ check((elements.cometTailWrap.innerHTML.match(/<circle/g) || []).length === 6, "
 sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
 check(elements.cometTailWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the comet tail on every recalculation, not just at page load");
 
+console.log("--- viz-innovation batch 4: Thermostat Feedback Loop golden values (same overall utilization above, vs. this page's own 85% green threshold) ---");
+// overallUtil=78.64583333333334 (golden above), target=85 -> gap=6.354166666666657, mode='heating'
+// (current below target). Pre-registered via node -e.
+check(typeof sandbox.calcThermostat === "function", "window.calcThermostat is exposed as a function");
+const thermoState = sandbox.calcThermostat(78.64583333333334);
+check(thermoState.target === 85, "target matches this page's own established green threshold", thermoState.target);
+check(Math.abs(thermoState.gap - 6.354166666666657) < 1e-9, "gap matches golden value", thermoState.gap);
+check(thermoState.mode === "heating", "mode is correctly 'heating' when current utilization is below target", thermoState.mode);
+sandbox.renderThermostat(thermoState);
+check(elements.thermostatWrap.innerHTML.includes("<svg") && elements.thermostatWrap.innerHTML.includes('role="img"'), "renderThermostat() renders an actual accessible <svg>, not just numbers");
+check(elements.thermostatWrap.innerHTML.includes("HEATING"), "the rendered mode label matches the golden state", elements.thermostatWrap.innerHTML);
+check(elements.thermostatWrap.innerHTML.includes("current 78.6% vs target 85%"), "the rendered current-vs-target text matches golden values", elements.thermostatWrap.innerHTML);
+// Edge case: an overallUtil above target should flip the mode to cooling.
+const thermoCooling = sandbox.calcThermostat(95);
+check(thermoCooling.mode === "cooling", "mode correctly flips to 'cooling' when current utilization exceeds target", thermoCooling.mode);
+sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel path) to restore the default golden state
+check(elements.thermostatWrap.innerHTML.includes("HEATING"), "calcCapacity() itself re-renders the thermostat back to the default golden state on every recalculation", elements.thermostatWrap.innerHTML);
+
 console.log("--- Stress-test round (2026-09-05) fix: Variance tab's copy no longer uses \"live\" for two different meanings in one paragraph ---");
 // A stress-test found "the bridge recalculates live" sitting right next to "not a real-time feed" --
 // two different senses of "live" (this demo tool's instant UI feedback vs. the real accounting
@@ -939,6 +957,23 @@ sandbox.renderKaleidophone(kaleidoState);
 check(elements.kaleidophoneWrap.innerHTML.includes("<svg") && elements.kaleidophoneWrap.innerHTML.includes('role="img"'), "renderKaleidophone() renders an actual accessible <svg>, not just numbers");
 check((elements.kaleidophoneWrap.innerHTML.match(/<rect/g) || []).length === 3, "exactly 3 resonance rods are rendered, one per DFM parameter", (elements.kaleidophoneWrap.innerHTML.match(/<rect/g) || []).length);
 check(elements.kaleidophoneWrap.innerHTML.includes("2.50 pts/step"), "the top lever's exact per-step sensitivity value is labeled on the chart", elements.kaleidophoneWrap.innerHTML);
+
+console.log("--- viz-innovation batch 4: Shadow Puppet Overlay Comparator golden values (same $100 reference vs. DFM-adjusted actual above) ---");
+// reference=100 (DFM_BASELINE), estCost=153.00 (golden above) -> excess=53.00.
+check(typeof sandbox.calcShadowPuppet === "function", "window.calcShadowPuppet is exposed as a function");
+const shadowState = sandbox.calcShadowPuppet(153);
+check(shadowState.reference === 100, "reference matches the golden $100 DFM_BASELINE constant", shadowState.reference);
+check(Math.abs(shadowState.excess - 53) < 1e-9, "excess matches golden value (153 - 100)", shadowState.excess);
+sandbox.renderShadowPuppet(shadowState);
+check(elements.shadowPuppetWrap.innerHTML.includes("<svg") && elements.shadowPuppetWrap.innerHTML.includes('role="img"'), "renderShadowPuppet() renders an actual accessible <svg>, not just numbers");
+check(elements.shadowPuppetWrap.innerHTML.includes("+$53.00 over reference"), "the rendered excess label matches the golden value", elements.shadowPuppetWrap.innerHTML);
+// Edge case: an estCost at or below the reference should show no excess label at all.
+const shadowNoExcess = sandbox.calcShadowPuppet(100);
+check(shadowNoExcess.excess === 0, "excess correctly floors to 0 when estCost equals the reference exactly", shadowNoExcess.excess);
+sandbox.renderShadowPuppet(shadowNoExcess);
+check(!elements.shadowPuppetWrap.innerHTML.includes("over reference"), "no excess label is rendered when there's nothing to show", elements.shadowPuppetWrap.innerHTML);
+sandbox.calcDfm(); // re-trigger via the real calculator (not a parallel path) to restore the default golden state
+check(elements.shadowPuppetWrap.innerHTML.includes("+$53.00 over reference"), "calcDfm() itself re-renders the shadow puppet comparator back to the default golden state on every recalculation", elements.shadowPuppetWrap.innerHTML);
 
 console.log("--- Commodity Price Exposure Early Warning: golden values ---");
 check(elements.cpShiftPct.textContent === "13.46%", "price shift % matches golden value ($29.50 vs $26.00 frozen)", elements.cpShiftPct.textContent);
@@ -1019,6 +1054,25 @@ check(elements.mhrRunningOut.textContent === "$14.15/hr", "variable operating ra
 check(elements.mhrTotalOut.textContent === "$53.63/hr", "fully burdened MHR matches golden value (fixed allocation + variable operating, and equals the sum of the two lines above)", elements.mhrTotalOut.textContent);
 check(!bannedStrings.some((s) => elements.mhrCapital && [elements.mhrDepOut, elements.mhrStandingOut, elements.mhrTotalOut].some((el) => el.textContent.includes(s))), "the MHR Build-Up Calculator's own outputs don't happen to reproduce any of the banned fabricated figures");
 
+console.log("--- viz-innovation batch 4: Suspension Bridge Load Monitor golden values (same 5 MHR cost drivers, converted to a consistent $/hr basis) ---");
+// depRate=82857.142857.../2964, floorRateHr=12160/2964, serviceRateHr=22000/2964, powerRate=20*0.12=2.4,
+// consumables=11.75 -- all 5 sum to exactly totalMhr (53.629...) -- pre-registered via node -e.
+check(typeof sandbox.calcSuspensionBridge === "function", "window.calcSuspensionBridge is exposed as a function");
+const bridgeState = sandbox.calcSuspensionBridge(580000 / 7, 320 * 38, 22000, 3800 * 0.78, 20 * 0.12, 11.75, 53.62946790052053);
+check(Math.abs(bridgeState.cables[0].rate - 27.954501638712163) < 1e-9, "depreciation cable rate matches golden value", bridgeState.cables[0].rate);
+check(Math.abs(bridgeState.cables[1].rate - 4.102564102564102) < 1e-9, "floor allocation cable rate matches golden value", bridgeState.cables[1].rate);
+check(Math.abs(bridgeState.cables[2].rate - 7.422402159244265) < 1e-9, "service contract cable rate matches golden value", bridgeState.cables[2].rate);
+check(Math.abs(bridgeState.cables[3].rate - 2.4) < 1e-9, "power cable rate matches golden value", bridgeState.cables[3].rate);
+check(Math.abs(bridgeState.cables[4].rate - 11.75) < 1e-9, "consumables cable rate matches golden value", bridgeState.cables[4].rate);
+const cableSum = bridgeState.cables.reduce((s, c) => s + c.rate, 0);
+check(Math.abs(cableSum - 53.62946790052053) < 1e-6, "all 5 cable rates sum to exactly the same fully burdened MHR the calculator above reports", cableSum);
+check(bridgeState.dominant.label === "Depreciation", "the dominant (heaviest-loaded) cable is correctly identified as Depreciation", bridgeState.dominant.label);
+sandbox.renderSuspensionBridge(bridgeState);
+check(elements.suspensionBridgeWrap.innerHTML.includes("<svg") && elements.suspensionBridgeWrap.innerHTML.includes('role="img"'), "renderSuspensionBridge() renders an actual accessible <svg>, not just numbers");
+check((elements.suspensionBridgeWrap.innerHTML.match(/<line/g) || []).length === 3 + 5, "exactly 8 lines: 2 towers + 1 deck + 5 cables", (elements.suspensionBridgeWrap.innerHTML.match(/<line/g) || []).length);
+sandbox.calcMhrBuildup(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.suspensionBridgeWrap.innerHTML.includes("<svg"), "calcMhrBuildup() itself re-renders the suspension bridge on every recalculation, not just at page load");
+
 console.log("--- Cost Diagnostic Playbook: structural + golden-value checks ---");
 check(Array.isArray(sandbox.PLAYBOOK), "window.PLAYBOOK is exposed as an array");
 check(sandbox.PLAYBOOK.length === 30, "exactly 30 playbook scenarios", sandbox.PLAYBOOK.length);
@@ -1056,6 +1110,39 @@ check(elements.pbCount.textContent === "Showing 1 of 30 scenarios", "searching \
 elements.pbSearch.value = "";
 sandbox.renderPlaybook();
 check(elements.pbCount.textContent === "Showing 30 of 30 scenarios", "clearing the search restores all 30 scenarios (filter state isn't sticky/broken)", elements.pbCount.textContent);
+
+console.log("--- viz-innovation batch 4: Card Catalog Drawer Cohort Browser golden values (calcCardCatalog/renderCardCatalog) ---");
+check(typeof sandbox.calcCardCatalog === "function", "calcCardCatalog is exposed on window");
+check(typeof sandbox.renderCardCatalog === "function", "renderCardCatalog is exposed on window");
+// Golden values pre-registered via a standalone node -e script against the real PLAYBOOK array
+// before this check was written (B35): total=30, PLAYBOOK[0].code="MAT-MPV", PLAYBOOK[29].code="FIN-TRF".
+const cc0 = sandbox.calcCardCatalog(0);
+check(cc0.index === 0 && cc0.total === 30, "calcCardCatalog(0) returns index 0 of 30 total", JSON.stringify(cc0.index) + "/" + cc0.total);
+check(cc0.item.code === "MAT-MPV", "calcCardCatalog(0) resolves to the same PLAYBOOK[0] the grid above renders (MAT-MPV)", cc0.item.code);
+const ccLast = sandbox.calcCardCatalog(29);
+check(ccLast.item.code === "FIN-TRF", "calcCardCatalog(29) resolves to PLAYBOOK[29] (FIN-TRF), the real last scenario", ccLast.item.code);
+// Clamping edge cases -- index is bounded to the real [0, PLAYBOOK.length-1] range, never a
+// separate hardcoded bound that could drift from the actual array length.
+check(sandbox.calcCardCatalog(-1).index === 0, "calcCardCatalog(-1) clamps to index 0, not negative", sandbox.calcCardCatalog(-1).index);
+check(sandbox.calcCardCatalog(30).index === 29, "calcCardCatalog(30) clamps to PLAYBOOK.length-1 (29), not out of bounds", sandbox.calcCardCatalog(30).index);
+
+sandbox.renderCardCatalog(cc0);
+check(!!elements.cardCatalogWrap, "found the card catalog wrap element to check");
+check(elements.cardCatalogWrap.innerHTML.includes("pb-card"), "renderCardCatalog renders a pb-card block (reuses the same card markup as the grid above)");
+check(elements.cardCatalogWrap.innerHTML.includes("MAT-MPV"), "rendered card shows the real MAT-MPV code for index 0", elements.cardCatalogWrap.innerHTML.includes("MAT-MPV"));
+check(!!elements.catalogPositionOut, "found the catalog position indicator element to check");
+check(elements.catalogPositionOut.textContent === "Card 1 of 30", "position indicator reads \"Card 1 of 30\" at index 0", elements.catalogPositionOut.textContent);
+
+// Exercise the Prev/Next buttons the same way a user would -- click the stub's real listener,
+// not a parallel reimplementation of the click handler.
+check(!!elements.catalogNextBtn && !!elements.catalogPrevBtn, "found the catalog Prev/Next buttons to check");
+elements.catalogNextBtn.click();
+check(elements.catalogPositionOut.textContent === "Card 2 of 30", "clicking Next advances the position indicator to \"Card 2 of 30\"", elements.catalogPositionOut.textContent);
+elements.catalogPrevBtn.click();
+check(elements.catalogPositionOut.textContent === "Card 1 of 30", "clicking Prev returns the position indicator to \"Card 1 of 30\"", elements.catalogPositionOut.textContent);
+// Restore the module-level catalogIndex to 0 so later checks in this file aren't affected by
+// this block's own click-simulation (matches the "restore to default" discipline used elsewhere).
+sandbox.renderCardCatalog(sandbox.calcCardCatalog(0));
 
 console.log("--- KPI research round (2026-09-05): Buy-to-Fly threshold correction + threshold-scale redesign ---");
 // A 7-agent research pass cross-checked all 30 Playbook KPIs against published industry evidence.
@@ -1166,6 +1253,19 @@ sandbox.renderMetronome(metroState);
 check(elements.metronomeWrap.innerHTML.includes("<svg") && elements.metronomeWrap.innerHTML.includes('role="img"'), "renderMetronome() renders an actual accessible <svg>, not just numbers");
 check((elements.metronomeWrap.innerHTML.match(/<g class="metronome-arm"/g) || []).length === 4, "exactly 4 metronome arms are rendered, one per cadence", (elements.metronomeWrap.innerHTML.match(/<g class="metronome-arm"/g) || []).length);
 check(elements.metronomeWrap.innerHTML.includes("45× so far"), "the daily standup's exact tick count is labeled on the chart", elements.metronomeWrap.innerHTML);
+
+console.log("--- viz-innovation batch 4: Relay Race Baton Pass Timeline golden values (same 4 cadence intervals as Metronome, as escalation gaps) ---");
+// gaps = [7-1, 30-7, 182-30] = [6, 23, 152] -- pre-registered via node -e.
+check(typeof sandbox.calcRelayRace === "function", "window.calcRelayRace is exposed as a function");
+const relayState = sandbox.calcRelayRace();
+check(relayState.gaps.length === 3, "exactly 3 gaps exist between the 4 cadence tiers", relayState.gaps.length);
+check(relayState.gaps[0].days === 6, "daily-to-weekly gap matches golden value", relayState.gaps[0].days);
+check(relayState.gaps[1].days === 23, "weekly-to-monthly gap matches golden value", relayState.gaps[1].days);
+check(relayState.gaps[2].days === 152, "monthly-to-OP1/OP2 gap matches golden value", relayState.gaps[2].days);
+sandbox.renderRelayRace(relayState);
+check(elements.relayRaceWrap.innerHTML.includes("<svg") && elements.relayRaceWrap.innerHTML.includes('role="img"'), "renderRelayRace() renders an actual accessible <svg>, not just numbers");
+check((elements.relayRaceWrap.innerHTML.match(/<circle/g) || []).length === 4, "exactly 4 runner circles are rendered, one per cadence tier", (elements.relayRaceWrap.innerHTML.match(/<circle/g) || []).length);
+check(elements.relayRaceWrap.innerHTML.includes("+152d wait"), "the largest gap's exact value is labeled on the chart", elements.relayRaceWrap.innerHTML);
 
 console.log("--- Stress-test finding (2026-09-06): reduced-motion now reaches the two JS-driven smooth-scroll calls too ---");
 // A stress-test found the CSS reduced-motion block disabled every transition/animation but missed
@@ -1362,12 +1462,12 @@ check(html.includes('<label for="mvarConfidence">Confidence level</label>'), "th
 
 console.log("--- Explain-the-Math modal: data + wiring ---");
 check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.EXPLAIN is exposed as an object");
-["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll", "circulatory", "glacial", "pressurevessel", "kaleidophone", "compassrose", "domino", "aurora", "sonar", "metronome", "comettail"].forEach((key) => {
+["cmar", "oae", "mpv", "mqv", "dlrv", "dlev", "vosv", "fovv", "mdqs", "mhrBuildup", "learningcurve", "crpn", "mvar", "ou", "qstar", "montecarlo", "tow", "pendulum", "tightrope", "archery", "honeycomb", "nestingdoll", "circulatory", "glacial", "pressurevessel", "kaleidophone", "compassrose", "domino", "aurora", "sonar", "metronome", "comettail", "suspensionbridge", "shadowpuppet", "relayrace", "thermostat", "cardcatalog"].forEach((key) => {
   const e = sandbox.EXPLAIN[key];
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 33, "exactly 33 explain buttons are wired in the HTML (28 from before + viz-innovation batch 3's 5)", explainButtonCount);
+check(explainButtonCount === 38, "exactly 38 explain buttons are wired in the HTML (33 from before + viz-innovation batch 4's 5)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");

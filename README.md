@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (33 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 37 indexed modules, and a **collapsible vertical side navigation** (real
+modals (38 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 42 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 37 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 42 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 788 checks, all passing as of this writing.
+Run: `node stress.cjs` — 844 checks, all passing as of this writing.
 
 ## Status
 
@@ -928,3 +928,39 @@ Live-verified in a real browser: all 5 render correctly, exact golden text confi
 interaction (Domino P1→100%) correctly zeroed out the "neither fires" bar and restored cleanly, 0
 console errors. Checks: 737 → 788 (+51). Committed locally — pending push with explicit
 confirmation, same discipline as every prior round.
+
+**2026-09-06, twenty-fourth round (viz-innovation batch 4 of 4 — final 5 visualizations, 20/20
+"top 20" concepts complete):**
+
+1. **Suspension Bridge Load Monitor** (Should-Cost/MHR tab) — the same 5 real MHR Build-Up cost
+   drivers, converted to a consistent $/hr basis and shown as 5 suspension cables sized by their
+   share of the total — the dominant cable marked live as inputs change, summing exactly to the
+   existing MHR total.
+2. **Shadow Puppet Overlay Comparator** (DFM tab) — the same $100 should-cost reference and the
+   DFM-adjusted actual cost, overlaid as two silhouettes so the DFM-penalty excess reads as a gap
+   between two shapes instead of a bare delta number.
+3. **Relay Race Baton Pass Timeline** (Operating Framework tab) — the same 4 named cadences from
+   the Operating Cadence card, this time showing the WORST-CASE WAIT between one cadence firing and
+   the next (a gap, not a raw interval) — daily→weekly is a 6-day worst case, not 7.
+4. **Thermostat Feedback Loop** (Capacity tab) — the same overall-utilization number and this
+   page's own real 85% green-band threshold, framed as a heating/cooling/steady gap — explicitly
+   labeled an illustrative heuristic only, never a claim that AMS runs an auto-rebalancing system.
+5. **Card Catalog Drawer Cohort Browser** (Cost Diagnostic Playbook tab) — the same 30 real
+   Playbook scenarios the grid above renders, browsed one card at a time via Prev/Next — a bounded,
+   tactile alternate navigation surface over the identical data, not a second copy of it.
+
+This closes out the "choose top 20 and build all" instruction: all 20 concepts across all 4
+batches are now built, tested, and live-verified. Suspension Bridge/Shadow Puppet/Relay
+Race/Thermostat all reuse already-live inputs by calling their `renderXxx()` directly from inside
+an existing host calculator (`calcMhrBuildup()`, `calcDfm()`, `calcCapacity()`) or, for Relay Race
+(no inputs), a one-time page-load call — no new event listeners to drift out of sync. Card Catalog
+is the one feature with its own dedicated Prev/Next click listeners, since it has no natural host
+calculator to hang off of.
+
+Live-verified in a real browser: all 5 render correctly with real computed values (Suspension
+Bridge's 5 cables sum to the existing $53.63/hr MHR total; Card Catalog's index-0 card shows the
+real MAT-MPV scenario), one live interaction per new-listener feature (Card Catalog Next → "Card 2
+of 30" → Prev restores "Card 1 of 30"), 0 console errors. Checks: 788 → 844 (+56, the largest
+single-batch addition this session because Card Catalog's click-driven interaction needed more
+assertions than the other four features' pure-recompute wiring). Committed locally — pending push
+with explicit confirmation, same discipline as every prior round.

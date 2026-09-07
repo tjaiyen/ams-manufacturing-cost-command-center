@@ -374,7 +374,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 788/788 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 844/844 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
@@ -640,6 +640,14 @@
         <div class="line"><span>Variable operating rate (power + consumables)</span><span class="mono" id="mhrRunningOut">$0.00/hr</span></div>
         <div class="line total"><span>Fully burdened MHR</span><span class="mono" id="mhrTotalOut">$0.00/hr</span></div>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Suspension Bridge Load Monitor <button class="explain-btn" data-explain="suspensionbridge" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME MHR BUILD-UP ABOVE, AS PER-HOUR LOAD SHARE</span></div>
+      <p class="lede" style="margin-bottom:12px">The MHR build-up above sums 5 real cost drivers into
+        one blended rate; this shows each driver's own share of that $/hr load — which cable is
+        carrying the most weight toward the fully burdened rate.</p>
+      <div id="suspensionBridgeWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -932,6 +940,15 @@
         rate of change (acceleration), the flared segment in the tail below.</p>
       <div id="cometTailWrap"></div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Thermostat Feedback Loop <button class="explain-btn" data-explain="thermostat" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ILLUSTRATIVE HEURISTIC — NOT A CLAIM AMS RUNS THIS</span></div>
+      <p class="lede" style="margin-bottom:12px">The same overall utilization total above, compared
+        against this page's own established 85% green threshold — illustrating what a negative-
+        feedback correction toward that real target would look like. AMS is never claimed to run an
+        actual automated rebalancing system; no such mechanism exists here or is implied.</p>
+      <div id="thermostatWrap"></div>
+    </div>
   </section>
 
   <!-- ============ TAB: TOOLING AMORTIZATION ============ -->
@@ -1019,6 +1036,14 @@
         most" — a live marginal-sensitivity view. Note a parameter can go silent: past the 3.0mm
         reference thickness, moving the slider further stops changing anything.</p>
       <div id="kaleidophoneWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Shadow Puppet Overlay Comparator <button class="explain-btn" data-explain="shadowpuppet" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME REFERENCE VS. ACTUAL ABOVE, OVERLAID</span></div>
+      <p class="lede" style="margin-bottom:12px">The outline above states the $100 reference and the
+        DFM-adjusted actual as two separate lines; overlaying them as silhouettes makes the exact
+        dollar overrun a direct visual comparison, not a percentage to translate mentally.</p>
+      <div id="shadowPuppetWrap"></div>
     </div>
   </section>
 
@@ -1138,6 +1163,19 @@
     </div>
     <p class="pb-count" id="pbCount"></p>
     <div id="pbList"></div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Card Catalog Drawer Cohort Browser <button class="explain-btn" data-explain="cardcatalog" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 30 PLAYBOOK SCENARIOS ABOVE, ONE AT A TIME</span></div>
+      <p class="lede" style="margin-bottom:10px">The grid above shows all matching scenarios at once;
+        this flips through the same 30 real scenarios one card at a time — a bounded, tactile way to
+        browse a large set without an unbounded scroll.</p>
+      <div id="cardCatalogWrap"></div>
+      <div class="field-row" style="margin-top:10px;align-items:center">
+        <button class="explain-btn" id="catalogPrevBtn" type="button" style="width:auto;padding:4px 12px;border-radius:6px" aria-label="Previous card">‹ Prev</button>
+        <span class="mono" id="catalogPositionOut" style="margin:0 12px">Card 1 of 30</span>
+        <button class="explain-btn" id="catalogNextBtn" type="button" style="width:auto;padding:4px 12px;border-radius:6px" aria-label="Next card">Next ›</button>
+      </div>
+    </div>
   </section>
 
   <!-- ============ TAB: PREDICTIVE & RISK MODELS ============ -->
@@ -1313,6 +1351,14 @@
         about AMS's actual calendar.</p>
       <div class="field" style="max-width:260px"><label for="metroDays">Illustrative days elapsed</label><input type="number" id="metroDays" value="45" min="0" max="365" step="1"></div>
       <div id="metronomeWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Relay Race Baton Pass Timeline <button class="explain-btn" data-explain="relayrace" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 CADENCES ABOVE, AS ESCALATION LATENCY</span></div>
+      <p class="lede" style="margin-bottom:12px">The metronome above shows how OFTEN each cadence
+        fires; this shows how LONG an unresolved issue could wait for the next tier's real interval
+        gap — the same 4 real cadence intervals, one derivative further.</p>
+      <div id="relayRaceWrap"></div>
     </div>
   </section>
 
@@ -1953,7 +1999,12 @@
     aurora: { title: 'Aurora Layer Correlation Map', formula: 'Pearson r between each pair of {Probability, Severity, Detection} across the 10 real risk-register entries', body: 'Probability, Severity, and Detection are assigned independently for each of the 10 risks above — nothing here derives one from another — so a real Pearson correlation between any pair is a genuine finding, not a trivial identity. As of this writing: P and S correlate at ≈−0.71 (higher-probability risks in this register tend to carry lower dollar severity, a real and intuitive pattern), while P-D and S-D show little linear relationship.' },
     sonar: { title: 'Sonar Ping Anomaly Sweep', formula: 'distance ratio = (util − mean) / (UCL − mean)  — exactly 1.0 at the control limit, by I-MR construction', body: 'The same 6-week SPC control-chart data above (center line and control limits derived from this shop\'s own history), re-plotted as distance from the mean instead of a time-ordered trend line — a ping that reaches the outer ring is genuinely out of statistical control, not just a fixed-band "red" reading. Angle around the sonar screen is purely for visual separation between the 6 weeks and carries no data meaning; only radial distance does.' },
     metronome: { title: 'Metronome Cadence Drift Tracker', formula: 'tick count = floor(illustrative days elapsed / cadence interval)', body: 'The same 4 named cadences from the Operating Cadence card above, using each cadence NAME\'s own standard real-world interval (daily=1 day, weekly=7, monthly=30, a semi-annual OP1/OP2 split≈182) — a generic definition of what those words mean, not a claim about AMS\'s actual calendar dates. Swing PERIOD (not amplitude) is the real signal: the daily arm visibly swings fastest, OP1/OP2 slowest, directly encoding how often each cadence actually fires.' },
-    comettail: { title: 'Comet Tail Velocity Tracker', formula: 'velocity[i] = util[i]−util[i−1];  acceleration[k] = velocity[k+1]−velocity[k]', body: 'The same 6-week utilization series as the table/SPC/Honeycomb views above, extended one derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH single transition saw the sharpest swing in rate of change, not just which week had the biggest raw delta. The flared tail segment is whichever one carries the largest |acceleration| this period.' }
+    comettail: { title: 'Comet Tail Velocity Tracker', formula: 'velocity[i] = util[i]−util[i−1];  acceleration[k] = velocity[k+1]−velocity[k]', body: 'The same 6-week utilization series as the table/SPC/Honeycomb views above, extended one derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH single transition saw the sharpest swing in rate of change, not just which week had the biggest raw delta. The flared tail segment is whichever one carries the largest |acceleration| this period.' },
+    suspensionbridge: { title: 'Suspension Bridge Load Monitor', formula: 'each cable rate = (fixed component / productive hours) for depreciation/floor/service, or the raw $/hr rate for power/consumables — all 5 sum exactly to the fully burdened MHR', body: 'The same 5 real cost drivers the MHR Build-Up Calculator above sums into one blended rate, converted to a consistent $/hr basis so each cable\'s sag is directly proportional to its real share of the total load. The heaviest-loaded cable (marked in red) updates live as any of the 10 MHR inputs change.' },
+    shadowpuppet: { title: 'Shadow Puppet Overlay Comparator', formula: 'excess = max(0, DFM-adjusted estimate − $100 reference)', body: 'The same $100 reference should-cost and DFM-adjusted actual estimate the outline above already states as two separate lines, drawn as two overlapping silhouettes instead — bar height is directly proportional to dollar value, so the excess is a felt visual gap, not a percentage requiring mental translation. Updates live with the same 3 DFM sliders.' },
+    relayrace: { title: 'Relay Race Baton Pass Timeline', formula: 'gap = interval(tier N) − interval(tier N−1), using the same 4 cadence intervals as the Metronome above', body: 'The same 4 named cadences and their real standard intervals (daily=1, weekly=7, monthly=30, OP1/OP2≈182), one derivative further than the metronome above: the GAP between consecutive tiers is the real, structural worst-case wait before an unresolved issue reaches the next level of visibility — a generic property of the cadence definitions, not a claim about any specific AMS issue.' },
+    thermostat: { title: 'Thermostat Feedback Loop', formula: 'gap = 85% (this page\'s own established green threshold) − current overall utilization', body: 'The same overall 6-week utilization already computed above, compared against the SAME 85% green-band threshold this page already uses (utilStatus). This is an illustrative heuristic only, exactly like the DFM/DFC tab\'s design-sensitivity model — it demonstrates what a negative-feedback correction toward a real, already-stated target would look like. AMS is never claimed to run an actual automated rebalancing system.' },
+    cardcatalog: { title: 'Card Catalog Drawer Cohort Browser', formula: 'index clamped to [0, 29] — the real bounds of the same 30-item PLAYBOOK array the grid above renders', body: 'The same 30 real Cost Diagnostic Playbook scenarios shown as a filterable grid above, browsed one card at a time instead — a bounded, tactile alternate navigation surface over the identical data, not a second copy of it.' }
   };
   var explainModal = document.getElementById('explainModal');
   var explainTitle = document.getElementById('explainTitle');
@@ -2025,6 +2076,7 @@
     { label: 'Nesting Doll Cost Peel', tab: 'shouldcost', scrollTo: 'nestingDollWrap' },
     { label: 'Circulatory Cost Flow', tab: 'shouldcost', scrollTo: 'circulatoryWrap' },
     { label: 'MHR Build-Up Calculator', tab: 'shouldcost', scrollTo: 'mhrDepOut' },
+    { label: 'Suspension Bridge Load Monitor', tab: 'shouldcost', scrollTo: 'suspensionBridgeWrap' },
     { label: 'Monte Carlo Should-Cost Explorer', tab: 'shouldcost', scrollTo: 'mcP50Out' },
     { label: 'Variance Waterfall', tab: 'variance' },
     { label: 'Variance Tug-of-War', tab: 'variance', scrollTo: 'towNetOut' },
@@ -2038,14 +2090,17 @@
     { label: 'Sonar Ping Anomaly Sweep', tab: 'capacity', scrollTo: 'sonarWrap' },
     { label: 'Honeycomb Capacity Lattice', tab: 'capacity', scrollTo: 'honeycombWrap' },
     { label: 'Comet Tail Velocity Tracker', tab: 'capacity', scrollTo: 'cometTailWrap' },
+    { label: 'Thermostat Feedback Loop', tab: 'capacity', scrollTo: 'thermostatWrap' },
     { label: 'Tooling Amortization Tracker', tab: 'tooling' },
     { label: 'Glacial Calving Event Tracker', tab: 'tooling', scrollTo: 'glacialWrap' },
     { label: 'Design-for-Cost Sensitivity', tab: 'dfm' },
     { label: 'Kaleidophone Resonance Chart', tab: 'dfm', scrollTo: 'kaleidophoneWrap' },
+    { label: 'Shadow Puppet Overlay Comparator', tab: 'dfm', scrollTo: 'shadowPuppetWrap' },
     { label: 'Data Governance (MDQS)', tab: 'governance' },
     { label: 'Pressure-Vessel Cost Containment', tab: 'governance', scrollTo: 'pressureVesselWrap' },
     { label: 'Guardrail Gate Simulator', tab: 'governance', scrollTo: 'gateBomOut' },
     { label: 'Cost Diagnostic Playbook', tab: 'playbook' },
+    { label: 'Card Catalog Drawer Cohort Browser', tab: 'playbook', scrollTo: 'cardCatalogWrap' },
     { label: 'Domino Effect Probability Cascade', tab: 'playbook', scrollTo: 'dominoWrap' },
     { label: 'Predictive & Risk Models', tab: 'risk' },
     { label: 'Learning Curve Forecaster', tab: 'risk', scrollTo: 'lcB' },
@@ -2055,6 +2110,7 @@
     { label: 'Tightrope Confidence Walk', tab: 'risk', scrollTo: 'tightropeBufferOut' },
     { label: 'Operating Framework', tab: 'framework' },
     { label: 'Metronome Cadence Drift Tracker', tab: 'framework', scrollTo: 'metronomeWrap' },
+    { label: 'Relay Race Baton Pass Timeline', tab: 'framework', scrollTo: 'relayRaceWrap' },
     { label: 'Methodology & Sourcing', tab: 'methodology' }
   ];
   var paletteModal = document.getElementById('paletteModal');
@@ -2297,12 +2353,56 @@
     document.getElementById('mhrStandingOut').textContent = '$' + standingRate.toFixed(2) + '/hr';
     document.getElementById('mhrRunningOut').textContent = '$' + runningRate.toFixed(2) + '/hr';
     document.getElementById('mhrTotalOut').textContent = '$' + totalMhr.toFixed(2) + '/hr';
+    renderSuspensionBridge(calcSuspensionBridge(depreciation, floorAlloc, service, productiveHrs, power * utilRate, consumables, totalMhr));
     return { depreciation: depreciation, floorAlloc: floorAlloc, standingBasis: standingBasis, productiveHrs: productiveHrs, standingRate: standingRate, runningRate: runningRate, totalMhr: totalMhr };
   }
   window.calcMhrBuildup = calcMhrBuildup;
   ['mhrCapital','mhrLife','mhrFloor','mhrFloorRate','mhrService','mhrSchedHrs','mhrOee','mhrPower','mhrUtilRate','mhrConsumables'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcMhrBuildup);
   });
+
+  // ---------- Suspension Bridge Load Monitor: the same 5 real MHR build-up cost drivers above,
+  // converted to a consistent $/hr basis (the fixed drivers divided by productive hours) so all 5
+  // sum exactly to the same fully burdened MHR the calculator above reports. Pure state computation
+  // separated from render. ----------
+  function calcSuspensionBridge(depreciation, floorAlloc, service, productiveHrs, powerRate, consumables, totalMhr){
+    var cables = [
+      { label: 'Depreciation', rate: productiveHrs > 0 ? depreciation / productiveHrs : 0 },
+      { label: 'Floor allocation', rate: productiveHrs > 0 ? floorAlloc / productiveHrs : 0 },
+      { label: 'Service contract', rate: productiveHrs > 0 ? service / productiveHrs : 0 },
+      { label: 'Power', rate: powerRate },
+      { label: 'Consumables', rate: consumables },
+    ];
+    var dominant = cables.reduce(function(a, b){ return b.rate > a.rate ? b : a; });
+    return { cables: cables, totalMhr: totalMhr, dominant: dominant };
+  }
+  window.calcSuspensionBridge = calcSuspensionBridge;
+
+  function renderSuspensionBridge(state){
+    var W = 500, H = 170, deckY = 130, towerL = 40, towerR = 460, deckL = 30, deckR = 470;
+    var maxSag = 40;
+    var maxRate = Math.max.apply(null, state.cables.map(function(c){ return c.rate; }));
+    var n = state.cables.length;
+    var cablesSvg = '', labelsSvg = '';
+    state.cables.forEach(function(c, i){
+      var x = deckL + ((i + 1) / (n + 1)) * (deckR - deckL);
+      var sag = state.totalMhr > 0 ? (c.rate / state.totalMhr) * maxSag * n : 0; // proportional to this cable's SHARE of the total load
+      var isDominant = c.label === state.dominant.label;
+      var strokeWidth = maxRate > 0 ? 1.5 + (c.rate / maxRate) * 4 : 1.5;
+      cablesSvg += '<line x1="' + x.toFixed(1) + '" y1="' + (deckY - sag).toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + deckY + '" stroke="' + (isDominant ? 'rgb(var(--c-danger))' : 'rgb(var(--c-accent))') + '" stroke-width="' + strokeWidth.toFixed(1) + '"/>';
+      labelsSvg += '<text x="' + x.toFixed(1) + '" y="' + (deckY + 16) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + c.label + '</text>' +
+        '<text x="' + x.toFixed(1) + '" y="' + (deckY + 29) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">$' + c.rate.toFixed(2) + '/hr</text>';
+    });
+    var ariaLabel = 'Suspension bridge load monitor. ' + state.cables.map(function(c){ return c.label + ': $' + c.rate.toFixed(2) + ' per hour'; }).join(', ') + '. Heaviest load: ' + state.dominant.label + '. Total fully burdened rate $' + state.totalMhr.toFixed(2) + ' per hour.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:500px" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="' + towerL + '" y1="10" x2="' + towerL + '" y2="' + deckY + '" stroke="rgb(var(--c-text-secondary))" stroke-width="4"/>' +
+      '<line x1="' + towerR + '" y1="10" x2="' + towerR + '" y2="' + deckY + '" stroke="rgb(var(--c-text-secondary))" stroke-width="4"/>' +
+      '<line x1="' + deckL + '" y1="' + deckY + '" x2="' + deckR + '" y2="' + deckY + '" stroke="rgb(var(--c-text-primary))" stroke-width="3"/>' +
+      cablesSvg + labelsSvg +
+      '</svg>';
+    document.getElementById('suspensionBridgeWrap').innerHTML = svg;
+  }
+  window.renderSuspensionBridge = renderSuspensionBridge;
 
   // ---------- Monte Carlo Should-Cost Explorer ----------
   // Seeded PRNG (mulberry32, public domain) instead of Math.random() -- deterministic and
@@ -3241,10 +3341,52 @@
     renderCapacitySPC();
     renderHoneycomb(calcHoneycomb());
     renderCometTail(calcCometTail());
+    renderThermostat(calcThermostat(overallUtil));
     return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
   }
   window.calcCapacity = calcCapacity;
   document.getElementById('capOhRate').addEventListener('input', calcCapacity);
+
+  // ---------- Thermostat Feedback Loop: the same overall 6-week utilization above, compared against
+  // this page's own already-established 85% green threshold (utilStatus). ILLUSTRATIVE HEURISTIC
+  // ONLY -- AMS is never claimed to run an actual automated rebalancing system; this demonstrates
+  // what a negative-feedback correction toward that real threshold would look like. Pure state
+  // computation separated from render, matching the DFM tab's own "illustrative, not physics-based"
+  // convention. ----------
+  var THERMOSTAT_TARGET = 85; // this page's own established green-band threshold (utilStatus)
+  function calcThermostat(overallUtil){
+    var gap = THERMOSTAT_TARGET - overallUtil;
+    return { current: overallUtil, target: THERMOSTAT_TARGET, gap: gap, mode: gap > 0 ? 'heating' : (gap < 0 ? 'cooling' : 'steady') };
+  }
+  window.calcThermostat = calcThermostat;
+
+  function renderThermostat(state){
+    var W = 200, H = 200, cx = W / 2, cy = H / 2, r = 70;
+    // Dial spans a fixed illustrative 50-100% range so both current and target land legibly on it.
+    var domainMin = 50, domainMax = 100;
+    function angleFor(v){ return -135 + ((v - domainMin) / (domainMax - domainMin)) * 270; } // degrees, -135 to +135
+    function pointAt(angleDeg, radius){
+      var rad = (angleDeg - 90) * Math.PI / 180;
+      return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+    }
+    var needleAngle = angleFor(state.current);
+    var targetAngle = angleFor(state.target);
+    var needleTip = pointAt(needleAngle, r - 10);
+    var targetTick = pointAt(targetAngle, r);
+    var modeColor = state.mode === 'heating' ? 'rgb(var(--c-danger))' : (state.mode === 'cooling' ? 'rgb(var(--c-accent))' : 'rgb(var(--c-success))');
+    var modeLabel = state.mode === 'heating' ? 'HEATING (needs more booked hours)' : (state.mode === 'cooling' ? 'COOLING (over-committed)' : 'STEADY');
+    var ariaLabel = 'Thermostat feedback loop, an illustrative heuristic only -- current utilization ' + state.current.toFixed(1) + '%, target ' + state.target + '%, ' + modeLabel + ', gap ' + Math.abs(state.gap).toFixed(1) + ' points.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:200px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="3"/>' +
+      '<line x1="' + targetTick.x.toFixed(1) + '" y1="' + targetTick.y.toFixed(1) + '" x2="' + pointAt(targetAngle, r - 14).x.toFixed(1) + '" y2="' + pointAt(targetAngle, r - 14).y.toFixed(1) + '" stroke="rgb(var(--c-success))" stroke-width="3"/>' +
+      '<line x1="' + cx + '" y1="' + cy + '" x2="' + needleTip.x.toFixed(1) + '" y2="' + needleTip.y.toFixed(1) + '" stroke="' + modeColor + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="' + modeColor + '"/>' +
+      '<text x="' + cx + '" y="' + (cy + r + 20) + '" font-size="11" font-weight="700" fill="' + modeColor + '" text-anchor="middle">' + state.mode.toUpperCase() + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + r + 34) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">current ' + state.current.toFixed(1) + '% vs target ' + state.target + '%</text>' +
+      '</svg>';
+    document.getElementById('thermostatWrap').innerHTML = svg;
+  }
+  window.renderThermostat = renderThermostat;
 
   // ---------- Honeycomb Capacity Lattice: same 6-week CAP_WEEKS data as the table/SPC chart above,
   // re-read live from the same editable inputs -- no new fields, no new fabricated time series. Pure
@@ -3527,10 +3669,41 @@
     document.getElementById('dfmTotalOut').textContent = '+' + (total * 100).toFixed(1) + '%';
     document.getElementById('dfmCostOut').textContent = '$' + estCost.toFixed(2);
     renderKaleidophone(calcKaleidophone(thickness, pocket));
+    renderShadowPuppet(calcShadowPuppet(estCost));
     return { wallFactor: wallFactor, pocketFactor: pocketFactor, heightFactor: heightFactor, total: total, estCost: estCost };
   }
   window.calcDfm = calcDfm;
   ['dfmThickness', 'dfmPocket', 'dfmHeight'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcDfm); });
+
+  // ---------- Shadow Puppet Overlay Comparator: the same $100 reference should-cost and DFM-adjusted
+  // estimated cost above, overlaid as two silhouettes -- the overlap is the reference baseline still
+  // "inside" the actual cost, and the excess (hatched) is exactly the same dollar overrun the outline
+  // above already states as a percentage. Pure state computation separated from render. ----------
+  function calcShadowPuppet(estCost){
+    var reference = DFM_BASELINE;
+    var excess = Math.max(0, estCost - reference);
+    return { reference: reference, estCost: estCost, excess: excess };
+  }
+  window.calcShadowPuppet = calcShadowPuppet;
+
+  function renderShadowPuppet(state){
+    var W = 300, H = 160, baseY = 140, barW = 70;
+    var scale = 0.6; // px per dollar, chosen so a $153 estimate stays comfortably inside the canvas
+    var refH = state.reference * scale;
+    var actH = state.estCost * scale;
+    var refX = 90, actX = 140; // overlapping but offset so both silhouettes remain visible
+    var ariaLabel = 'Shadow puppet overlay comparator. Reference should-cost $' + state.reference.toFixed(2) + ', DFM-adjusted actual $' + state.estCost.toFixed(2) + ', excess $' + state.excess.toFixed(2) + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:300px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="20" y1="' + baseY + '" x2="' + (W - 20) + '" y2="' + baseY + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<rect x="' + actX + '" y="' + (baseY - actH).toFixed(1) + '" width="' + barW + '" height="' + actH.toFixed(1) + '" fill="rgb(var(--c-danger)/.25)" stroke="rgb(var(--c-danger))" stroke-width="1.5"/>' +
+      '<rect x="' + refX + '" y="' + (baseY - refH).toFixed(1) + '" width="' + barW + '" height="' + refH.toFixed(1) + '" fill="rgb(var(--c-accent)/.45)" stroke="rgb(var(--c-accent))" stroke-width="1.5"/>' +
+      '<text x="' + (refX + barW / 2) + '" y="' + (baseY + 16) + '" font-size="10" fill="rgb(var(--c-accent))" text-anchor="middle">reference $' + state.reference.toFixed(2) + '</text>' +
+      '<text x="' + (actX + barW / 2) + '" y="' + (baseY + 30) + '" font-size="10" fill="rgb(var(--c-danger))" text-anchor="middle">actual $' + state.estCost.toFixed(2) + '</text>' +
+      (state.excess > 0 ? '<text x="' + (actX + barW / 2) + '" y="' + (baseY - actH - 8).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-danger))" text-anchor="middle">+$' + state.excess.toFixed(2) + ' over reference</text>' : '') +
+      '</svg>';
+    document.getElementById('shadowPuppetWrap').innerHTML = svg;
+  }
+  window.renderShadowPuppet = renderShadowPuppet;
 
   // ---------- Kaleidophone Resonance Chart: same 3 DFM penalty formulas above, re-framed as live
   // marginal sensitivity -- how much the total would move if THIS slider were nudged by one step,
@@ -4002,6 +4175,31 @@
   document.getElementById('pbDomain').addEventListener('change', renderPlaybook);
   document.getElementById('pbSearch').addEventListener('input', renderPlaybook);
 
+  // ---------- Card Catalog Drawer Cohort Browser: the same 30 real PLAYBOOK scenarios above, browsed
+  // one at a time instead of as a filtered grid -- no new data, an alternate navigation surface only.
+  // Pure state computation (index clamped to the real array bounds) separated from render. ----------
+  var catalogIndex = 0;
+  function calcCardCatalog(index){
+    var clamped = Math.max(0, Math.min(PLAYBOOK.length - 1, index));
+    return { index: clamped, item: PLAYBOOK[clamped], total: PLAYBOOK.length };
+  }
+  window.calcCardCatalog = calcCardCatalog;
+
+  function renderCardCatalog(state){
+    catalogIndex = state.index;
+    var item = state.item;
+    document.getElementById('cardCatalogWrap').innerHTML = '<div class="pb-card">' +
+      '<div class="pb-card-head"><span class="pb-code">Q' + item.num + ' · ' + item.code + ' · ' + (PB_DOMAIN_LABELS[item.domain] || item.domain) + '</span></div>' +
+      '<div class="pb-q">' + item.kpi + '</div>' +
+      '<p class="pb-row"><b>Question: </b>' + item.q + '</p>' +
+      '<p class="pb-row pb-result" style="' + pbResultClass(item.result) + '">' + item.result + '</p>' +
+      '</div>';
+    document.getElementById('catalogPositionOut').textContent = 'Card ' + (state.index + 1) + ' of ' + state.total;
+  }
+  window.renderCardCatalog = renderCardCatalog;
+  document.getElementById('catalogPrevBtn').addEventListener('click', function(){ renderCardCatalog(calcCardCatalog(catalogIndex - 1)); });
+  document.getElementById('catalogNextBtn').addEventListener('click', function(){ renderCardCatalog(calcCardCatalog(catalogIndex + 1)); });
+
   // ---------- Quality/Scrap Cost Pareto (research-recommended chart type for these 3 KPIs,
   // 2026-09-05: Pareto charts are the established ASQ/Juran root-cause-prioritization tool for
   // exactly this question -- "which failure mode dominates cost exposure"). Built from the three
@@ -4213,6 +4411,44 @@
   document.getElementById('metroDays').addEventListener('input', function(){
     renderMetronome(calcMetronome(parseFloat(document.getElementById('metroDays').value) || 0));
   });
+
+  // ---------- Relay Race Baton Pass Timeline: the same 4 CADENCE_INTERVALS above, one derivative
+  // further -- the GAP between consecutive cadence intervals is the real, structural worst-case wait
+  // before an unresolved issue reaches the next tier. A fixed property of the cadence definitions
+  // themselves, not a function of elapsed time, so this doesn't need its own input. ----------
+  function calcRelayRace(){
+    var gaps = [];
+    for (var i = 1; i < CADENCE_INTERVALS.length; i++){
+      gaps.push({ from: CADENCE_INTERVALS[i - 1].label, to: CADENCE_INTERVALS[i].label, days: CADENCE_INTERVALS[i].days - CADENCE_INTERVALS[i - 1].days });
+    }
+    return { gaps: gaps };
+  }
+  window.calcRelayRace = calcRelayRace;
+
+  function renderRelayRace(state){
+    var W = 500, H = 120, y = 60, runnerR = 8;
+    var n = CADENCE_INTERVALS.length;
+    var x0 = 40, spacing = (W - 80) / (n - 1);
+    var maxGap = Math.max.apply(null, state.gaps.map(function(g){ return g.days; }));
+    var runnersSvg = '', gapsSvg = '';
+    CADENCE_INTERVALS.forEach(function(c, i){
+      var x = x0 + i * spacing;
+      runnersSvg += '<circle cx="' + x + '" cy="' + y + '" r="' + runnerR + '" fill="rgb(var(--c-accent))"/>' +
+        '<text x="' + x + '" y="' + (y + 24) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + c.label + '</text>';
+    });
+    state.gaps.forEach(function(g, i){
+      var x1 = x0 + i * spacing + runnerR, x2 = x0 + (i + 1) * spacing - runnerR;
+      var strokeWidth = maxGap > 0 ? 1.5 + (g.days / maxGap) * 5 : 1.5;
+      gapsSvg += '<line x1="' + x1.toFixed(1) + '" y1="' + y + '" x2="' + x2.toFixed(1) + '" y2="' + y + '" stroke="rgb(var(--c-warning))" stroke-width="' + strokeWidth.toFixed(1) + '" stroke-dasharray="6,4"/>' +
+        '<text x="' + ((x1 + x2) / 2).toFixed(1) + '" y="' + (y - 12) + '" font-size="10" font-weight="700" fill="rgb(var(--c-warning))" text-anchor="middle">+' + g.days + 'd wait</text>';
+    });
+    var ariaLabel = 'Relay race baton pass timeline. ' + state.gaps.map(function(g){ return g.from + ' to ' + g.to + ': ' + g.days + ' day worst-case wait'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:500px" role="img" aria-label="' + ariaLabel + '">' +
+      gapsSvg + runnersSvg +
+      '</svg>';
+    document.getElementById('relayRaceWrap').innerHTML = svg;
+  }
+  window.renderRelayRace = renderRelayRace;
 
   // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
   function calcLearningCurve(){
@@ -4462,10 +4698,12 @@
   calcOuForward();
   renderPendulum(calcPendulum());
   renderPlaybook();
+  renderCardCatalog(calcCardCatalog(0));
   renderQualityParetoChart();
   renderKpiInteractionMap();
   renderDomino(calcDomino(35, 25));
   renderMetronome(calcMetronome(45));
+  renderRelayRace(calcRelayRace());
   calcLearningCurve();
   renderRiskRegister();
   renderAurora(calcAurora());
