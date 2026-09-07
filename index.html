@@ -374,8 +374,9 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 857/857 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 885/885 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
+    <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
@@ -1620,6 +1621,23 @@
     </div>
 
     <div class="card">
+      <div class="card-head"><h2>How this page's own numbers earn trust — three layers, not one number</h2><span class="tag">ARCHITECTURE NOTE, NOT A NEW TAB</span></div>
+      <p class="lede">This cuts <em>across</em> the Operating Framework tab's 4-pillar taxonomy, not a
+        replacement for it — the pillars describe what areas of the role this page models; this
+        describes how every number on every one of those pillars earns the right to be shown at all.
+        Three groups already exist on this page, each built independently, on its own tab — naming
+        them as one architecture here for the first time, not introducing new mechanisms.</p>
+      <div class="outline">
+        <div class="line"><span><b>Layer 1 — Leading indicators.</b> Moves before a cost or schedule problem shows up in the ledger: the Capacity Forecast tab's utilization trend and I-MR control chart, and the Tooling Amortization tab's wear-related signals.</span><span></span></div>
+        <div class="line"><span><b>Layer 2 — Confirming metrics.</b> Says whether a leading signal actually became a real cost problem: the Should-Cost &amp; MHR Simulator and the Variance Waterfall — the numbers a leading signal has to actually move before they react.</span><span></span></div>
+        <div class="line"><span><b>Layer 3 — Independent assurance.</b> Checks that every number in the two layers above is honest before it's ever shown: the full <code>stress.cjs</code> suite (re-run on every load — see the passing-count badge in the nav), plus the Explain-the-Math modal on every calculator.</span><span></span></div>
+      </div>
+      <p style="font-size:12.5px;color:rgb(var(--c-text-secondary));margin-top:10px">A drift that only
+        shows up in one layer is worth watching; the same root cause confirmed independently in more
+        than one layer is closer to a real signal than a single number ever is on its own.</p>
+    </div>
+
+    <div class="card">
       <div class="card-head"><h2>A research pass on the 30-scenario Playbook's own KPIs — one real miscalibration found and fixed</h2></div>
       <p style="font-size:12.5px;color:rgb(var(--c-text-secondary))">Every one of the Cost Diagnostic
         Playbook's 30 KPIs was cross-checked against published industry evidence (7 independent
@@ -1714,6 +1732,13 @@
     <div class="modal-box">
       <div class="modal-head"><h3 id="explainTitle">Formula</h3><button class="modal-close" id="explainClose" type="button" aria-label="Close">×</button></div>
       <div class="modal-body" id="explainBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="shortcutsModal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <div class="modal-box">
+      <div class="modal-head"><h3 id="shortcutsTitle">Keyboard Shortcuts</h3><button class="modal-close" id="shortcutsClose" type="button" aria-label="Close">×</button></div>
+      <div class="modal-body" id="shortcutsBody"></div>
     </div>
   </div>
 
@@ -2037,8 +2062,8 @@
     // overwrite modalReturnFocusTo with the first modal's own now-closing control instead of the
     // real pre-modal trigger, stranding focus on a hidden element once the second modal closes
     // (reproduced: a stress-test check written to verify this very feature caught it).
-    var alreadyOpen = [explainModal, paletteModal].some(function(m){ return m && m.classList.contains('open'); });
-    [explainModal, paletteModal].forEach(function(m){ if (m && m !== modalEl) m.classList.remove('open'); });
+    var alreadyOpen = [explainModal, paletteModal, shortcutsModal].some(function(m){ return m && m.classList.contains('open'); });
+    [explainModal, paletteModal, shortcutsModal].forEach(function(m){ if (m && m !== modalEl) m.classList.remove('open'); });
     if (!alreadyOpen) modalReturnFocusTo = document.activeElement;
     modalEl.classList.add('open');
     if (focusTarget && focusTarget.focus) focusTarget.focus();
@@ -2182,11 +2207,12 @@
     else if (ev.key === 'Enter'){ ev.preventDefault(); if (paletteSelectedIndex > -1) activatePaletteItem(paletteFiltered[paletteSelectedIndex]); }
   });
   document.addEventListener('keydown', function(ev){
-    if (ev.key === 'Escape'){ closeExplain(); closePalette(); }
+    if (ev.key === 'Escape'){ closeExplain(); closePalette(); closeShortcuts(); }
     else if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); openPalette(); }
     else if (ev.key === 'Tab'){
       if (explainModal.classList.contains('open')) trapModalTab(explainModal, ev);
       else if (paletteModal.classList.contains('open')) trapModalTab(paletteModal, ev);
+      else if (shortcutsModal.classList.contains('open')) trapModalTab(shortcutsModal, ev);
     }
   });
 
@@ -2195,6 +2221,12 @@
     var tag = el.tagName;
     return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!el.isContentEditable;
   }
+  // UX_ROADMAP idea #23 (P0): every status-pill on this page already carries a text label
+  // (PASS/BLOCKED/WARNING/GREEN/AMBER/RED/etc.) alongside its color, but the roadmap's own audit
+  // asked for a redundant SYMBOL too -- a faster, pre-attentive scan cue that doesn't depend on
+  // reading the word. One shared helper, not 8 hand-edited call sites re-deriving the same mapping.
+  function statusSymbol(band){ return band === 'green' ? '✓' : (band === 'amber' ? '▲' : '✗'); }
+  window.statusSymbol = statusSymbol;
   function tabLabelFor(name){
     var btn = document.getElementById('navtab-' + name);
     return btn ? btn.getAttribute('aria-label') : name;
@@ -2233,8 +2265,46 @@
     if (ev.key.toLowerCase() === 'g' && !ev.metaKey && !ev.ctrlKey && !ev.altKey){
       ev.preventDefault();
       startChord();
+      return;
+    }
+    if (ev.key === '?' && !ev.metaKey && !ev.ctrlKey && !ev.altKey){
+      ev.preventDefault();
+      openShortcuts();
     }
   });
+
+  // ---------- Keyboard Shortcuts Overlay (UX_ROADMAP idea #22, P0) ----------
+  // Same data-table-plus-generic-modal shape as EXPLAIN/Command Palette (openModal/closeModal reused,
+  // not reinvented). The chord-legend rows are generated from the real CHORD_MAP + tabLabelFor() --
+  // the same live lookup the chord feature itself uses -- so this list can never hand-drift from the
+  // actual keybindings the way a separately hand-typed legend could.
+  var shortcutsModal = document.getElementById('shortcutsModal');
+  var shortcutsBody = document.getElementById('shortcutsBody');
+  function renderShortcuts(){
+    var chordRows = Object.keys(CHORD_MAP).sort().map(function(letter){
+      return '<div class="line"><span><span class="mono">g</span> then <span class="mono">' + letter + '</span></span><span>' + tabLabelFor(CHORD_MAP[letter]) + '</span></div>';
+    }).join('');
+    shortcutsBody.innerHTML =
+      '<div class="outline" style="margin-bottom:14px">' +
+        '<div class="line"><span><span class="mono">⌘K</span> / <span class="mono">Ctrl+K</span></span><span>Open Quick Navigation</span></div>' +
+        '<div class="line"><span><span class="mono">?</span></span><span>Show this shortcuts list</span></div>' +
+        '<div class="line"><span><span class="mono">Esc</span></span><span>Close any open dialog</span></div>' +
+      '</div>' +
+      '<p class="lede" style="margin-bottom:6px">Jump directly to a tab — press <span class="mono">g</span>, then a letter:</p>' +
+      '<div class="outline" style="margin-bottom:14px">' + chordRows + '</div>' +
+      '<div class="outline">' +
+        '<div class="line"><span><span class="mono">↑</span> / <span class="mono">↓</span> / <span class="mono">Home</span> / <span class="mono">End</span></span><span>Move between tabs (when the nav has focus)</span></div>' +
+        '<div class="line"><span><span class="mono">⌘⇧[</span> / <span class="mono">Ctrl⇧[</span></span><span>Step to an older recently-visited tab</span></div>' +
+        '<div class="line"><span><span class="mono">⌘⇧]</span> / <span class="mono">Ctrl⇧]</span></span><span>Step back toward a more recent tab</span></div>' +
+      '</div>';
+  }
+  function openShortcuts(){ renderShortcuts(); openModal(shortcutsModal, document.getElementById('shortcutsClose')); }
+  function closeShortcuts(){ closeModal(shortcutsModal); }
+  window.openShortcuts = openShortcuts;
+  window.closeShortcuts = closeShortcuts;
+  document.getElementById('shortcutsBtn').addEventListener('click', openShortcuts);
+  document.getElementById('shortcutsClose').addEventListener('click', closeShortcuts);
+  shortcutsModal.addEventListener('click', function(ev){ if (ev.target === shortcutsModal) closeShortcuts(); });
 
   // ---------- Recency-Based Tab Stepper (MRU order, not DOM order) ----------
   // Ctrl/Cmd+Tab is reserved by every major browser for its OWN tab-cycling and never reaches page
@@ -2882,7 +2952,7 @@
     document.getElementById('cpShiftPct').textContent = shiftPct.toFixed(2) + '%';
     document.getElementById('cpProjected').textContent = fmtMoney(projected);
     document.getElementById('cpProjected').style.color = projected > 0 ? 'rgb(var(--c-danger))' : (projected < 0 ? 'rgb(var(--c-success))' : '');
-    document.getElementById('cpStatus').innerHTML = '<span class="status-pill ' + (warning ? 'red' : 'green') + '">' + (warning ? 'WARNING' : 'OK') + '</span>';
+    document.getElementById('cpStatus').innerHTML = '<span class="status-pill ' + (warning ? 'red' : 'green') + '">' + statusSymbol(warning ? 'red' : 'green') + ' ' + (warning ? 'WARNING' : 'OK') + '</span>';
     return { shiftPct: shiftPct, projected: projected, warning: warning };
   }
   window.calcCommodityExposure = calcCommodityExposure;
@@ -3345,13 +3415,13 @@
       document.getElementById('capUnabHrs' + i).textContent = unabHrs.toFixed(1);
       document.getElementById('capUnabDollars' + i).textContent = '$' + Math.round(unabDollars).toLocaleString();
       document.getElementById('capUtil' + i).textContent = util.toFixed(2) + '%';
-      document.getElementById('capStatus' + i).innerHTML = '<span class="status-pill ' + status + '">' + status.toUpperCase() + '</span>';
+      document.getElementById('capStatus' + i).innerHTML = '<span class="status-pill ' + status + '">' + statusSymbol(status) + ' ' + status.toUpperCase() + '</span>';
       totalAvail += avail; totalBooked += booked; totalUnabHrs += unabHrs; totalUnabDollars += unabDollars;
     });
     var overallUtil = totalAvail > 0 ? (totalBooked / totalAvail) * 100 : 0;
     document.getElementById('capTotalRow').innerHTML = '<td>6-Week Total</td><td class="mono">' + totalAvail + '</td><td class="mono">' + totalBooked + '</td>' +
       '<td class="mono">' + totalUnabHrs.toFixed(1) + '</td><td class="mono">$' + Math.round(totalUnabDollars).toLocaleString() + '</td>' +
-      '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
+      '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + statusSymbol(utilStatus(overallUtil)) + ' ' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
     renderCapacitySPC();
     renderHoneycomb(calcHoneycomb());
     renderCometTail(calcCometTail());
@@ -3786,7 +3856,7 @@
     var score = 100 - deduction;
     var band = bandFor(score);
     document.getElementById('mdqsScore').textContent = score.toFixed(3) + '%';
-    document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + band.toUpperCase() + '</span>';
+    document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + statusSymbol(band) + ' ' + band.toUpperCase() + '</span>';
     updateGovernanceNavStatus();
     renderPressureVessel(calcPressureVessel(deduction, band));
     return { score: score, band: band };
@@ -3829,7 +3899,7 @@
     document.getElementById(id).addEventListener('input', calcMdqs);
   });
 
-  function gatePill(pass){ return '<span class="status-pill ' + (pass ? 'green' : 'red') + '">' + (pass ? 'PASS' : 'BLOCKED') + '</span>'; }
+  function gatePill(pass){ return '<span class="status-pill ' + (pass ? 'green' : 'red') + '">' + statusSymbol(pass ? 'green' : 'red') + ' ' + (pass ? 'PASS' : 'BLOCKED') + '</span>'; }
   function calcGates(){
     var bom = parseFloat(document.getElementById('gateBom').value) || 0;
     var po = parseFloat(document.getElementById('gatePo').value) || 0;
@@ -4546,7 +4616,7 @@
       return '<tr><td class="mono">' + r.id + '</td><td>' + r.event +
         '<div style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:4px"><b>Root cause:</b> ' + r.root + '<br><b>Mitigation:</b> ' + r.mitigation + '</div></td>' +
         '<td class="mono">' + r.p + '</td><td class="mono">' + r.s + '</td><td class="mono">' + r.d + '</td>' +
-        '<td class="mono">' + crpn + '</td><td><span class="status-pill ' + band + '">' + (band === 'red' ? 'ESCALATE' : 'MONITOR') + '</span></td></tr>';
+        '<td class="mono">' + crpn + '</td><td><span class="status-pill ' + band + '">' + statusSymbol(band) + ' ' + (band === 'red' ? 'ESCALATE' : 'MONITOR') + '</span></td></tr>';
     }).join('');
     document.getElementById('riskRegisterBody').innerHTML = rows;
   }
@@ -4610,7 +4680,7 @@
     var crpn = p * s * d;
     var band = crpnBand(crpn);
     document.getElementById('riskScoreOut').textContent = String(crpn);
-    document.getElementById('riskScoreBand').innerHTML = '<span class="status-pill ' + band + '">' + (band === 'red' ? 'ESCALATE (RCCA required)' : 'MONITOR') + '</span>';
+    document.getElementById('riskScoreBand').innerHTML = '<span class="status-pill ' + band + '">' + statusSymbol(band) + ' ' + (band === 'red' ? 'ESCALATE (RCCA required)' : 'MONITOR') + '</span>';
     return { crpn: crpn, band: band };
   }
   window.calcRiskScorer = calcRiskScorer;
@@ -4724,6 +4794,16 @@
   calcRiskScorer();
   calcMVaR();
   renderTightrope(calcTightrope());
+
+  // UX_ROADMAP Phase 4, idea #19 (P0): aria-live="polite" on every calculator result block so a
+  // screen reader announces updated results without requiring re-navigation. Applied once, here, to
+  // every .outline block on the page (the existing, consistent markup convention for a calculator's
+  // own result lines -- see the architecture notes in UX_ROADMAP.md) rather than hand-editing each
+  // of the 23 blocks individually. aria-atomic is deliberately left at its default (false): only the
+  // specific line(s) whose text actually changed get announced, not the whole block every time --
+  // e.g. changing just the overhead rate announces "Overhead $16.23. Should-cost per unit $124.63."
+  // without re-announcing the unchanged Material/Machine/Labor lines above it.
+  document.querySelectorAll('.outline').forEach(function(el){ el.setAttribute('aria-live', 'polite'); });
 })();
 </script>
 </body>

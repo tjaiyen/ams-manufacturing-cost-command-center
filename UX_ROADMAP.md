@@ -56,7 +56,7 @@ wins that a technical reviewer would actually notice and respect. Every idea bel
 25. **Milestone celebrations** (confetti/sound crossing a threshold). ⛔ tone-mismatched for a hiring-panel audience.
 26. **"Guess before reveal" quiz mode** on the Diagnostic Playbook (hide the root cause, guess the variance type first). ⚠ genuinely educational reframing of gamification, but real build effort — good P2 experiment, not a quick win.
 27. **Session streak / visit counter.** ⛔ streak mechanics are a retention pattern for repeat-visit products; this dashboard gets one serious look from a reviewer, not daily engagement.
-28. **"Continue where you left off" resume chip** (localStorage remembers the last tab). ✅ genuinely useful continuity, not really gamification, but honestly answers the engagement ask.
+28. **"Continue where you left off" resume chip** (localStorage remembers the last tab). ✅ genuinely useful continuity, not really gamification, but honestly answers the engagement ask. **Built** — `ams-cc-last-tab` + `restoreLastTab()`. (This entry went stale after that shipped — caught and corrected during the Phase 4 stress-test below.)
 29. **Achievement badges for exploring all tabs.** ⛔ same reasoning as #25/#27.
 30. **Sound cues on interaction** (from the reviewed document). ⛔ previously declined for the same dashboard; reaffirmed.
 
@@ -90,6 +90,7 @@ itself (not a reimplementation) — see the "Vertical side navigation" sections 
 - Progressive disclosure for advanced calculator inputs (idea #13)
 - Per-tab empty-state guidance (idea #10)
 - Full keyboard-nav audit beyond the side-nav itself (idea #17)
+- Printable one-pager (idea #14) — good-fit at Phase 1, never actually tiered until now (caught during the Phase 4 stress-test below)
 
 **P2 — valuable but bigger lift or more speculative:**
 - KPI sparkline previews (idea #2)
@@ -102,6 +103,52 @@ itself (not a reimplementation) — see the "Vertical side navigation" sections 
 **Declined, documented not silently dropped:** 3D/WebGL sculptor (#8), sensor oscilloscope (#15),
 dyslexia web-font (#21, pending a deliberate zero-dependency tradeoff revisit), milestone
 celebrations (#25), streak/visit counters (#27), tab-exploration badges (#29), sound cues (#30).
+
+## Phase 4 — External-inspiration ideas (2026-09-07), vetted against the same audience test
+
+TJ pointed at a sibling portfolio dashboard (`project-controls-command-center`, capital-program EVM/
+schedule controls — a genuinely different domain, kept as a separate repo on purpose, see README) and
+asked for a proposal of AMS upgrades inspired by it. A `/stress-test` pass on the resulting plan found
+that 4 of the proposed ideas had gone straight to "build it" without the ✅/⚠/⛔ vetting every Phase-1
+idea got — closing that gap here before building any of them.
+
+31. **"Three layers" architecture reframing** (Leading indicators → Confirming cost/schedule metrics →
+    Independent assurance) — the inspiration dashboard names its own tabs this way. ⚠→✅ **with two
+    fixes required, not adopted as-is.** As first proposed it borrowed the sibling repo's own EVM
+    vocabulary ("Confirming EVM-like metrics") — re-importing exactly the cross-domain blending the
+    separate-repo decision exists to prevent — and would have created a second, competing taxonomy
+    next to the existing illustrative 4-pillar Operating Framework. Fixed: rewritten in AMS-native
+    language only (Capacity/Tooling wear = leading, Should-Cost/Variance = confirming, the 857-check
+    `stress.cjs` suite = assurance), scoped to a Methodology-tab paragraph that explicitly says it cuts
+    *across* the 4-pillar taxonomy rather than replacing it.
+32. **"Changed since your last visit" banner** — diffs current KPI values against a localStorage
+    snapshot from the visitor's prior session. ⚠→✅ **with an explicit guardrail.** This is
+    conceptually adjacent to declined idea #27 (streak/visit counter) — both presuppose a returning
+    visitor. The distinction that makes it fit here: zero streak/count/badge/reward mechanics, purely
+    a factual "here's what moved" statement — the same reasoning that made #28 (resume chip) a good
+    fit despite the same "presupposes a return visit" shape. Built to that standard, not #27's.
+33. **"View as: [Role]" filter** — the inspiration dashboard narrows one unified 20-KPI grid to 6 tiles
+    per role. ⚠→✅ **redefined, not adopted as proposed.** AMS has no such grid — only 17 `.kpi-tile`
+    elements total, 2–4 per tab across 12 separate tabs. As literally proposed this had no structural
+    analog to filter. Redefined as role-scoped **nav-tab visibility** instead (AMS's 12 real tabs are
+    the actual analog to the inspiration's 20 tiles), framed explicitly as demonstrating
+    audience-tailored communication — a real skill for the target role — not as serving genuinely
+    different real viewers of this one-hiring-panel-audience dashboard.
+34. **Attention & Triage tab** — one cross-tab tab aggregating every currently-firing (non-green/
+    non-PASS) real threshold already computed elsewhere on the page into urgency tiers. ✅ **the
+    strongest idea in this batch** — reuses only real, already-computed data (MDQS band, Gate
+    Simulator results, capacity utilization bands, risk-register severities), zero new fabrication.
+    Scope rule (needed because a naive build would range from 4 items to 30+): one item per real
+    *distinct mechanism*, with multi-row mechanisms (capacity weeks, risk-register entries, playbook
+    scenarios) rolled up into one aggregate item each — never exploded per-row, which would just
+    duplicate the tab that already owns that detail.
+35. **Colorblind-safe status-pill symbol audit (idea #23, reaffirmed)** — this is the one already-P0
+    idea the stress-test caught missing from the new plan entirely. Not a new idea; restored to its
+    original P0 priority.
+
+**Dropped, not built:** a live mini-recompute demo on the Executive Overview tab (proposed alongside
+#33 above) — the Site Accuracy Explorer already on that tab (live-editable CMAR/spread) is exactly
+this; building a second one would ship a near-duplicate.
 
 ## Technical architecture & component breakdown
 

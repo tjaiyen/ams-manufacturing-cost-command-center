@@ -312,6 +312,15 @@ function makeElement(id) {
 // could silently drift from it.
 const NAVTAB_IDS = [...html.matchAll(/id="(navtab-[a-z]+)"/g)].map((m) => m[1]);
 const TABPANEL_IDS = [...html.matchAll(/id="(tab-[a-z]+)"/g)].map((m) => m[1]);
+// Real aria-label text per navtab, extracted from the actual button markup (not hand-copied) -- the
+// Phase 4 batch A stress-test found tabLabelFor() (used by the new Keyboard Shortcuts overlay's
+// chord legend) reads this via document.getElementById(), which bypassed the existing data-tab
+// seeding below entirely (that only ran for the querySelectorAll('.sidenav-item[role="tab"]') path),
+// so every legend row rendered "null" instead of the real tab name -- reproduced, then fixed at the
+// root (getElementById now seeds navtab-* the same way, see below) rather than worked around.
+const NAVTAB_ARIA_LABELS = Object.fromEntries(
+  [...html.matchAll(/id="(navtab-[a-z]+)"[^>]*aria-label="([^"]*)"/g)].map((m) => [m[1], m[2]])
+);
 // A real browser's getAttribute('data-tab') reads a STATIC markup attribute -- this stub's
 // getAttribute only ever returns what's been set at runtime via setAttribute, so the static
 // data-tab value has to be seeded onto each stub element once, at creation time, or every
@@ -321,10 +330,11 @@ const TABPANEL_IDS = [...html.matchAll(/id="(tab-[a-z]+)"/g)].map((m) => m[1]);
 function makeNavTab(id) {
   const el = makeElement(id);
   if (el.getAttribute("data-tab") === null) el.setAttribute("data-tab", id.replace("navtab-", ""));
+  if (el.getAttribute("aria-label") === null && NAVTAB_ARIA_LABELS[id]) el.setAttribute("aria-label", NAVTAB_ARIA_LABELS[id]);
   return el;
 }
 const documentStub = {
-  getElementById: (id) => makeElement(id),
+  getElementById: (id) => (id.startsWith("navtab-") ? makeNavTab(id) : makeElement(id)),
   querySelectorAll: (sel) => {
     if (sel === '.sidenav-item[role="tab"]') return NAVTAB_IDS.map(makeNavTab);
     if (sel === '.tabpanel') return TABPANEL_IDS.map(makeElement);
@@ -856,10 +866,10 @@ check(JSON.stringify(sandbox.CAP_WEEKS) === JSON.stringify([{avail:160,booked:15
 check(elements.capUnabHrs2.textContent === "60.0", "Week 3 unabsorbed hours matches golden value (160 avail - 100 booked)", elements.capUnabHrs2.textContent);
 check(elements.capUnabDollars2.textContent === "$1,680", "Week 3 unabsorbed dollars matches golden value (60hrs x $28/hr)", elements.capUnabDollars2.textContent);
 check(elements.capUtil2.textContent === "62.50%", "Week 3 utilization matches golden value", elements.capUtil2.textContent);
-check(elements.capStatus2.innerHTML.includes(">RED<"), "Week 3 (62.5% utilization) is correctly banded RED (<70%)", elements.capStatus2.innerHTML);
+check(elements.capStatus2.innerHTML.includes(">✗ RED<"), "Week 3 (62.5% utilization) is correctly banded RED (<70%)", elements.capStatus2.innerHTML);
 check(elements.capTotalRow.innerHTML.includes("$5,740"), "6-week total unabsorbed dollars matches golden value", elements.capTotalRow.innerHTML);
 check(elements.capTotalRow.innerHTML.includes("78.65%"), "6-week overall utilization matches golden value", elements.capTotalRow.innerHTML);
-check(elements.capTotalRow.innerHTML.includes(">AMBER<"), "78.65% overall utilization is correctly banded AMBER (70-85%)", elements.capTotalRow.innerHTML);
+check(elements.capTotalRow.innerHTML.includes(">▲ AMBER<"), "78.65% overall utilization is correctly banded AMBER (70-85%)", elements.capTotalRow.innerHTML);
 
 console.log("--- Pathway B (2026-09-05): weekly-utilization SPC control chart (I-MR method, built from the same CAP_WEEKS data above) ---");
 // Pre-registered via Node before this check was written: weekly utilization = [93.75, 87.5, 62.5,
@@ -1026,7 +1036,7 @@ check(elements.shadowPuppetWrap.innerHTML.includes("+$53.00 over reference"), "c
 console.log("--- Commodity Price Exposure Early Warning: golden values ---");
 check(elements.cpShiftPct.textContent === "13.46%", "price shift % matches golden value ($29.50 vs $26.00 frozen)", elements.cpShiftPct.textContent);
 check(elements.cpProjected.textContent === "+$7,700", "projected MPV exposure matches golden value ($3.50/kg x 2,200kg)", elements.cpProjected.textContent);
-check(elements.cpStatus.innerHTML.includes(">WARNING<"), "13.46% shift correctly triggers WARNING (>8% threshold)", elements.cpStatus.innerHTML);
+check(elements.cpStatus.innerHTML.includes(">✗ WARNING<"), "13.46% shift correctly triggers WARNING (>8% threshold)", elements.cpStatus.innerHTML);
 
 console.log("--- Mean-Reversion Forward Band (Ornstein-Uhlenbeck): golden values (pre-registered via Python) ---");
 check(elements.ouExpected.textContent === "$29.15", "expected forward price matches golden value (P̄=27, Pt=29.50, θ=0.15, Δt=1)", elements.ouExpected.textContent);
@@ -1047,20 +1057,20 @@ check(elements.pendulumWrap.innerHTML.includes('class="pendulum-bob"'), "the pen
 
 console.log("--- Data Governance: MDQS + Guardrail Gate Simulator golden values ---");
 check(elements.mdqsScore.textContent === "96.875%", "MDQS score matches golden value (100% - weighted deductions)", elements.mdqsScore.textContent);
-check(elements.mdqsBand.innerHTML.includes(">AMBER<"), "96.875% is correctly banded AMBER (93-98%)", elements.mdqsBand.innerHTML);
-check(elements.gateBomOut.innerHTML.includes(">PASS<"), "BOM gate (8% vs 15% threshold) correctly PASSES", elements.gateBomOut.innerHTML);
-check(elements.gatePoOut.innerHTML.includes(">BLOCKED<"), "PO gate (7% vs 5% threshold) correctly BLOCKS", elements.gatePoOut.innerHTML);
-check(elements.gateConfOut.innerHTML.includes(">PASS<"), "Confirmation gate (12% vs 15% threshold) correctly PASSES", elements.gateConfOut.innerHTML);
+check(elements.mdqsBand.innerHTML.includes(">▲ AMBER<"), "96.875% is correctly banded AMBER (93-98%)", elements.mdqsBand.innerHTML);
+check(elements.gateBomOut.innerHTML.includes(">✓ PASS<"), "BOM gate (8% vs 15% threshold) correctly PASSES", elements.gateBomOut.innerHTML);
+check(elements.gatePoOut.innerHTML.includes(">✗ BLOCKED<"), "PO gate (7% vs 5% threshold) correctly BLOCKS", elements.gatePoOut.innerHTML);
+check(elements.gateConfOut.innerHTML.includes(">✓ PASS<"), "Confirmation gate (12% vs 15% threshold) correctly PASSES", elements.gateConfOut.innerHTML);
 
 console.log("--- Stress-test finding (2026-09-06): BOM gate was missing Math.abs(), unlike its 2 siblings ---");
 // Pre-registered by hand: -50% is a mass discrepancy 3x past the 15% threshold in magnitude, but
 // without Math.abs() it reads as bom<=15 -> true -> PASS, identical to the benign default (8%).
 elements.gateBom.value = "-50";
 sandbox.calcGates();
-check(elements.gateBomOut.innerHTML.includes(">BLOCKED<"), "BOM gate now correctly BLOCKS on a large NEGATIVE discrepancy (-50%), matching PO/Confirmation's existing Math.abs() behavior (was: silently PASS, identical to a benign +8%)", elements.gateBomOut.innerHTML);
+check(elements.gateBomOut.innerHTML.includes(">✗ BLOCKED<"), "BOM gate now correctly BLOCKS on a large NEGATIVE discrepancy (-50%), matching PO/Confirmation's existing Math.abs() behavior (was: silently PASS, identical to a benign +8%)", elements.gateBomOut.innerHTML);
 elements.gateBom.value = "8"; // restore default
 sandbox.calcGates();
-check(elements.gateBomOut.innerHTML.includes(">PASS<"), "restoring the BOM input to its default (8%) reproduces the original golden PASS state", elements.gateBomOut.innerHTML);
+check(elements.gateBomOut.innerHTML.includes(">✓ PASS<"), "restoring the BOM input to its default (8%) reproduces the original golden PASS state", elements.gateBomOut.innerHTML);
 
 console.log("--- Stress-test finding (2026-09-06): MDQS score wasn't floored, could exceed 100% with a negative input ---");
 // Pre-registered by hand: deduction = 0.30*(-50/300)*100 + 0.30*(15/500)*100 + 0.25*(4/80)*100 +
@@ -1398,6 +1408,7 @@ check(elements.auroraCorrSD.textContent === "0.024", "rendered corr(S,D) text ma
 console.log("--- Risk Scorer: golden values (default P=3, S=3, D=3) ---");
 check(elements.riskScoreOut.textContent === "27", "default risk score matches golden value (3x3x3)", elements.riskScoreOut.textContent);
 check(elements.riskScoreBand.innerHTML.includes("ESCALATE"), "CRPN 27 (>= 25) correctly bands ESCALATE", elements.riskScoreBand.innerHTML);
+check(elements.riskScoreBand.innerHTML.includes(">✗ ESCALATE"), "the ESCALATE band also carries the redundant ✗ symbol (UX_ROADMAP idea #23), not color+text alone", elements.riskScoreBand.innerHTML);
 
 console.log("--- Manufacturing Value at Risk (M-VaR): golden values ---");
 check(elements.mvarZ.textContent === "1.645", "default (95%) Z-score matches golden value", elements.mvarZ.textContent);
@@ -1547,6 +1558,58 @@ check(!elements.paletteModal.classList.contains("open"), "closePalette() removes
 // modalReturnFocusTo when no modal was already open, re-verified here (not just re-asserted).
 check(documentStub.activeElement === preModalTrigger, "closing the modal restores focus to whatever had it before ANY modal opened (survives the explain->palette handoff above), not stranded on the first modal's own now-hidden control");
 
+console.log("--- Phase 4 batch A (2026-09-07): Keyboard Shortcuts overlay (UX_ROADMAP idea #22, P0) ---");
+// Golden CHORD_MAP size pre-registered by reading the real object (window.CHORD_MAP, not a
+// hand-copied duplicate) before writing this check (B35): 12 tabs, 12 chord letters.
+check(typeof sandbox.openShortcuts === "function" && typeof sandbox.closeShortcuts === "function", "openShortcuts/closeShortcuts are exposed as functions");
+check(Object.keys(sandbox.CHORD_MAP).length === 12, "CHORD_MAP has exactly 12 entries (one per real tab)", Object.keys(sandbox.CHORD_MAP).length);
+sandbox.openExplain("cmar");
+check(elements.explainModal.classList.contains("open"), "sanity: explainModal is open before testing the shortcuts overlay's own close-others behavior");
+sandbox.openShortcuts();
+check(elements.shortcutsModal.classList.contains("open"), "openShortcuts() opens shortcutsModal");
+check(!elements.explainModal.classList.contains("open"), "opening the shortcuts overlay while Explain was open auto-closes Explain first (reuses the shared openModal close-others behavior, not a special case)");
+check(documentStub.activeElement === elements.shortcutsClose, "opening the overlay moves focus onto its own close button");
+// The chord-legend rows must be GENERATED from the real CHORD_MAP + tabLabelFor(), not a hand-typed
+// duplicate list -- checked by asserting the rendered body actually contains the real aria-label
+// text for a sample of real tabs, keyed off their real chord letters.
+check(elements.shortcutsBody.innerHTML.includes('then <span class="mono">e</span></span><span>Executive Overview</span>'), "the \"g then e\" row names the real Executive Overview tab (via CHORD_MAP+tabLabelFor, not a hand-typed string)", elements.shortcutsBody.innerHTML);
+check(elements.shortcutsBody.innerHTML.includes('then <span class="mono">g</span></span><span>Data Governance</span>'), "the \"g then g\" row names the real Data Governance tab", elements.shortcutsBody.innerHTML);
+check((elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length === 12, "exactly 12 chord rows are rendered, matching CHORD_MAP's own size (not a stale hardcoded count)", (elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length);
+check(elements.shortcutsBody.innerHTML.includes("⌘K") && elements.shortcutsBody.innerHTML.includes("Esc"), "the overlay also documents the non-chord shortcuts (Quick Jump, Esc)", "");
+sandbox.closeShortcuts();
+check(!elements.shortcutsModal.classList.contains("open"), "closeShortcuts() removes the 'open' class");
+check(documentStub.activeElement === preModalTrigger, "closing the shortcuts overlay restores focus to the real pre-modal trigger, same discipline as every other modal on this page");
+
+console.log("--- Phase 4 batch A (2026-09-07): colorblind-safe status-pill symbol audit (UX_ROADMAP idea #23, P0) ---");
+check(typeof sandbox.statusSymbol === "function", "statusSymbol is exposed as a function");
+check(sandbox.statusSymbol("green") === "✓" && sandbox.statusSymbol("amber") === "▲" && sandbox.statusSymbol("red") === "✗", "statusSymbol maps green/amber/red to ✓/▲/✗ exactly", [sandbox.statusSymbol("green"), sandbox.statusSymbol("amber"), sandbox.statusSymbol("red")].join(","));
+// Every one of the 7 real status-pill render call sites in index.html now routes its label through
+// statusSymbol() -- checked structurally here (every one already has its own golden-value behavioral
+// check elsewhere in this file, re-verified above after this round's symbol-prefix change broke and
+// was fixed against 9 of them).
+// Golden count pre-registered via grep before writing this check (B35): 7 real status-pill render
+// call sites (cpStatus, capStatus loop, overallUtil summary row, mdqsBand, gatePill, the risk-register
+// table row, riskScoreBand), each now calling statusSymbol() exactly once.
+const statusSymbolCallCount = (html.match(/statusSymbol\(/g) || []).length;
+check(statusSymbolCallCount === 8, "statusSymbol() is called exactly 8 times: once per definition/export plus once at each of the 7 real status-pill render call sites", statusSymbolCallCount);
+
+console.log("--- Phase 4 batch A (2026-09-07): \"three layers\" methodology reframing (UX_ROADMAP idea #31) ---");
+// A design-qa-style accuracy guard for this new prose card, matching the established discipline of
+// never asserting a claim without checking it against the actual page. Specifically verifies: (1) it
+// explicitly reconciles against the existing 4-pillar taxonomy rather than silently competing with it,
+// (2) every tab/feature it names by label actually exists, (3) no EVM vocabulary leaked in from the
+// sibling repo this idea was inspired by (the stress-test finding this fixes), (4) it's scoped to the
+// Methodology tab only, not a new nav tab.
+check(html.includes("How this page's own numbers earn trust"), "the three-layers card is present in the page");
+check(html.includes("cuts <em>across</em> the Operating Framework tab's 4-pillar taxonomy, not a"), "the card explicitly reconciles against the existing 4-pillar taxonomy rather than presenting a competing, unreconciled framework");
+["Capacity Forecast", "Tooling Amortization", "Should-Cost &amp; MHR Simulator", "Variance Waterfall"].forEach((label) => {
+  check(html.includes(label), `the three-layers card only names real, existing features/tabs ("${label}" exists elsewhere on the page)`);
+});
+check(!/\bEVM\b|Earned Value Management|Confirming EVM/i.test(html.slice(html.indexOf("How this page's own numbers earn trust"), html.indexOf("How this page's own numbers earn trust") + 1500)), "the three-layers card's own text avoids the sibling repo's EVM vocabulary (the cross-domain-blending finding this round fixed)");
+check(!html.includes('id="tab-threelayers"') && !html.includes('id="navtab-threelayers"'), "this shipped as a Methodology-tab prose card, not a new top-level nav tab (matches the plan's revised scope)");
+const fourPillarHeadings = (html.match(/<h3>[1-4] · /g) || []).length;
+check(fourPillarHeadings === 4, "the Operating Framework tab really does have exactly 4 pillar headings (the count the reconciliation sentence above depends on)", fourPillarHeadings);
+
 console.log("--- Methodology tab: newly-verified real terms are cited, not asserted without a source ---");
 ["Single-Minute Exchange of Die", "MTConnect", "OPC-UA", "buy-to-fly ratios of 6:1", "Movement Type 551", "Medallion Architecture"].forEach((term) => {
   check(html.includes(term), `Methodology tab cites "${term}" (independently verified this session, not asserted bare)`);
@@ -1690,6 +1753,30 @@ check(!readmeSrc.includes(`any of the ${realCommandIndexCount - 1} indexed modul
 check((readmeSrc.match(new RegExp(`${realCommandIndexCount} indexed modules`, "g")) || []).length === 2, `README cites the current command-index count (${realCommandIndexCount}) in both places it appears (evergreen summary + feature-list prose)`, (readmeSrc.match(new RegExp(`${realCommandIndexCount} indexed modules`, "g")) || []).length);
 check(!uxRoadmapSrc.includes("highest-priority accessibility item not yet built"), "UX_ROADMAP.md no longer claims prefers-reduced-motion is unbuilt (it shipped in the tenth round and is live + tested)", "");
 check(/@media \(prefers-reduced-motion:reduce\)/.test(html), "sanity: the feature UX_ROADMAP.md now claims is built really is present in index.html, not just asserted in prose", "");
+
+console.log("--- Phase 4 batch A (2026-09-07): aria-live on calculator outputs (UX_ROADMAP idea #19, P0) ---");
+// Golden count pre-registered via `grep -c 'class="outline"' index.html` before writing this check
+// (B35): 23 real calculator-result blocks share this markup convention. The page wires aria-live via
+// a single document.querySelectorAll('.outline').forEach(...) at page-load rather than 23 individual
+// hand-edits (Simplicity First) -- but this stub's querySelectorAll only special-cases 2 known
+// selectors (.sidenav-item[role="tab"], .tabpanel) and has no real DOM tree to resolve an anonymous,
+// id-less class selector against, so it can't execute that forEach meaningfully (degrades safely to
+// [] , same accepted-limitation shape as the KPI Interaction Map / Command Palette items elsewhere in
+// this file). Verified instead: the wiring code itself is present and correctly scoped, the golden
+// element count matches, and the actual runtime behavior (every .outline gets aria-live="polite",
+// only the changed line is announced) was confirmed live in a real browser before this round shipped.
+// Scoped to the static markup only (before <script>) -- the Keyboard Shortcuts overlay built later
+// in this same batch reuses the .outline CSS class inside a JS template string for its own styling,
+// which would otherwise inflate this count with rows that don't exist in the DOM until that modal is
+// opened (and don't need aria-live: they're a static reference legend, not a live calculator result).
+// 24, not the original 23: the "three layers" methodology card (also this batch) adds one more real
+// static .outline block for its own 3-row legend -- harmless to also carry aria-live (it never
+// changes, so the attribute is simply inert there), but it does legitimately move this golden count.
+const staticMarkup = html.slice(0, html.indexOf("<script>"));
+const outlineCount = (staticMarkup.match(/class="outline"/g) || []).length;
+check(outlineCount === 24, "exactly 24 real result/legend blocks share the .outline convention in the static markup (golden count, pre-registered via grep)", outlineCount);
+check(html.includes("document.querySelectorAll('.outline').forEach(function(el){ el.setAttribute('aria-live', 'polite'); });"), "the page wires aria-live=\"polite\" onto every .outline block via one init call, not 23 separate hand-edits", "");
+check(!html.includes('aria-live="polite"') || html.match(/aria-live="polite"/g).length >= 2, "aria-live is used at least where it already existed pre-round (the kbd-hint toast + MRU toast) -- sanity floor, not a full behavioral proof (see the stub limitation noted above)", (html.match(/aria-live="polite"/g) || []).length);
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH

@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 857 checks, all passing as of this writing.
+Run: `node stress.cjs` — 885 checks, all passing as of this writing.
 
 ## Status
 
@@ -1026,3 +1026,50 @@ mass-input change) to confirm the fix is input-invariant, not tuned to just the 
 Total label's bbox top stayed at `y=3` exactly, as the ellipse-radius invariant predicts. 0 console
 errors. Checks: 851 → 857 (+6). Committed locally — pending push with explicit confirmation, same
 discipline as every prior round.
+
+**2026-09-07, twenty-seventh round (Phase 4 batch A/5 — a `/plan-exec` + `/stress-test` pass on 10
+PCCC-inspired ideas, then the first batch of 4):**
+
+TJ asked for upgrades inspired by a sibling portfolio dashboard (`project-controls-command-center`).
+A `/stress-test` on the resulting plan (see `UX_ROADMAP.md`'s new Phase 4) found 2 CRIT findings
+before any code was written: a proposed "exec-tab mini-recompute widget" already exists (the Site
+Accuracy Explorer), dropped as a near-duplicate; and a proposed "View as: Role" KPI-grid filter had
+no structural analog in this codebase (17 `.kpi-tile` elements spread 2-4 per tab, not one unified
+grid like the inspiration) — redefined as role-scoped nav-tab visibility instead, deferred to a later
+batch. Also caught: a stated P0 item (idea #23, colorblind-safe status-pill symbols) had been silently
+dropped from the new plan; restored here as this batch's 4th item.
+
+1. **`aria-live="polite"` on every calculator output** (idea #19) — wired once via
+   `document.querySelectorAll('.outline').forEach(...)` at page load across all 24 real result
+   blocks, not 24 hand-edits. `aria-atomic` deliberately left at its default (false) so only the
+   specific line that changed gets announced, not the whole block every time.
+2. **Keyboard Shortcuts overlay** (idea #22, `?` key) — same data-table-plus-generic-modal shape as
+   Explain/Command Palette (reuses `openModal`/`closeModal`, not reinvented). The chord-legend rows
+   are generated from the real `CHORD_MAP` + `tabLabelFor()`, so they can't hand-drift from the actual
+   keybindings.
+3. **Colorblind-safe status-pill symbols** (idea #23) — one shared `statusSymbol()` helper
+   (green→✓, amber→▲, red→✗) applied at all 7 real status-pill render call sites, not color+text
+   alone.
+4. **"Three layers" methodology card** (idea #31) — as first proposed this borrowed the sibling
+   repo's own EVM vocabulary and would have competed with the existing 4-pillar taxonomy; rewritten
+   in AMS-native language only (Capacity/Tooling = leading, Should-Cost/Variance = confirming, the
+   `stress.cjs` suite = assurance), scoped to a Methodology-tab card that explicitly reconciles
+   against the 4-pillar taxonomy rather than replacing it.
+
+Two real bugs caught by the stub, not the browser: `tabLabelFor()` read `aria-label` via
+`document.getElementById()`, a path this test harness's stub had never seeded (only the
+`querySelectorAll('.sidenav-item[role="tab"]')` path seeded `data-tab`) — every chord-legend row
+rendered "null" until `getElementById` was fixed to seed `navtab-*` elements the same way, at the
+root, not worked around in the checks. And the new Shortcuts overlay's own markup reuses the
+`.outline` CSS class inside a JS template string, which inflated a naive `.outline` count check by 3
+— fixed by scoping that check to the static markup only (before `<script>`). Also had to update 9
+existing golden-value checks (`>PASS<`→`>✓ PASS<`, etc.) that the new symbol prefix correctly broke —
+re-verified each, not just patched.
+
+Live-verified in a real browser: all 24 `.outline` blocks confirmed carrying `aria-live="polite"`,
+the Shortcuts overlay opens via both a direct click and a real `?` keydown (dispatched as a genuine
+`KeyboardEvent`, not `.focus()`, matching this page's own established real-vs-simulated-input
+discipline), closes via both its own close button and Escape with focus correctly restored, and all
+3 status-pill symbols (✓/▲/✗) render as expected at default values. 0 console errors. Checks:
+857 → 885 (+28). Committed locally — pending push with explicit confirmation, same discipline as
+every prior round. Batches B–E (6 more ideas) still to come.
