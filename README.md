@@ -12,7 +12,7 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
 modals (38 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 42 indexed modules, and a **collapsible vertical side navigation** (real
+directly to any of the 43 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 42 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 43 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 915 checks, all passing as of this writing.
+Run: `node stress.cjs` — 932 checks, all passing as of this writing.
 
 ## Status
 
@@ -1147,3 +1147,43 @@ Executive role cycle through exactly its 4 visible tabs and wrap back to the sta
 one of the 8 hidden ones. 0 console errors. Checks: 906 → 915 (+9). Committed locally — pending push
 with explicit confirmation, same discipline as every prior round. Batches D–E (the Attention & Triage
 tab, guided tour, and printable one-pager) still to come.
+
+**2026-09-07, thirtieth round (Phase 4 batch D/5 — the Attention & Triage tab, the plan's
+highest-value item):**
+
+A new 13th tab consolidating every currently non-green real threshold already computed elsewhere on
+this page into 2 severity tiers — zero new fabrication, every fact traced straight from another
+calculator's own already-rendered DOM output or the real `RISK_REGISTER` array. Deliberately tiered
+by **current severity band only** (red vs. amber), stated in the tab's own lede: this page has no
+real due-dates/SLA data to tier by urgency-over-time the way the inspiration dashboard's own 4-tier
+model does, so it doesn't pretend to. At today's defaults, 4 real items land in Tier 1 (PO
+price-variance gate BLOCKED, live CRPN calculator ESCALATE, Commodity Price Exposure WARNING, 2 of 6
+Capacity weeks red) and 3 in Tier 2 (MDQS amber, OAE amber, the risk register's own severity skew — 6
+of 10 entries at ESCALATE-level CRPN). Each item carries a real "Open source" jump-link (reusing the
+same `jumpToDecomposition` helper from batch B, generalized into `triageJump()` to also switch tabs
+first) and a "Mark Acknowledged" checkbox persisted per-item to localStorage — checking it dims that
+row and survives a revisit, unchecking it doesn't. Only genuinely non-green conditions are included
+at all: fixing the one upstream input that trips a rule (e.g. the PO gate) makes that item disappear
+from the list entirely the next time the tab is opened, not just change tier — this reflects live
+reality, recomputed fresh on every visit, not a frozen snapshot.
+
+Two real bugs caught by the test stub, one of them a genuinely foundational gap, not the narrow
+per-id patches of prior rounds: this harness's stub had always defaulted every element's
+`className` to `""`, permanently — a real, universal DOM property this file had simply never needed
+to read back before now. The Triage tab's own OAE item reads a KPI tile's real
+`class="kpi-foot amber"` to decide inclusion, and it silently looked absent under test even though it
+renders correctly live. Fixed with a general (not narrowly-scoped) static `class=` seed, since
+`className` — unlike `aria-label`/`textContent` before it — is a property every element genuinely
+has, not a handful of special cases. Confirmed the fix touched nothing else: the full suite's
+pre-existing checks all still passed unchanged. Also seeded `#kpi-oae`'s own static "93.1%" text,
+the same targeted-allowlist shape as the `#verifyBadge` fix from batch B.
+
+Live-verified in a real browser: the tab renders the exact predicted 4/3 item split with the exact
+real text for each; clicking "Open source" on the PO-gate item switches to Data Governance and
+focuses the real `gatePoOut` element; checking "Acknowledged" dims the row, persists through a
+tab-away-and-back revisit, and un-checking it doesn't leave a stale acknowledgment behind; fixing the
+PO gate's real input (7%→2%) removes that item from the list on the next open, and restoring it
+(2%→7%) brings it back; the tab stays visible under every "View as: Role" tier (batch C); 0 console
+errors. Checks: 915 → 932 (+17). Committed locally — pending push with explicit confirmation, same
+discipline as every prior round. Batch E (guided tour + printable one-pager) still to come, closing
+out all 10 Phase 4 ideas.

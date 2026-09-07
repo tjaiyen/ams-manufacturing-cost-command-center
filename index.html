@@ -208,6 +208,9 @@
   .explain-btn:hover{border-color:rgb(var(--c-accent));color:rgb(var(--c-accent))}
   .decomp-link{display:block;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:2px 0 0;font-family:inherit;text-align:right}
   .decomp-link:hover{text-decoration:underline}
+  .triage-acked{opacity:.45}
+  .source-link{display:inline;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:0;font-family:inherit}
+  .source-link:hover{text-decoration:underline}
   .modal-overlay{display:none;position:fixed;inset:0;background:rgb(0 0 0/.6);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px}
   .modal-overlay.open{display:flex}
   .modal-box{background:rgb(var(--c-bg-card));border:1px solid var(--c-line);border-radius:12px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 20px 50px rgb(0 0 0/.45)}
@@ -382,13 +385,16 @@
     <button class="sidenav-item" data-tab="framework" role="tab" aria-selected="false" aria-controls="tab-framework" id="navtab-framework" tabindex="-1" data-tooltip="Operating Framework" aria-label="Operating Framework">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></span><span class="sidenav-label">Operating Framework</span>
     </button>
+    <button class="sidenav-item" data-tab="triage" role="tab" aria-selected="false" aria-controls="tab-triage" id="navtab-triage" tabindex="-1" data-tooltip="Attention & Triage" aria-label="Attention & Triage">
+      <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M10 3 2 17h16Z"/><path d="M10 8v4"/><circle cx="10" cy="14.5" r="0.75" fill="currentColor" stroke="none"/></svg></span><span class="sidenav-label">Attention &amp; Triage</span>
+    </button>
     <button class="sidenav-item" data-tab="methodology" role="tab" aria-selected="false" aria-controls="tab-methodology" id="navtab-methodology" tabindex="-1" data-tooltip="Methodology & Sourcing" aria-label="Methodology & Sourcing">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M6 3h6l3 3v11H6z"/><path d="M12 3v3h3"/><path d="M8 11h4M8 14h4"/></svg></span><span class="sidenav-label">Methodology &amp; Sourcing</span>
     </button>
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 915/915 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 932/932 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
@@ -1384,6 +1390,29 @@
     </div>
   </section>
 
+  <!-- ============ TAB: ATTENTION & TRIAGE ============ -->
+  <section class="tabpanel" id="tab-triage" role="tabpanel" aria-labelledby="navtab-triage">
+    <h1>Attention &amp; Triage</h1>
+    <p class="lede">Out of everything this dashboard already computes, what actually needs a second
+      look right now? Every item below traces to a real threshold already live elsewhere on this
+      page — this is a different lens over the same real data, not a second system of record.
+      Tiered by <b>current severity band only</b> (red vs. amber): this page has no real due-dates
+      or SLA data to tier by urgency-over-time the way a live operational system would, so it
+      doesn't pretend to. Recomputed fresh every time you open this tab.</p>
+
+    <div class="card">
+      <div class="card-head"><h2>Tier 1 — Red / Blocked</h2><span class="tag" id="triageTier1Count">0 ITEMS</span></div>
+      <p id="triageTier1Empty" class="lede" style="margin-bottom:0" hidden>Nothing in the red band right now.</p>
+      <div class="outline" id="triageTier1List"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Tier 2 — Amber / Watch</h2><span class="tag" id="triageTier2Count">0 ITEMS</span></div>
+      <p id="triageTier2Empty" class="lede" style="margin-bottom:0" hidden>Nothing in the amber band right now.</p>
+      <div class="outline" id="triageTier2List"></div>
+    </div>
+  </section>
+
   <!-- ============ TAB 6: METHODOLOGY & SOURCING ============ -->
   <section class="tabpanel" id="tab-methodology" role="tabpanel" aria-labelledby="navtab-methodology">
     <h1>Methodology &amp; Sourcing</h1>
@@ -1940,6 +1969,10 @@
     panels.forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
     try{ localStorage.setItem('ams-cc-last-tab', name); }catch(e){}
     recordTabVisit(name);
+    // Phase 4 batch D: recompute the Attention & Triage tab fresh every time it's opened, reading
+    // whatever every OTHER calculator's own inputs currently produce -- not on every keystroke
+    // elsewhere on the page (a deliberate, stated simplification; see that tab's own lede).
+    if (name === 'triage' && typeof calcTriage === 'function') renderTriage(calcTriage());
   }
   window.activateTab = activateTab;
   // Session Reload Memory: restore the last-active tab on load, same persisted-preference pattern
@@ -1989,9 +2022,9 @@
   // skill for the target role -- not as serving genuinely different real viewers of what is still a
   // one-hiring-panel-audience dashboard (UX_ROADMAP's own stated audience constraint).
   var ROLE_TABS = {
-    exec: ['exec', 'shouldcost', 'variance', 'methodology'],
-    engineer: ['exec', 'shouldcost', 'variance', 'methodology', 'buildbuy', 'capacity', 'tooling', 'dfm', 'governance', 'playbook'],
-    all: null // null = every tab visible, not a hand-maintained duplicate of all 12 names
+    exec: ['exec', 'shouldcost', 'variance', 'methodology', 'triage'],
+    engineer: ['exec', 'shouldcost', 'variance', 'methodology', 'buildbuy', 'capacity', 'tooling', 'dfm', 'governance', 'playbook', 'triage'],
+    all: null // null = every tab visible, not a hand-maintained duplicate of all 13 names
   };
   function applyRoleView(role){
     var allowed = ROLE_TABS[role];
@@ -2237,6 +2270,7 @@
     { label: 'Operating Framework', tab: 'framework' },
     { label: 'Metronome Cadence Drift Tracker', tab: 'framework', scrollTo: 'metronomeWrap' },
     { label: 'Relay Race Baton Pass Timeline', tab: 'framework', scrollTo: 'relayRaceWrap' },
+    { label: 'Attention & Triage', tab: 'triage' },
     { label: 'Methodology & Sourcing', tab: 'methodology' }
   ];
   var paletteModal = document.getElementById('paletteModal');
@@ -4736,6 +4770,7 @@
   }
   window.RISK_REGISTER = RISK_REGISTER;
   window.renderRiskRegister = renderRiskRegister;
+  window.crpnBand = crpnBand; // exposed for the Attention & Triage tab (Phase 4 batch D) to reuse the real threshold function, not a hand-duplicated one
 
   // ---------- Aurora Layer Correlation Map: the SAME 10 risks' P/S/D scores above, correlated
   // across the register -- 3 independently-assigned dimensions, not derived from each other, so a
@@ -4876,6 +4911,102 @@
     document.getElementById('tightropeCovOut').textContent = isFinite(state.cov) ? (state.cov * 100).toFixed(1) + '%' : '— (μ=0)';
   }
   window.renderTightrope = renderTightrope;
+
+  // ---------- Attention & Triage: UX_ROADMAP idea #34, Phase 4 batch D. Aggregates every currently
+  // non-green real threshold already computed elsewhere on this page into 2 severity tiers -- zero
+  // new fabrication (every fact here is read straight from another calculator's own already-rendered
+  // DOM output or the real RISK_REGISTER array, never re-derived). Only genuinely non-green items are
+  // included at all, so fixing an upstream input (e.g. bringing the PO gate back under 5%) makes that
+  // item disappear from this list the next time it's opened, not just change tier. Recomputed fresh
+  // every time this tab is opened (see the activateTab() hook below), not on every keystroke
+  // elsewhere on the page -- a deliberate, stated simplification (see the tab's own lede). ----------
+  function calcTriage(){
+    var items = [];
+    var poGateHtml = document.getElementById('gatePoOut') ? document.getElementById('gatePoOut').innerHTML : '';
+    if (poGateHtml.indexOf('BLOCKED') !== -1){
+      var poVal = document.getElementById('gatePo') ? document.getElementById('gatePo').value : '?';
+      items.push({ id: 'po-gate', tier: 1, tab: 'governance', target: 'gatePoOut', source: 'Data Governance', text: 'PO price-variance gate BLOCKED (' + poVal + '% actual vs ±5% threshold)' });
+    }
+    var riskBandHtml = document.getElementById('riskScoreBand') ? document.getElementById('riskScoreBand').innerHTML : '';
+    if (riskBandHtml.indexOf('ESCALATE') !== -1){
+      var crpnVal = document.getElementById('riskScoreOut') ? document.getElementById('riskScoreOut').textContent : '?';
+      items.push({ id: 'risk-scorer', tier: 1, tab: 'risk', target: 'riskScoreOut', source: 'Predictive & Risk Models', text: 'Live CRPN calculator ESCALATE (' + crpnVal + ', ≥25 threshold)' });
+    }
+    var cpStatusHtml = document.getElementById('cpStatus') ? document.getElementById('cpStatus').innerHTML : '';
+    if (cpStatusHtml.indexOf('WARNING') !== -1){
+      var cpShift = document.getElementById('cpShiftPct') ? document.getElementById('cpShiftPct').textContent : '?';
+      items.push({ id: 'commodity-exposure', tier: 1, tab: 'shouldcost', target: 'cpStatus', source: 'Should-Cost & MHR', text: 'Commodity Price Exposure WARNING (' + cpShift + ' shift vs 8% early-warning threshold)' });
+    }
+    var redWeeks = [];
+    for (var i = 0; i < 6; i++){
+      var wk = document.getElementById('capStatus' + i);
+      if (wk && wk.innerHTML.indexOf('RED') !== -1) redWeeks.push(i + 1);
+    }
+    if (redWeeks.length > 0){
+      var capTotalHtml = document.getElementById('capTotalRow') ? document.getElementById('capTotalRow').innerHTML : '';
+      var amberNote = capTotalHtml.indexOf('AMBER') !== -1 ? '; overall 6-week utilization sits in the amber band' : '';
+      items.push({ id: 'capacity-weeks', tier: 1, tab: 'capacity', target: 'capTotalRow', source: 'Capacity Forecast', text: redWeeks.length + ' of 6 weeks in the red utilization band (Week' + (redWeeks.length > 1 ? 's ' : ' ') + redWeeks.join(', ') + ')' + amberNote });
+    }
+    var mdqsBandHtml = document.getElementById('mdqsBand') ? document.getElementById('mdqsBand').innerHTML : '';
+    if (mdqsBandHtml.indexOf('AMBER') !== -1 || mdqsBandHtml.indexOf('RED') !== -1){
+      var mdqsTier = mdqsBandHtml.indexOf('RED') !== -1 ? 1 : 2;
+      var mdqsScoreVal = document.getElementById('mdqsScore') ? document.getElementById('mdqsScore').textContent : '?';
+      items.push({ id: 'mdqs', tier: mdqsTier, tab: 'governance', target: 'mdqsScore', source: 'Data Governance', text: 'MDQS score ' + mdqsScoreVal + ' (' + (mdqsTier === 1 ? 'red' : 'amber') + ' band)' });
+    }
+    var oaeFootEl = document.getElementById('kpi-oae-foot');
+    if (oaeFootEl && oaeFootEl.className.indexOf('amber') !== -1){
+      var oaeVal = document.getElementById('kpi-oae') ? document.getElementById('kpi-oae').textContent : '?';
+      items.push({ id: 'oae', tier: 2, tab: 'exec', target: 'kpi-oae', source: 'Executive Overview', text: 'Overhead Absorption (OAE) ' + oaeVal + ' (amber, target ≥95%)' });
+    }
+    if (typeof RISK_REGISTER !== 'undefined' && typeof crpnBand === 'function'){
+      var escalated = RISK_REGISTER.filter(function(r){ return crpnBand(r.p * r.s * r.d) === 'red'; }).length;
+      if (escalated > RISK_REGISTER.length / 2){
+        items.push({ id: 'risk-register-aggregate', tier: 2, tab: 'risk', target: null, source: 'Predictive & Risk Models', text: 'Risk register skews toward higher severity: ' + escalated + ' of ' + RISK_REGISTER.length + ' entries at ESCALATE-level CRPN' });
+      }
+    }
+    return { tier1: items.filter(function(i){ return i.tier === 1; }), tier2: items.filter(function(i){ return i.tier === 2; }) };
+  }
+  window.calcTriage = calcTriage;
+
+  function triageJump(tabName, targetId){
+    activateTab(tabName, { focus: false });
+    if (targetId) jumpToDecomposition(targetId);
+  }
+  window.triageJump = triageJump;
+
+  function triageRowHtml(item){
+    var acked = false;
+    try{ acked = localStorage.getItem('ams-cc-triage-ack-' + item.id) === '1'; }catch(e){}
+    var jumpBtn = item.target ? '<button class="source-link" type="button" onclick="triageJump(\'' + item.tab + '\', \'' + item.target + '\')">Open source</button>' : '<span class="mono" style="opacity:.6">' + item.source + '</span>';
+    return '<div class="line' + (acked ? ' triage-acked' : '') + '" data-triage-id="' + item.id + '">' +
+      '<span><b>' + item.source + '</b> — ' + item.text + '</span>' +
+      '<span style="display:flex;align-items:center;gap:10px">' + jumpBtn +
+      '<label style="font-size:11px;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" class="triage-ack-box" data-triage-id="' + item.id + '"' + (acked ? ' checked' : '') + '> Acknowledged</label></span></div>';
+  }
+
+  function renderTriage(state){
+    document.getElementById('triageTier1Count').textContent = state.tier1.length + (state.tier1.length === 1 ? ' ITEM' : ' ITEMS');
+    document.getElementById('triageTier2Count').textContent = state.tier2.length + (state.tier2.length === 1 ? ' ITEM' : ' ITEMS');
+    document.getElementById('triageTier1List').innerHTML = state.tier1.map(triageRowHtml).join('');
+    document.getElementById('triageTier2List').innerHTML = state.tier2.map(triageRowHtml).join('');
+    document.getElementById('triageTier1Empty').hidden = state.tier1.length > 0;
+    document.getElementById('triageTier2Empty').hidden = state.tier2.length > 0;
+  }
+  window.renderTriage = renderTriage;
+  // Delegated listener bound ONCE to each stable list container -- survives every innerHTML
+  // re-render inside renderTriage() above, unlike binding to the (replaced) checkboxes directly, and
+  // unlike re-attaching this same listener on every render (which would stack a new duplicate
+  // listener on the same never-replaced container each time the tab is revisited).
+  ['triageTier1List', 'triageTier2List'].forEach(function(wrapId){
+    document.getElementById(wrapId).addEventListener('change', function(ev){
+      var box = ev.target;
+      if (!box.classList || !box.classList.contains('triage-ack-box')) return;
+      var id = box.getAttribute('data-triage-id');
+      try{ localStorage.setItem('ams-cc-triage-ack-' + id, box.checked ? '1' : '0'); }catch(e){}
+      var row = box.closest ? box.closest('.line') : null;
+      if (row) row.classList.toggle('triage-acked', box.checked);
+    });
+  });
 
   // ---------- Initial render ----------
   calcMhrBuildup();

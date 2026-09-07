@@ -18,6 +18,12 @@ function check(cond, msg, detail) {
 }
 
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+// The page's own inline <script> block, sliced off -- several checks need to count real static
+// markup only, not the same class/tag name reused inside a JS template string elsewhere in the file
+// (found twice now: the Keyboard Shortcuts overlay's .outline reuse, and the Attention & Triage tab's
+// checkbox <label>). Declared here, once, near the top, so every later check can use it regardless of
+// where in the file it's written.
+const staticMarkup = html.slice(0, html.indexOf("<script>"));
 
 console.log("--- Structural checks ---");
 const TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
@@ -32,8 +38,8 @@ check(html.includes("None of it is real Amazon Manufacturing Services data"), "t
 check(html.includes('robots" content="noindex,nofollow"'), "page is noindex,nofollow (not meant for search discovery)");
 
 console.log("--- Vertical side navigation: structural checks ---");
-check((html.match(/class="sidenav-item"/g) || []).length === 12, "exactly 12 side-nav items in the HTML (one per tab)", (html.match(/class="sidenav-item"/g) || []).length);
-check((html.match(/role="tabpanel"/g) || []).length === 12, "exactly 12 panels carry role=\"tabpanel\"", (html.match(/role="tabpanel"/g) || []).length);
+check((html.match(/class="sidenav-item"/g) || []).length === 13, "exactly 13 side-nav items in the HTML (one per tab, +1 for Phase 4 batch D's Attention & Triage)", (html.match(/class="sidenav-item"/g) || []).length);
+check((html.match(/role="tabpanel"/g) || []).length === 13, "exactly 13 panels carry role=\"tabpanel\"", (html.match(/role="tabpanel"/g) || []).length);
 check(html.includes('role="tablist"') && html.includes('aria-orientation="vertical"'), "the side-nav list is a real ARIA vertical tablist, not a generic nav (satisfies the ARIA-compliance ask directly)");
 check(html.includes('id="sidenavToggle"') && html.includes('aria-expanded='), "the collapse/expand toggle button exists and exposes its state via aria-expanded");
 check(html.includes('data-collapsed="false"'), "the side-nav has an explicit default (expanded) collapse state in the markup, not implied");
@@ -55,7 +61,7 @@ console.log("--- Stress-test round (2026-09-05) fix 2: every collapsed-mode nav 
 // pseudo-element -- neither is in the accessibility tree, so a screen reader announced these 12
 // buttons (plus 3 footer controls) with no name at all. Fixed via aria-label on each.
 const sidenavItemAriaLabelCount = (html.match(/class="sidenav-item"[^>]*aria-label="[^"]+"/g) || []).length;
-check(sidenavItemAriaLabelCount === 12, "all 12 side-nav item buttons carry a real aria-label, not just a CSS-only tooltip/label", sidenavItemAriaLabelCount);
+check(sidenavItemAriaLabelCount === 13, "all 13 side-nav item buttons carry a real aria-label, not just a CSS-only tooltip/label", sidenavItemAriaLabelCount);
 check(html.includes('aria-label="High Contrast"'), "the High-Contrast toggle carries a real aria-label independent of its CSS-hideable .label-text span");
 check(html.includes('aria-label="Toggle theme"'), "the theme toggle carries a real aria-label independent of its CSS-hideable .label-text span");
 check(html.includes('aria-label="Fit brief (opens in the same tab)"'), "the Fit-brief footer link carries a real aria-label independent of its CSS-hideable .label-text span");
@@ -277,6 +283,25 @@ Object.keys(DEFAULTS).forEach((id) => {
 const STATIC_TEXT_CONTENT = {};
 const verifyBadgeMatch = html.match(/id="verifyBadge"[^>]*>([^<]*)</);
 if (verifyBadgeMatch) STATIC_TEXT_CONTENT.verifyBadge = verifyBadgeMatch[1];
+// Same allowlist shape, added for the Attention & Triage tab's OAE item: kpi-oae's real "93.1%" is a
+// static exec-tab value, never written by any calc/render function, so it needs the same seed.
+const kpiOaeMatch = html.match(/id="kpi-oae"[^>]*>([^<]*)</);
+if (kpiOaeMatch) STATIC_TEXT_CONTENT["kpi-oae"] = kpiOaeMatch[1];
+
+// Real static class="..." per id, seeded once from the actual markup -- unlike aria-label/textContent
+// above (narrow, per-id allowlists), .className is a genuinely universal DOM property every element
+// has, so this is a general seed rather than a one-off patch. Found by the Attention & Triage tab
+// (Phase 4 batch D) reading a KPI tile's real class="kpi-foot amber" at init to decide whether that
+// KPI belongs in its own list -- this stub's className had always defaulted to "" for every element,
+// so that real, already-shipped amber state looked invisible under test even though it renders
+// correctly live. Handles either attribute order (class before or after id), same style as the
+// existing bidirectional DEFAULTS regex below.
+const STATIC_CLASS_NAMES = {};
+for (const m of html.matchAll(/id="([a-zA-Z0-9_-]+)"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*id="([a-zA-Z0-9_-]+)"/g)) {
+  const id = m[1] || m[4];
+  const cls = m[1] ? m[2] : m[3];
+  if (STATIC_CLASS_NAMES[id] === undefined) STATIC_CLASS_NAMES[id] = cls;
+}
 
 const elements = {};
 function makeElement(id) {
@@ -286,7 +311,8 @@ function makeElement(id) {
   const classes = new Set();
   const el = {
     id, value: DEFAULTS[id] !== undefined ? DEFAULTS[id] : "",
-    textContent: STATIC_TEXT_CONTENT[id] !== undefined ? STATIC_TEXT_CONTENT[id] : "", innerHTML: "", style: {}, className: "",
+    textContent: STATIC_TEXT_CONTENT[id] !== undefined ? STATIC_TEXT_CONTENT[id] : "", innerHTML: "", style: {},
+    className: STATIC_CLASS_NAMES[id] !== undefined ? STATIC_CLASS_NAMES[id] : "",
     // Real (not no-op) attribute/class tracking -- needed for the side-nav's roving-tabindex
     // logic (aria-selected/tabindex read back what was just set) and for asserting on the actual
     // resulting state, not just that a setter was called without throwing.
@@ -438,32 +464,32 @@ check(typeof sandbox.applyRoleView === "function", "applyRoleView is exposed as 
 // Golden ROLE_TABS content pre-registered by design decision before writing this check (B35): exec=4
 // tabs, engineer=10 (adds the 6 operational tabs to exec's 4), all=null (every tab, not a duplicated
 // 12-name list that could silently drift from the real navtab count).
-check(JSON.stringify(sandbox.ROLE_TABS.exec) === JSON.stringify(["exec", "shouldcost", "variance", "methodology"]), "ROLE_TABS.exec is exactly the 4 golden tab names", JSON.stringify(sandbox.ROLE_TABS.exec));
-check(sandbox.ROLE_TABS.engineer.length === 10, "ROLE_TABS.engineer has exactly 10 tab names", sandbox.ROLE_TABS.engineer.length);
-check(sandbox.ROLE_TABS.all === null, "ROLE_TABS.all is null (every tab), not a hand-duplicated 12-name array");
+check(JSON.stringify(sandbox.ROLE_TABS.exec) === JSON.stringify(["exec", "shouldcost", "variance", "methodology", "triage"]), "ROLE_TABS.exec is exactly the 5 golden tab names (Attention & Triage added, Phase 4 batch D)", JSON.stringify(sandbox.ROLE_TABS.exec));
+check(sandbox.ROLE_TABS.engineer.length === 11, "ROLE_TABS.engineer has exactly 11 tab names (+1 for Attention & Triage)", sandbox.ROLE_TABS.engineer.length);
+check(sandbox.ROLE_TABS.all === null, "ROLE_TABS.all is null (every tab), not a hand-duplicated 13-name array");
 sandbox.applyRoleView("exec");
 const hiddenUnderExecRole = ["buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework"].every((t) => elements["navtab-" + t].hidden === true);
-const visibleUnderExecRole = ["exec", "shouldcost", "variance", "methodology"].every((t) => !elements["navtab-" + t].hidden);
-check(hiddenUnderExecRole && visibleUnderExecRole, "applyRoleView('exec') hides exactly the 8 non-exec tabs and shows exactly the 4 exec tabs");
+const visibleUnderExecRole = ["exec", "shouldcost", "variance", "methodology", "triage"].every((t) => !elements["navtab-" + t].hidden);
+check(hiddenUnderExecRole && visibleUnderExecRole, "applyRoleView('exec') hides exactly the 8 non-exec tabs and shows exactly the 5 exec tabs (incl. Attention & Triage)");
 check(sandbox.localStorage._s["ams-cc-role-view"] === "exec", "the chosen role persists to localStorage, same pattern as theme/contrast/last-tab");
 // The actual regression this guards: cycling ArrowDown through a role-narrowed nav must never land
 // on a hidden tab, even transiently -- a stale full-list index (pre-fix) would silently skip/no-op
 // on a hidden button instead of correctly landing on the next VISIBLE one.
 sandbox.activateTab("exec", { focus: false });
 const selectedSequence = [];
-for (let i = 0; i < 4; i++) {
+for (let i = 0; i < 5; i++) {
   sidenavListEl.fire("keydown", { key: "ArrowDown", preventDefault() {} });
   selectedSequence.push(sandbox.ROLE_TABS.exec.find((t) => elements["navtab-" + t].getAttribute("aria-selected") === "true"));
 }
-check(selectedSequence.join(",") === "shouldcost,variance,methodology,exec", "4 ArrowDown presses under the exec role cycle through exactly the 4 visible tabs and wrap back to exec, never landing on a hidden one", selectedSequence.join(","));
+check(selectedSequence.join(",") === "shouldcost,variance,triage,methodology,exec", "5 ArrowDown presses under the exec role cycle through exactly the 5 visible tabs (DOM order places Attention & Triage before Methodology) and wrap back to exec, never landing on a hidden one", selectedSequence.join(","));
 // Redirect-on-hide: landing on a tab, then narrowing the role so that tab is no longer visible,
 // must not strand the user on a now-invisible tab.
 sandbox.activateTab("playbook", { focus: false });
 sandbox.applyRoleView("exec");
 check(elements["tab-exec"].classList.contains("active"), "narrowing to the exec role while on a tab that role hides (playbook) redirects to the role's own first tab (exec), not stranding the user", elements["tab-exec"].classList.contains("active"));
 sandbox.applyRoleView("all");
-const allTwelveVisible = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"].every((t) => !elements["navtab-" + t].hidden);
-check(allTwelveVisible, "applyRoleView('all') restores every one of the 12 tabs to visible", allTwelveVisible);
+const allThirteenVisible = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology", "triage"].every((t) => !elements["navtab-" + t].hidden);
+check(allThirteenVisible, "applyRoleView('all') restores every one of the 13 tabs to visible", allThirteenVisible);
 
 console.log("--- Vertical side navigation: collapse/expand toggle ---");
 check(sandbox.document.getElementById("sidenav").getAttribute("data-collapsed") === "false", "side-nav starts expanded by default in this stubbed run (no stored preference, and window.innerWidth is undefined in the stub -- not narrow)", sandbox.document.getElementById("sidenav").getAttribute("data-collapsed"));
@@ -868,12 +894,12 @@ check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real 
 
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 42, "exactly 42 navigable items in the command index (+5: viz-innovation batch 4 -- Suspension Bridge, Shadow Puppet, Relay Race, Thermostat, Card Catalog)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 42, "all 42 command labels are unique");
-const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology"];
+check(sandbox.COMMAND_INDEX.length === 43, "exactly 43 navigable items in the command index (+1: Phase 4 batch D's Attention & Triage)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 43, "all 43 command labels are unique");
+const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology", "triage"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 42, "empty-query search returns all 42 items", allMatch.length);
+check(allMatch.length === 43, "empty-query search returns all 43 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
@@ -1547,10 +1573,15 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // on the page (only the two Playbook filter controls had an aria-label fallback). Fixed by pairing
 // each label to the nearest following <input>/<select> id (skipping any id inside a nested <b>, a
 // live-value display, not the control itself).
-const totalLabels = (html.match(/<label\b/g) || []).length;
-const labelsWithFor = html.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 91, "exactly 91 <label> elements exist on the page (90 + 1 from Phase 4 batch C's roleSelect)", totalLabels);
-check(labelsWithFor.length === totalLabels, "every single <label> now carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
+// Scoped to the static markup only (before <script>) -- the Attention & Triage tab (Phase 4 batch D)
+// generates its own "Acknowledged" checkbox <label> at runtime via a JS template string, using
+// implicit wrapping-based label association (a real, valid a11y pattern) rather than this file's
+// otherwise-universal explicit for= convention. That's a deliberate choice for one dynamic, always-
+// re-rendered control, not a lapse in the static-markup convention this check actually guards.
+const totalLabels = (staticMarkup.match(/<label\b/g) || []).length;
+const labelsWithFor = staticMarkup.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
+check(totalLabels === 91, "exactly 91 <label> elements exist in the static markup (90 + 1 from Phase 4 batch C's roleSelect)", totalLabels);
+check(labelsWithFor.length === totalLabels, "every single static-markup <label> carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
 check(forTargets.every((id) => allIds.has(id)), "every for= target resolves to a real id= somewhere on the page (no dangling/typo'd pairing)", JSON.stringify(forTargets.filter((id) => !allIds.has(id))));
@@ -1857,18 +1888,54 @@ console.log("--- Phase 4 batch A (2026-09-07): aria-live on calculator outputs (
 // this file). Verified instead: the wiring code itself is present and correctly scoped, the golden
 // element count matches, and the actual runtime behavior (every .outline gets aria-live="polite",
 // only the changed line is announced) was confirmed live in a real browser before this round shipped.
-// Scoped to the static markup only (before <script>) -- the Keyboard Shortcuts overlay built later
-// in this same batch reuses the .outline CSS class inside a JS template string for its own styling,
-// which would otherwise inflate this count with rows that don't exist in the DOM until that modal is
-// opened (and don't need aria-live: they're a static reference legend, not a live calculator result).
-// 24, not the original 23: the "three layers" methodology card (also this batch) adds one more real
-// static .outline block for its own 3-row legend -- harmless to also carry aria-live (it never
-// changes, so the attribute is simply inert there), but it does legitimately move this golden count.
-const staticMarkup = html.slice(0, html.indexOf("<script>"));
+// Scoped to the static markup only (before <script>, declared once near the top of this file) --
+// the Keyboard Shortcuts overlay reuses the .outline CSS class inside a JS template string for its
+// own styling, which would otherwise inflate this count with rows that don't exist in the DOM until
+// that modal is opened (and don't need aria-live: they're a static reference legend, not a live
+// calculator result). 26, not the original 23: the "three layers" methodology card adds one real
+// static .outline block for its own 3-row legend, and the Attention & Triage tab (Phase 4 batch D)
+// adds 2 more (its Tier 1/Tier 2 list containers) -- 23 + 1 + 2 = 26.
 const outlineCount = (staticMarkup.match(/class="outline"/g) || []).length;
-check(outlineCount === 24, "exactly 24 real result/legend blocks share the .outline convention in the static markup (golden count, pre-registered via grep)", outlineCount);
+check(outlineCount === 26, "exactly 26 real result/legend blocks share the .outline convention in the static markup (golden count, pre-registered via grep)", outlineCount);
 check(html.includes("document.querySelectorAll('.outline').forEach(function(el){ el.setAttribute('aria-live', 'polite'); });"), "the page wires aria-live=\"polite\" onto every .outline block via one init call, not 23 separate hand-edits", "");
 check(!html.includes('aria-live="polite"') || html.match(/aria-live="polite"/g).length >= 2, "aria-live is used at least where it already existed pre-round (the kbd-hint toast + MRU toast) -- sanity floor, not a full behavioral proof (see the stub limitation noted above)", (html.match(/aria-live="polite"/g) || []).length);
+
+console.log("--- Phase 4 batch D (2026-09-07): Attention & Triage tab -- calcTriage() golden values (idea #34) ---");
+// Golden item list pre-registered by reading each source's own already-tested default state before
+// writing this check (B35): PO gate BLOCKED at 7% (stress.cjs's own existing gate check), live CRPN
+// calculator ESCALATE at 27 (existing riskScoreBand check), Commodity Price Exposure WARNING at
+// 13.46% (existing cpStatus check, cpShiftPct's real toFixed(2) format), capacity weeks 3+4 red with
+// the overall 6-week row amber (existing honeycomb/capacity checks), MDQS AMBER at 96.875% (existing
+// mdqsBand check), OAE amber-footed at 93.1% (static exec-tab markup), and 6 of 10 real risk-register
+// entries at ESCALATE-level CRPN (computed directly from the real RISK_REGISTER array + crpnBand()).
+check(typeof sandbox.calcTriage === "function" && typeof sandbox.renderTriage === "function" && typeof sandbox.triageJump === "function", "calcTriage/renderTriage/triageJump are all exposed as functions");
+const triageState = sandbox.calcTriage();
+check(triageState.tier1.length === 4, "exactly 4 real items land in Tier 1 (Red/Blocked) at default page-load values", triageState.tier1.length, JSON.stringify(triageState.tier1.map((i) => i.id)));
+check(triageState.tier2.length === 3, "exactly 3 real items land in Tier 2 (Amber/Watch) at default page-load values", triageState.tier2.length, JSON.stringify(triageState.tier2.map((i) => i.id)));
+check(triageState.tier1.map((i) => i.id).join(",") === "po-gate,risk-scorer,commodity-exposure,capacity-weeks", "Tier 1's 4 items are exactly the 4 golden ids, in the order their source calculators run", triageState.tier1.map((i) => i.id).join(","));
+check(triageState.tier2.map((i) => i.id).join(",") === "mdqs,oae,risk-register-aggregate", "Tier 2's 3 items are exactly the 3 golden ids, in the order their source calculators run", triageState.tier2.map((i) => i.id).join(","));
+check(triageState.tier1.find((i) => i.id === "po-gate").text === "PO price-variance gate BLOCKED (7% actual vs ±5% threshold)", "the PO-gate item states the exact real input value and threshold", triageState.tier1.find((i) => i.id === "po-gate").text);
+check(triageState.tier1.find((i) => i.id === "risk-scorer").text === "Live CRPN calculator ESCALATE (27, ≥25 threshold)", "the live CRPN-scorer item states the exact real CRPN value", triageState.tier1.find((i) => i.id === "risk-scorer").text);
+check(triageState.tier1.find((i) => i.id === "commodity-exposure").text === "Commodity Price Exposure WARNING (13.46% shift vs 8% early-warning threshold)", "the commodity-exposure item states the exact real shift percentage", triageState.tier1.find((i) => i.id === "commodity-exposure").text);
+check(triageState.tier1.find((i) => i.id === "capacity-weeks").text === "2 of 6 weeks in the red utilization band (Weeks 3, 4); overall 6-week utilization sits in the amber band", "the capacity item names the exact real red weeks and the real amber overall band", triageState.tier1.find((i) => i.id === "capacity-weeks").text);
+check(triageState.tier2.find((i) => i.id === "mdqs").text === "MDQS score 96.875% (amber band)", "the MDQS item states the exact real score", triageState.tier2.find((i) => i.id === "mdqs").text);
+check(triageState.tier2.find((i) => i.id === "oae").text === "Overhead Absorption (OAE) 93.1% (amber, target ≥95%)", "the OAE item states the exact real static value", triageState.tier2.find((i) => i.id === "oae").text);
+const realEscalatedCount = sandbox.RISK_REGISTER.filter((r) => sandbox.crpnBand(r.p * r.s * r.d) === "red").length;
+check(realEscalatedCount === 6, "sanity: the real risk register really does have 6 of 10 entries at ESCALATE-level CRPN (not a stale hand-typed number)", realEscalatedCount);
+check(triageState.tier2.find((i) => i.id === "risk-register-aggregate").text === "Risk register skews toward higher severity: 6 of 10 entries at ESCALATE-level CRPN", "the risk-register aggregate item states the exact real escalated count, computed from the real array, not hand-typed", triageState.tier2.find((i) => i.id === "risk-register-aggregate").text);
+sandbox.renderTriage(triageState);
+check(elements.triageTier1Count.textContent === "4 ITEMS" && elements.triageTier2Count.textContent === "3 ITEMS", "the tier count badges render the exact real item counts, singular/plural handled", `${elements.triageTier1Count.textContent} / ${elements.triageTier2Count.textContent}`);
+check(elements.triageTier1List.innerHTML.includes("PO price-variance gate BLOCKED") && elements.triageTier1List.innerHTML.includes("source-link"), "renderTriage() actually writes the real item text and a source-link jump control into the DOM, not just computing state", "");
+check(elements.triageTier1Empty.hidden === true && elements.triageTier2Empty.hidden === true, "the \"nothing to see\" empty-state messages stay hidden when real items exist", `${elements.triageTier1Empty.hidden} / ${elements.triageTier2Empty.hidden}`);
+// Disappearing-item behavior: fixing the one upstream input that makes the PO gate fire should make
+// that item vanish from the NEXT computed state entirely, not merely change tier -- proving this
+// tab reflects live reality rather than a frozen snapshot from whenever it was first opened.
+elements.gatePo.value = "2";
+sandbox.calcGates();
+const triageAfterFix = sandbox.calcTriage();
+check(!triageAfterFix.tier1.some((i) => i.id === "po-gate") && !triageAfterFix.tier2.some((i) => i.id === "po-gate"), "fixing the PO gate's real input (7% -> 2%, back under the 5% threshold) removes the po-gate item from calcTriage() entirely, in either tier", JSON.stringify(triageAfterFix.tier1.concat(triageAfterFix.tier2).map((i) => i.id)));
+elements.gatePo.value = "7";
+sandbox.calcGates(); // restore the default before any later check in this file relies on the gate's real state
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH
