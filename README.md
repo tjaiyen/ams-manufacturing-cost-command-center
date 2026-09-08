@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1335 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1343 checks, all passing as of this writing.
 
 ## Status
 
@@ -1764,3 +1764,38 @@ than glossed over. No accepted limitations this round.
 sabotage-tested.** Checks: 1258 → 1335 (+77). SELF_METRICS and the sibling-comparator's own commit-count
 citation updated to the real 44 commits / 7348 lines. Committed locally — pending push with explicit
 confirmation, same discipline as every prior round.
+
+**2026-09-08, forty-third round (`/stress-test` of the full 30-concept `/viz-innovation` arc, batches
+A–E) — the required Verify pass this session's own discipline calls for after any non-trivial build.**
+Followed the standard method: adversarial review by this session plus an independent fresh-context
+reviewer, B35 pre-registered empirical verification, a findings table, every finding driven to a fix and
+re-verified, accepted limitations stated plainly.
+
+**Findings:**
+
+| Finding | Severity | Fix |
+|---|---|---|
+| Concept 10 (Break-Even Playground Depth Layers) — the real ghost-trail/break-even-delta logic in `renderQStarChart()` shipped and was live-verified when Batch B landed, but no `stress.cjs` assertion was ever written for it. Same failure class already caught once before, for concept 2, mid-session. | HIGH | 7 new checks added (pre-registered via `node -e`: `qStarFor(180,420,0.12)≈1165`, `qStarFor(180,500,0.12)≈4983`, delta +3,817), live-browser-verified across 3 real scenarios (first render, real-change render, no-op re-render), then sabotage-tested — disabling the ghost-detection condition correctly failed exactly the 2 checks it should. |
+| Duplicate README header (pre-existing, cosmetic) | LOW | Already flagged as a separate follow-up task from an earlier round; out of scope here, left as-is rather than smuggled into this round's diff. |
+| The stub DOM's `getElementById()` auto-creates a stub element for ANY id (`makeElement`), so a typo'd id in a new wrap-div reference would NOT be caught by `stress.cjs` alone | Accepted limitation | Not a fix — a structural property of the harness. Mitigated (not eliminated) by mandatory live-browser verification for every concept this session, plus a post-hoc systematic grep cross-check of all 21 new wrap-div ids from batches A–E confirming exact 1:1 HTML-definition-to-JS-reference matches. |
+
+One false alarm surfaced and dismissed only after reproduction (not on assertion): the `mhrBuildup`
+EXPLAIN key is shared by two different buttons (Work-Center Rate Card + MHR Build-Up Calculator) —
+`git show 96c0ef7^:index.html | grep -c 'data-explain="mhrBuildup"'` returned 2, proving this predates
+the very first Batch A commit of this session and is a legitimate pre-existing shared-modal design, not
+something introduced here.
+
+Fixing the Concept 10 gap (and adding the HISTORY round entry documenting it) triggered the same
+cascading self-referential convergence every prior batch round has required — now compounding across two
+dimensions at once, since this round both adds 7 brand-new checks AND grows HISTORY by one entry
+simultaneously: the HISTORY-wide checks (length, family distribution, `sabotageTestedRounds`), all 11
+`trackedRounds` position checks, the Cadence Ring's now-11-spoke geometry, the Heartbeat's mean/stdev/
+z-scores/anomaly list (settling at a clean mean of exactly +29.0/round; rounds 15/40/42 stay flagged,
+round 43's own modest +8 does not qualify), the Streamgraph's 5th window (now spanning 2 real rounds,
+42–43, with 2 real non-zero families — viz-innovation +77 and stress-test +8 — not 1), and the Sibling
+Radar's Checks axis, were each recomputed against the true final converged state, several iterations
+deep, and confirmed with a fresh live-browser read of every affected aria-label matching `stress.cjs`
+exactly. Checks: 1335 → 1343 (+8). SELF_METRICS updated to the real 45 commits / 7,349 lines (this
+round's own commit + the one-line HISTORY entry it added). No accepted limitations beyond the stub-DOM
+one stated above. Committed locally — pending push with explicit confirmation, same discipline as every
+prior round.

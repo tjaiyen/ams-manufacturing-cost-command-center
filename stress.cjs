@@ -1068,6 +1068,39 @@ sandbox.document.getElementById("qsUncertainty").value = "10";
 sandbox.renderQStarChart();
 check(elements.qsFogOut.textContent === "219 – 6,205 units", "defaults restored cleanly after the fog-band edge-case test, confirming no residual state leaked", elements.qsFogOut.textContent);
 
+console.log("--- concept 10: Break-Even Playground Depth Layers (real fading ghost-trail + break-even delta, session-only) ---");
+// Found missing entirely during a /stress-test pass (2026-09-08) -- built and live-verified when
+// Batch B shipped, but no stress.cjs assertion was ever written for it, the same failure class
+// already caught once for concept 2. Fixed here: pre-registered (B35), live-verified, checked,
+// sabotage-tested.
+// Two real consecutive renders at the SAME inputs (not one hardcoded-vs-real comparison) establish a
+// genuine no-op baseline, the same lesson learned from concept 2's own float-precision false positive
+// -- previousQStarState may already hold ANY prior value by this point in the file from earlier Q*
+// sections above, so the FIRST of these two calls is not assumed to show "no ghost."
+sandbox.renderQStarChart();
+sandbox.renderQStarChart();
+check(!elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'), "no ghost trail across two consecutive identical real renders (a genuine no-op)", elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'));
+check(!elements.qsChartWrap.innerHTML.includes("Break-even moved"), "no delta sentence in the aria-label for a genuine no-op re-render", elements.qsChartWrap.innerHTML.includes("Break-even moved"));
+// Golden delta pre-registered via node -e: qStarFor(180,420,0.12)=1165.395 (the golden Q* already
+// established above), qStarFor(180,500,0.12)=4982.865 -- delta = +3817 (rounded), a huge real swing
+// because gamma=0.12 amplifies price changes ~8x, the same finding already documented for the Fog band.
+elements.qsVendorP0.value = "500";
+sandbox.calcQStar();
+sandbox.renderQStarChart();
+check(elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'), "changing a real input renders a real fading ghost of the curve's previous position", elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'));
+check(elements.qsChartWrap.innerHTML.includes("Break-even moved +3,817 units from the last position"), "the aria-label states the exact real break-even delta, matching the pre-registered golden value", elements.qsChartWrap.innerHTML);
+// Re-rendering at the SAME new p0=500 (no real change from here) must NOT show a ghost -- proves this
+// reads a genuine before/after comparison, not "always show a ghost after the first render."
+sandbox.renderQStarChart();
+check(!elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'), "re-rendering at the identical new input (500 -> 500) shows no ghost, confirming this is a real change-detector, not a permanent trail", elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'));
+// Restore real defaults so nothing downstream in this file runs against this edge-case input.
+elements.qsVendorP0.value = "420.00";
+sandbox.calcQStar();
+sandbox.renderQStarChart();
+check(elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"') && elements.qsChartWrap.innerHTML.includes("Break-even moved"), "restoring the real default P0 (500 -> 420) correctly shows one more real ghost + delta transition", elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"'));
+sandbox.renderQStarChart();
+check(!elements.qsChartWrap.innerHTML.includes('class="qs-ghost-fade"') && elements.qsOut.textContent === "1,165 units", "defaults restored cleanly after the ghost-trail edge-case tests -- a second identical recalculation shows no ghost and the real golden Q* value, confirming no residual state leaked", elements.qsOut.textContent);
+
 console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
 check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);
 check(elements.mcP80Out.textContent === "$159.28", "P80 matches golden value", elements.mcP80Out.textContent);
@@ -2443,16 +2476,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 38, "HISTORY has all 38 real build rounds (5 through 42)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 39, "HISTORY has all 39 real build rounds (5 through 43)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 11, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 38 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 6, research: 1, fix: 6, "viz-innovation": 11, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 39 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
-check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39, 40, 41, 42]), "HISTORY's real sabotageTested tags match exactly the 10 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39, 40, 41, 42, 43]), "HISTORY's real sabotageTested tags match exactly the 11 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
@@ -2472,15 +2505,16 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 10].n === 33 && trackedRounds[trackedRounds.length - 10].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 9].n === 34 && trackedRounds[trackedRounds.length - 9].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
-check(trackedRounds[trackedRounds.length - 8].n === 35 && trackedRounds[trackedRounds.length - 8].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
-check(trackedRounds[trackedRounds.length - 7].n === 36 && trackedRounds[trackedRounds.length - 7].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
-check(trackedRounds[trackedRounds.length - 6].n === 37 && trackedRounds[trackedRounds.length - 6].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
-check(trackedRounds[trackedRounds.length - 5].n === 38 && trackedRounds[trackedRounds.length - 5].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
-check(trackedRounds[trackedRounds.length - 4].n === 39 && trackedRounds[trackedRounds.length - 4].after === 1117, "round 39 (viz-innovation Batch B) ends at the real 1117");
-check(trackedRounds[trackedRounds.length - 3].n === 40 && trackedRounds[trackedRounds.length - 3].after === 1196, "round 40 (viz-innovation Batch C) ends at the real 1196");
-check(trackedRounds[trackedRounds.length - 2].n === 41 && trackedRounds[trackedRounds.length - 2].after === 1258, "round 41 (viz-innovation Batch D) ends at the real 1258");
+check(trackedRounds[trackedRounds.length - 11].n === 33 && trackedRounds[trackedRounds.length - 11].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 10].n === 34 && trackedRounds[trackedRounds.length - 10].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 9].n === 35 && trackedRounds[trackedRounds.length - 9].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 8].n === 36 && trackedRounds[trackedRounds.length - 8].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 7].n === 37 && trackedRounds[trackedRounds.length - 7].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
+check(trackedRounds[trackedRounds.length - 6].n === 38 && trackedRounds[trackedRounds.length - 6].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
+check(trackedRounds[trackedRounds.length - 5].n === 39 && trackedRounds[trackedRounds.length - 5].after === 1117, "round 39 (viz-innovation Batch B) ends at the real 1117");
+check(trackedRounds[trackedRounds.length - 4].n === 40 && trackedRounds[trackedRounds.length - 4].after === 1196, "round 40 (viz-innovation Batch C) ends at the real 1196");
+check(trackedRounds[trackedRounds.length - 3].n === 41 && trackedRounds[trackedRounds.length - 3].after === 1258, "round 41 (viz-innovation Batch D) ends at the real 1258");
+check(trackedRounds[trackedRounds.length - 2].n === 42 && trackedRounds[trackedRounds.length - 2].after === 1335, "round 42 (viz-innovation Batch E) ends at the real 1335");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2519,13 +2553,13 @@ check(heartbeatCircleCount === trackedRounds.length + 3, "renderHeartbeat draws 
 console.log("--- concept 20: Build Velocity Heartbeat, Anomaly-Annotated (real z-score outlier test on the SAME per-round deltas) ---");
 check(typeof sandbox.calcHeartbeatAnomalies === "function", "window.calcHeartbeatAnomalies is exposed as a function");
 const anomalyState = sandbox.calcHeartbeatAnomalies();
-check(Math.abs(anomalyState.mean - 29.636363636363637) < 1e-6, "the real mean velocity across all 33 tracked rounds matches the pre-registered golden value", anomalyState.mean);
-check(Math.abs(anomalyState.stdev - 22.33195588038643) < 1e-6, "the real population stdev matches the pre-registered golden value", anomalyState.stdev);
+check(Math.abs(anomalyState.mean - 29) < 1e-6, "the real mean velocity across all 34 tracked rounds matches the pre-registered golden value (a clean +29.0, once round 43's own +8 joins the real dataset)", anomalyState.mean);
+check(Math.abs(anomalyState.stdev - 22.302729983252775) < 1e-6, "the real population stdev matches the pre-registered golden value", anomalyState.stdev);
 const flaggedRounds = anomalyState.anomalies.filter((a) => a.isAnomaly).map((a) => a.n);
-check(JSON.stringify(flaggedRounds) === JSON.stringify([15, 40, 42]), "exactly the 3 real rounds whose velocity exceeds |z|>1.5 are flagged (rounds 15, 40, 42 -- round 41 dropped out of anomaly status once Batch E widened the real dataset again, an honest recalculation, not a hardcoded list)", JSON.stringify(flaggedRounds));
-check(Math.abs(anomalyState.anomalies.find((a) => a.n === 40).z - 2.210448409805034) < 1e-6, "round 40's own real z-score matches the pre-registered golden value (Batch C's own +79 delta is still the session's biggest single-round jump)", anomalyState.anomalies.find((a) => a.n === 40).z);
+check(JSON.stringify(flaggedRounds) === JSON.stringify([15, 40, 42]), "exactly the 3 real rounds whose velocity exceeds |z|>1.5 are flagged (rounds 15, 40, 42 -- round 43's own modest +8 delta does not qualify, an honest recalculation, not a hardcoded list)", JSON.stringify(flaggedRounds));
+check(Math.abs(anomalyState.anomalies.find((a) => a.n === 40).z - 2.241878013926781) < 1e-6, "round 40's own real z-score matches the pre-registered golden value (Batch C's own +79 delta is still the session's biggest single-round jump)", anomalyState.anomalies.find((a) => a.n === 40).z);
 check((elements.heartbeatWrap.innerHTML.match(/stroke-dasharray="2,2"/g) || []).length === 3, "renders exactly 3 real anomaly rings, matching the 3 flagged rounds exactly", (elements.heartbeatWrap.innerHTML.match(/stroke-dasharray="2,2"/g) || []).length);
-check(elements.heartbeatWrap.innerHTML.includes("Velocity anomalies (beyond 1.5 standard deviations from the session mean): round 15 (+1.6σ), round 40 (+2.2σ), round 42 (+2.1σ)"), "the aria-label states all 3 real anomalous rounds with their exact real z-scores", elements.heartbeatWrap.innerHTML);
+check(elements.heartbeatWrap.innerHTML.includes("Velocity anomalies (beyond 1.5 standard deviations from the session mean): round 15 (+1.6σ), round 40 (+2.2σ), round 42 (+2.2σ)"), "the aria-label states all 3 real anomalous rounds with their exact real z-scores", elements.heartbeatWrap.innerHTML);
 const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) || []).length;
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 
@@ -2549,15 +2583,15 @@ console.log("--- concept 24: Threshold-Break Cadence Ring (real round-number gap
 check(typeof sandbox.calcCadenceRing === "function", "window.calcCadenceRing is exposed as a function");
 check(typeof sandbox.renderCadenceRing === "function", "window.renderCadenceRing is exposed as a function");
 const cadenceState = sandbox.calcCadenceRing();
-check(cadenceState.gaps.length === 10, "exactly 10 real sabotage-tested rounds feed the ring", cadenceState.gaps.length);
+check(cadenceState.gaps.length === 11, "exactly 11 real sabotage-tested rounds feed the ring", cadenceState.gaps.length);
 check(cadenceState.gaps[0].n === 17 && cadenceState.gaps[0].gap === null, "the first sabotage-tested round (17) correctly has no prior gap (null, not a fabricated 0)", JSON.stringify(cadenceState.gaps[0]));
 check(cadenceState.gaps[1].n === 20 && cadenceState.gaps[1].gap === 3, "round 20's real gap since round 17 matches the golden value (3)", JSON.stringify(cadenceState.gaps[1]));
 check(cadenceState.gaps[2].n === 32 && cadenceState.gaps[2].gap === 12, "round 32's real gap since round 20 matches the golden value (12, the session's own widest rigor gap)", JSON.stringify(cadenceState.gaps[2]));
 check(cadenceState.maxGap === 12, "the real max gap across all 7 real intervals matches the golden value", cadenceState.maxGap);
 sandbox.renderCadenceRing(cadenceState);
 check(elements.cadenceRingWrap.innerHTML.includes("<svg") && elements.cadenceRingWrap.innerHTML.includes('role="img"'), "renderCadenceRing() renders an actual accessible <svg>, not just numbers");
-check((elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length === 10, "renders exactly 10 real spoke-tip circles, one per sabotage-tested round", (elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length);
-check(elements.cadenceRingWrap.innerHTML.includes('cx="190.8" cy="83.7"'), "round 32's real spoke position (the max-gap round, reaching the outer radius) matches the pre-registered golden geometry exactly (geometry shifted again from 9 to 10 spokes once round 42 joined the real sabotage-tested set)", elements.cadenceRingWrap.innerHTML);
+check((elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length === 11, "renders exactly 11 real spoke-tip circles, one per sabotage-tested round", (elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length);
+check(elements.cadenceRingWrap.innerHTML.includes('cx="187.3" cy="74.7"'), "round 32's real spoke position (the max-gap round, reaching the outer radius) matches the pre-registered golden geometry exactly (geometry shifted again from 10 to 11 spokes once round 43 joined the real sabotage-tested set)", elements.cadenceRingWrap.innerHTML);
 check(elements.cadenceRingWrap.innerHTML.includes('cx="110.0" cy="90.0"'), "round 17's real spoke position (the first round, at the fixed inner floor radius) matches the pre-registered golden geometry exactly", elements.cadenceRingWrap.innerHTML);
 check(elements.cadenceRingWrap.innerHTML.includes("round 32: 12 rounds since the previous"), "the aria-label states the exact real widest-gap round for screen-reader users", elements.cadenceRingWrap.innerHTML);
 
@@ -2566,13 +2600,13 @@ check(typeof sandbox.calcFeatureStreamgraph === "function", "window.calcFeatureS
 check(typeof sandbox.renderFeatureStreamgraph === "function", "window.renderFeatureStreamgraph is exposed as a function");
 const streamState = sandbox.calcFeatureStreamgraph();
 check(streamState.families.length === 9, "exactly 9 real family categories feed the streamgraph, matching HISTORY's own real classification", streamState.families.length);
-check(streamState.series.length === 5, "the real 33 tracked rounds bucket into exactly 5 real windows (4 full 8-round windows + 1 partial 1-round window)", streamState.series.length);
-check(JSON.stringify(streamState.windows) === JSON.stringify([{ start: 10, end: 17 }, { start: 18, end: 25 }, { start: 26, end: 33 }, { start: 34, end: 41 }, { start: 42, end: 42 }]), "the real window boundaries match the pre-registered golden values exactly, including the new partial 5th window", JSON.stringify(streamState.windows));
+check(streamState.series.length === 5, "the real 34 tracked rounds bucket into exactly 5 real windows (4 full 8-round windows + 1 partial 2-round window)", streamState.series.length);
+check(JSON.stringify(streamState.windows) === JSON.stringify([{ start: 10, end: 17 }, { start: 18, end: 25 }, { start: 26, end: 33 }, { start: 34, end: 41 }, { start: 42, end: 43 }]), "the real window boundaries match the pre-registered golden values exactly, including the now-2-round 5th window", JSON.stringify(streamState.windows));
 check(streamState.series[0].feature === 107 && streamState.series[0]["stress-test"] === 69, "window 1's real per-family check-delta sums match the pre-registered golden values", JSON.stringify(streamState.series[0]));
 check(streamState.series[1]["viz-innovation"] === 223, "window 2's real viz-innovation sum matches the pre-registered golden value (the viz-innovation batches 1-4 round + Batch A)", streamState.series[1]["viz-innovation"]);
 check(streamState.series[2].phase4 === 99, "window 3's real phase4 sum matches the pre-registered golden value (the Phase 4 batch A-E arc)", streamState.series[2].phase4);
 check(streamState.series[3]["self-audit"] === 27 && streamState.series[3]["nav-innovation"] === 35 && streamState.series[3]["viz-innovation"] === 217, "window 4's real self-audit/nav-innovation/viz-innovation sums all match the pre-registered golden values", JSON.stringify(streamState.series[3]));
-check(streamState.series[4]["viz-innovation"] === 77 && Object.keys(streamState.series[4]).filter((f) => streamState.series[4][f] > 0).length === 1, "window 5 (the new partial 1-round window, round 42 alone) correctly shows only real viz-innovation activity, matching this round's own real +77 delta", JSON.stringify(streamState.series[4]));
+check(streamState.series[4]["viz-innovation"] === 77 && streamState.series[4]["stress-test"] === 8 && Object.keys(streamState.series[4]).filter((f) => streamState.series[4][f] > 0).length === 2, "window 5 (now a real 2-round window, rounds 42-43) correctly shows exactly the 2 real families active in it -- round 42's own +77 viz-innovation and round 43's own +8 stress-test, neither dropped nor a 3rd fabricated", JSON.stringify(streamState.series[4]));
 sandbox.renderFeatureStreamgraph(streamState);
 check(elements.streamgraphWrap.innerHTML.includes("<svg") && elements.streamgraphWrap.innerHTML.includes('role="img"'), "renderFeatureStreamgraph() renders an actual accessible <svg>, not just numbers");
 check((elements.streamgraphWrap.innerHTML.match(/<polygon/g) || []).length === 9, "renders exactly 9 real layer polygons, one per family (empty-in-every-window families still render a real, degenerate zero-area polygon, not silently omitted)", (elements.streamgraphWrap.innerHTML.match(/<polygon/g) || []).length);
@@ -2581,25 +2615,25 @@ check(elements.streamgraphWrap.innerHTML.includes("rounds 34-41: fix +3, viz-inn
 
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("44") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("45") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- concept 26: Sibling Dashboard Benchmark Radar (same 3 real metrics above, as a dual-shape radar) ---");
 check(typeof sandbox.calcSiblingRadar === "function", "window.calcSiblingRadar is exposed as a function");
 check(typeof sandbox.renderSiblingRadar === "function", "window.renderSiblingRadar is exposed as a function");
 const radarState2 = sandbox.calcSiblingRadar(sandbox.calcSelfAudit());
 check(radarState2.metrics.length === 3, "exactly 3 real metrics feed the radar, matching the comparator table above", radarState2.metrics.length);
-check(radarState2.metrics[0].self === 44 && radarState2.metrics[0].sibling === 261, "the Commits axis reads the SAME real SELF_METRICS/SIBLING_METRICS values as the table above", JSON.stringify(radarState2.metrics[0]));
-check(Math.abs(radarState2.metrics[0].selfPct - 0.1685823754789272) < 1e-9, "Commits' real selfPct matches the pre-registered golden value (44/261)", radarState2.metrics[0].selfPct);
+check(radarState2.metrics[0].self === 45 && radarState2.metrics[0].sibling === 261, "the Commits axis reads the SAME real SELF_METRICS/SIBLING_METRICS values as the table above", JSON.stringify(radarState2.metrics[0]));
+check(Math.abs(radarState2.metrics[0].selfPct - 0.1724137931034483) < 1e-9, "Commits' real selfPct matches the pre-registered golden value (45/261)", radarState2.metrics[0].selfPct);
 check(radarState2.metrics[0].siblingPct === 1, "the sibling always reaches exactly 100% on whichever axis it's larger on (by construction)", radarState2.metrics[0].siblingPct);
-check(Math.abs(radarState2.metrics[1].selfPct - 0.3152302243211334) < 1e-9, "Checks' real selfPct matches the pre-registered golden value (reads the SAME live badge count as the comparator table, not a duplicate parse)", radarState2.metrics[1].selfPct);
-check(Math.abs(radarState2.metrics[2].selfPct - 0.49331990600872777) < 1e-9, "Lines' real selfPct matches the pre-registered golden value", radarState2.metrics[2].selfPct);
+check(Math.abs(radarState2.metrics[1].selfPct - 0.31711924439197164) < 1e-9, "Checks' real selfPct matches the pre-registered golden value (reads the SAME live badge count as the comparator table, not a duplicate parse)", radarState2.metrics[1].selfPct);
+check(Math.abs(radarState2.metrics[2].selfPct - 0.49338704263175565) < 1e-9, "Lines' real selfPct matches the pre-registered golden value", radarState2.metrics[2].selfPct);
 sandbox.renderSiblingRadar(radarState2);
 check(elements.siblingRadarWrap.innerHTML.includes("<svg") && elements.siblingRadarWrap.innerHTML.includes('role="img"'), "renderSiblingRadar() renders an actual accessible <svg>, not just numbers");
-check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,105.7 143.2,133.4 83.7,141.0"'), "this-dashboard's real solid shape matches the pre-registered golden geometry exactly", elements.siblingRadarWrap.innerHTML);
+check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,105.3 143.3,133.5 83.7,141.0"'), "this-dashboard's real solid shape matches the pre-registered golden geometry exactly", elements.siblingRadarWrap.innerHTML);
 check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,35.0 193.6,162.5 46.4,162.5"'), "the sibling's real dashed shape (always the full-size outer triangle by construction) matches the pre-registered golden geometry exactly", elements.siblingRadarWrap.innerHTML);
 check(elements.siblingRadarWrap.innerHTML.includes("stroke-dasharray=\"4,3\""), "the sibling's shape is dual-encoded by a dashed stroke, not color alone, distinguishing it from this dashboard's solid shape");
 sandbox.renderSibling(sandbox.calcSelfAudit()); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
-check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,105.7 143.2,133.4 83.7,141.0"'), "renderSibling() itself re-renders the benchmark radar back to the default golden state on every recalculation", elements.siblingRadarWrap.innerHTML);
+check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,105.3 143.3,133.5 83.7,141.0"'), "renderSibling() itself re-renders the benchmark radar back to the default golden state on every recalculation", elements.siblingRadarWrap.innerHTML);
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");
