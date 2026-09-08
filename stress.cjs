@@ -311,7 +311,8 @@ function makeElement(id) {
   const classes = new Set();
   const el = {
     id, value: DEFAULTS[id] !== undefined ? DEFAULTS[id] : "",
-    textContent: STATIC_TEXT_CONTENT[id] !== undefined ? STATIC_TEXT_CONTENT[id] : "", innerHTML: "", style: {},
+    textContent: STATIC_TEXT_CONTENT[id] !== undefined ? STATIC_TEXT_CONTENT[id] : "",
+    innerHTML: STATIC_INNER_HTML[id] !== undefined ? STATIC_INNER_HTML[id] : "", style: {},
     className: STATIC_CLASS_NAMES[id] !== undefined ? STATIC_CLASS_NAMES[id] : "",
     // Real (not no-op) attribute/class tracking -- needed for the side-nav's roving-tabindex
     // logic (aria-selected/tabindex read back what was just set) and for asserting on the actual
@@ -342,6 +343,17 @@ function makeElement(id) {
     // way click() already exercises click handlers -- fires a stubbed event at every listener
     // registered for `type` via addEventListener.
     fire(type, evt) { (listeners[type] || []).forEach((fn) => fn.call(el, evt || {})); },
+    // Real DOM elements have this too; this stub didn't. Minimal, tag-list-only implementation
+    // (e.g. 'input,button,select') that counts real tag occurrences in this element's own (real,
+    // seeded) innerHTML -- not a CSS selector engine, since the only real call site this needs to
+    // support (the Dashboard Self-Audit's per-tab interactive-element count) only ever passes a
+    // comma-separated bare tag list. Returns an array of that length (callers here only use .length).
+    querySelectorAll(sel) {
+      const tags = sel.split(",").map((s) => s.trim());
+      let count = 0;
+      for (const tag of tags) count += (el.innerHTML.match(new RegExp(`<${tag}[\\s>]`, "g")) || []).length;
+      return new Array(count).fill(null);
+    },
   };
   elements[id] = el;
   return el;
@@ -353,6 +365,24 @@ function makeElement(id) {
 // could silently drift from it.
 const NAVTAB_IDS = [...html.matchAll(/id="(navtab-[a-z]+)"/g)].map((m) => m[1]);
 const TABPANEL_IDS = [...html.matchAll(/id="(tab-[a-z]+)"/g)].map((m) => m[1]);
+// Real static innerHTML for each tabpanel <section>, sliced directly out of the page's own markup --
+// needed by the Dashboard Self-Audit (Phase 5, 2026-09-07), whose calcSelfAudit() reads each tab's
+// real interactive-element count via panel.querySelectorAll('input,button,select').length and an
+// "illustrative" text count via panel.innerHTML.match(...). This stub's innerHTML had always
+// defaulted to "" for every element (real DOM elements reflect their static markup as innerHTML even
+// before any script runs) -- reproduced as a real TypeError/wrong-count under test, fixed here from
+// the real HTML rather than a hand-copied duplicate, and only for the ids that are actual tabpanels
+// (nothing else on this page reads an element's initial innerHTML).
+const STATIC_INNER_HTML = {};
+for (const id of TABPANEL_IDS) {
+  const m = html.match(new RegExp(`<section class="tabpanel[^"]*" id="${id}"[^>]*>([\\s\\S]*?)<\\/section>`));
+  if (m) STATIC_INNER_HTML[id] = m[1];
+}
+// Real counts of the Source Ledger's two srctag classes -- same Dashboard Self-Audit dependency as
+// STATIC_INNER_HTML above (calcSelfAudit() reads document.querySelectorAll('.srctag.real'/'.srctag.
+// illustrative').length), derived from the real markup rather than hand-copied.
+const SRCTAG_REAL_COUNT = (html.match(/srctag real/g) || []).length;
+const SRCTAG_ILLUSTRATIVE_COUNT = (html.match(/srctag illustrative/g) || []).length;
 // Real aria-label text per navtab, extracted from the actual button markup (not hand-copied) -- the
 // Phase 4 batch A stress-test found tabLabelFor() (used by the new Keyboard Shortcuts overlay's
 // chord legend) reads this via document.getElementById(), which bypassed the existing data-tab
@@ -379,6 +409,8 @@ const documentStub = {
   querySelectorAll: (sel) => {
     if (sel === '.sidenav-item[role="tab"]') return NAVTAB_IDS.map(makeNavTab);
     if (sel === '.tabpanel') return TABPANEL_IDS.map(makeElement);
+    if (sel === '.srctag.real') return new Array(SRCTAG_REAL_COUNT).fill(null);
+    if (sel === '.srctag.illustrative') return new Array(SRCTAG_ILLUSTRATIVE_COUNT).fill(null);
     return [];
   },
   querySelector: (sel) => {
@@ -2063,6 +2095,65 @@ check(elements.tourNextBtn.textContent === "Done", "the final step's button read
 sandbox.tourNext(); // clicking "Done" on the final step
 check(!elements.tourModal.classList.contains("open"), "clicking \"Done\" on the final step closes the tour (tourNext doubles as the close action there), not stranding the user on a step with nowhere to go");
 sandbox.activateTab("exec", { focus: false }); // restore the default tab before any later check relies on it
+
+console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
+check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 30, "HISTORY has all 30 real build rounds (5 through 34)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
+check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
+check(sandbox.HISTORY[5].n === 10 && sandbox.HISTORY[5].before === 357 && sandbox.HISTORY[5].after === 400, "round 10 (first tracked round) matches README's real Checks: 357 -> 400");
+// Chain integrity: every tracked round's `before` must equal the PRIOR tracked round's `after` --
+// this is the exact class of gap the original 30-concept plan's Batch 0 would have introduced
+// silently (a naive regex extraction misses ~45% of real "Checks:" occurrences to line-wraps), so
+// this loop is what actually proves the hand-transcription in HISTORY has no gaps, not just that it
+// parses.
+let historyChainOk = true, historyChainBreak = "";
+const trackedRounds = sandbox.HISTORY.filter((h) => h.after !== null);
+for (let i = 1; i < trackedRounds.length; i++) {
+  if (trackedRounds[i].before !== trackedRounds[i - 1].after) {
+    historyChainOk = false;
+    historyChainBreak = `round ${trackedRounds[i].n} before=${trackedRounds[i].before} != round ${trackedRounds[i - 1].n} after=${trackedRounds[i - 1].after}`;
+    break;
+  }
+}
+check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
+check(trackedRounds[trackedRounds.length - 2].n === 33 && trackedRounds[trackedRounds.length - 2].after === 974, "round 33 (the round before this one) ends at the real 974 pre-this-round total");
+// Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
+// real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
+// would go stale the very next round a check is added and the badge is updated, exactly the kind of
+// drift this Self-Audit section exists to visualize honestly.
+const historyLastRound = sandbox.HISTORY[sandbox.HISTORY.length - 1];
+const badgeCountMatch = html.match(/id="verifyBadge"[^>]*>✓ (\d+)\/(\d+) CHECKS PASSING/);
+check(!!badgeCountMatch && historyLastRound.after === Number(badgeCountMatch[1]), "HISTORY's own final round's check-count matches the real #verifyBadge on this page (no stale hand-updated number)", badgeCountMatch ? `HISTORY.after=${historyLastRound.after} badge=${badgeCountMatch[1]}` : "verifyBadge not found");
+
+check(Array.isArray(sandbox.ROADMAP_PHASES) && sandbox.ROADMAP_PHASES.length === 3, "ROADMAP_PHASES has exactly the 3 real P0/P1/P2 tiers");
+check(sandbox.ROADMAP_PHASES[0].tier === "P0" && sandbox.ROADMAP_PHASES[0].done === 4 && sandbox.ROADMAP_PHASES[0].total === 4, "P0 backlog is really 4/4 shipped (UX_ROADMAP.md lines 80-84)");
+check(sandbox.ROADMAP_PHASES[1].tier === "P1" && sandbox.ROADMAP_PHASES[1].done === 2 && sandbox.ROADMAP_PHASES[1].total === 7, "P1 backlog is really 2/7 shipped");
+check(sandbox.ROADMAP_PHASES[2].tier === "P2" && sandbox.ROADMAP_PHASES[2].done === 1 && sandbox.ROADMAP_PHASES[2].total === 6, "P2 backlog is really 1/6 shipped (idea #28's stale un-struck-through line fixed this round)");
+
+check(sandbox.SIBLING_METRICS.commits === 261 && sandbox.SIBLING_METRICS.checks === 4235 && sandbox.SIBLING_METRICS.lines === 14895, "SIBLING_METRICS matches the real, hand-verified project-controls-command-center numbers (git log/stress.cjs/wc -l, 2026-09-07)");
+
+const selfAuditState = sandbox.calcSelfAudit();
+check(selfAuditState.srcReal === 11 && selfAuditState.srcIllustrative === 4, "the live .srctag.real/.srctag.illustrative counts match the Source Ledger's real 11/4 split", `real=${selfAuditState.srcReal} illustrative=${selfAuditState.srcIllustrative}`);
+check(selfAuditState.perTab.length === 13, "calcSelfAudit() reports all 13 real tabs");
+const methodologyRow = selfAuditState.perTab.find((t) => t.id === "methodology");
+check(!!methodologyRow && methodologyRow.interactive === 0 && methodologyRow.illustrative === 11, "the Methodology tab's own numbers exclude this very Self-Audit section (its cairn-trail buttons and prose don't recursively inflate the count it displays)", methodologyRow ? `interactive=${methodologyRow.interactive} illustrative=${methodologyRow.illustrative}` : "not found");
+check(html.includes("<!--SELFAUDIT_START-->") && html.includes("<!--SELFAUDIT_END-->"), "the SELFAUDIT_START/END markers the exclusion regex relies on actually exist in the real markup (proving the exclusion has real content to strip, not silently matching nothing)");
+const shouldcostRow = selfAuditState.perTab.find((t) => t.id === "shouldcost");
+check(!!shouldcostRow && shouldcostRow.interactive === Math.max(...selfAuditState.perTab.map((t) => t.interactive)), "Should-Cost & MHR is really the single busiest tab by interactive-element count (the leaderboard/scorecard's real #1 and 100% gauge)", shouldcostRow ? String(shouldcostRow.interactive) : "not found");
+check(selfAuditState.liveChecks !== null, "calcSelfAudit() successfully parses a live check count off #verifyBadge");
+
+sandbox.renderSelfAudit();
+check(elements.onionWrap.innerHTML.includes("onion-ring"), "renderOnion populates onionWrap with the 3-ring SVG");
+check((elements.onionWrap.innerHTML.match(/class="onion-ring"/g) || []).length === 4, "the onion renders exactly 4 ring elements (outer + mid + the inner ring's 2-way real/illustrative split)");
+check(elements.thermoWrap.innerHTML.includes("4/4") && elements.thermoWrap.innerHTML.includes("2/7") && elements.thermoWrap.innerHTML.includes("1/6"), "renderThermo shows all 3 phases' real done/total fractions");
+const heartbeatCircleCount = (elements.heartbeatWrap.innerHTML.match(/<circle/g) || []).length;
+check(heartbeatCircleCount === trackedRounds.length, "renderHeartbeat draws exactly one beat per tracked round (25), none for the 5 pre-tracking rounds", String(heartbeatCircleCount));
+const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) || []).length;
+check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (30)", String(cairnBtnCount));
+check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
+check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
+check(elements.siblingWrap.innerHTML.includes("35") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH

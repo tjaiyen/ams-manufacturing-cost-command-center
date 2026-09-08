@@ -192,6 +192,9 @@
   .srctag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;margin-right:6px}
   .srctag.real{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
   .srctag.illustrative{background:rgb(var(--c-warning)/.15);color:rgb(var(--c-warning))}
+  .onion-ring{transition:opacity .15s}
+  .onion-ring:hover,.onion-ring:focus{opacity:1 !important}
+  .cairn-btn:hover,.cairn-btn:focus-visible{background:rgb(var(--c-line))}
 
   .status-pill{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:99px;font-weight:700}
   .status-pill.green{background:rgb(var(--c-success)/.15);color:rgb(var(--c-success))}
@@ -404,7 +407,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 974/974 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1001/1001 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -1468,6 +1471,74 @@
         <li><span class="srctag illustrative">ILLUSTRATIVE</span> The Operating Framework tab's 4-pillar taxonomy — my own structural thesis for how I'd approach the role, not a description of AMS's actual current problems or org chart.</li>
       </ul>
     </div>
+
+    <!--SELFAUDIT_START-->
+    <div class="card">
+      <div class="card-head"><h2>Dashboard Self-Audit</h2><span class="tag">ABOUT THIS PAGE'S OWN BUILD — NOT AMS DATA</span></div>
+      <p class="lede">Seven small visualizations about how this dashboard itself was built, added 2026-09-07
+        after a 30-concept catalog was stress-tested down to the handful that don't need invented
+        telemetry — this page tracks no click, dwell-time, or navigation-distance data on anyone, and
+        never will (see the Source Ledger above). Every number below is read live from this page's own
+        markup/DOM at the moment it renders, or hand-transcribed and cited from the real changelog/backlog.
+        Kept on this one tab on purpose, not a new nav item, so it stays a footnote about the build rather
+        than the dashboard becoming a dashboard about itself.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Content Composition</h2></div>
+      <p class="lede" style="margin-bottom:10px">Three concentric rings, each a real count read live from
+        this page's own DOM right now. Click a ring to peel it back.</p>
+      <div id="onionWrap"></div>
+      <p class="kpi-foot" id="onionCaption">Click a ring to see what it counts.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Backlog Completion</h2></div>
+      <p class="lede" style="margin-bottom:10px">UX_ROADMAP.md's own real P0/P1/P2 backlog, done vs.
+        total — hand-counted from that file's strikethrough markers.</p>
+      <div id="thermoWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Build Velocity</h2></div>
+      <p class="lede" style="margin-bottom:10px">Every real build round's stress.cjs check-count delta, in
+        order. Rounds 5–9 predate check-count tracking (shown flat, not invented). Hover a beat for that
+        round's detail.</p>
+      <div id="heartbeatWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Milestone Trail</h2></div>
+      <p class="lede" style="margin-bottom:10px">All 29 real build rounds so far, in order — hover or
+        focus a cairn for that round's date and title.</p>
+      <div id="cairnWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Tab Density Leaderboard</h2></div>
+      <p class="lede" style="margin-bottom:10px">This page's 13 tabs, ranked by real interactive-element
+        count (inputs + buttons + selects), read live from the DOM.</p>
+      <div id="leaderboardWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Comprehensiveness Scorecard</h2></div>
+      <p class="lede" style="margin-bottom:10px">One gauge per tab — fill is that tab's interactive-element
+        count relative to the busiest tab. A density measure of this page's own build, not a claim about
+        how complete AMS's actual cost processes are.</p>
+      <div id="scorecardWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Sibling Dashboard Comparator</h2></div>
+      <p class="lede" style="margin-bottom:10px">This dashboard vs. its sibling
+        <a href="https://tjaiyen.github.io/project-controls-command-center/">Project Controls Command
+        Center</a> — a genuinely different domain (capital-program EVM/schedule controls, not
+        manufacturing cost) kept as a separate repo on purpose. Real structural facts, hand-verified as of
+        2026-09-07, not a live fetch — this page makes zero network calls by design.</p>
+      <div id="siblingWrap"></div>
+    </div>
+    <!--SELFAUDIT_END-->
 
     <div class="card">
       <div class="card-head"><h2>A note on where the framework idea came from</h2></div>
@@ -5129,6 +5200,272 @@
     });
   });
 
+  // ---------- Dashboard Self-Audit (7 concepts, /plan-exec "all 30" stress-tested down to the ones
+  // needing zero invented data, 2026-09-07) ----------
+  // HISTORY: hand-transcribed from README.md's real changelog headers (lines ~440-1301), chained
+  // round-by-round by hand so each entry's `before` matches the prior entry's `after` with no gap --
+  // a naive "Checks: NN -> MM" regex extraction misses ~45% of real occurrences here to line-wraps
+  // and format drift (confirmed while stress-testing the original 30-concept plan's own Batch 0), so
+  // this table was built by reading every round directly instead. Rounds 5-9 predate check-count
+  // tracking entirely -- `before`/`after` are null there, not zero, on purpose.
+  var HISTORY = [
+    { n: 5,  date: '2026-09-04', title: 'Cost Diagnostic Playbook tab + MHR Build-Up Calculator', before: null, after: null },
+    { n: 6,  date: '2026-09-04', title: 'Predictive & Risk Models tab', before: null, after: null },
+    { n: 7,  date: '2026-09-04', title: 'Volume Crossover Point (Q*) solver', before: null, after: null },
+    { n: 8,  date: '2026-09-04', title: 'Build-vs-Buy Crossover chart + Monte Carlo Should-Cost', before: null, after: null },
+    { n: 9,  date: '2026-09-05', title: 'Vertical collapsible navigation overhaul', before: null, after: null },
+    { n: 10, date: '2026-09-05', title: 'Stress-test of the navigation overhaul', before: 357, after: 400 },
+    { n: 11, date: '2026-09-05', title: 'KPI research pass (Cost Diagnostic Playbook)', before: 400, after: 420 },
+    { n: 12, date: '2026-09-05', title: 'Pathways B and C', before: 420, after: 462 },
+    { n: 13, date: '2026-09-05', title: 'Stress-test of Pathways A/B/C', before: 462, after: 475 },
+    { n: 14, date: '2026-09-05', title: 'Org verification + terminology calibration', before: 475, after: 486 },
+    { n: 15, date: '2026-09-05', title: '8 curated navigation features', before: 486, after: 551 },
+    { n: 16, date: '2026-09-05', title: 'Break-Even Crossover Playground', before: 551, after: 564 },
+    { n: 17, date: '2026-09-05', title: 'Stress-test of the Break-Even Playground', before: 564, after: 577 },
+    { n: 18, date: '2026-09-06', title: 'Follow-up fix', before: 577, after: 582 },
+    { n: 19, date: '2026-09-06', title: 'Variance Tug-of-War visualization', before: 582, after: 601 },
+    { n: 20, date: '2026-09-06', title: 'First full adversarial /stress-test audit', before: 601, after: 640 },
+    { n: 21, date: '2026-09-06', title: 'Viz-innovation batch 1 of 4', before: 640, after: 691 },
+    { n: 22, date: '2026-09-06', title: 'Viz-innovation batch 2 of 4', before: 691, after: 737 },
+    { n: 23, date: '2026-09-06', title: 'Viz-innovation batch 3 of 4', before: 737, after: 788 },
+    { n: 24, date: '2026-09-06', title: 'Viz-innovation batch 4 of 4 (20/20 shipped)', before: 788, after: 844 },
+    { n: 25, date: '2026-09-07', title: '/design-qa pass, one fix', before: 844, after: 851 },
+    { n: 26, date: '2026-09-07', title: 'Nesting Doll Cost Peel label-clipping fix', before: 851, after: 857 },
+    { n: 27, date: '2026-09-07', title: 'Phase 4 batch A/5 (/plan-exec + /stress-test)', before: 857, after: 885 },
+    { n: 28, date: '2026-09-07', title: 'Phase 4 batch B/5 (2 built, 1 honestly declined)', before: 885, after: 906 },
+    { n: 29, date: '2026-09-07', title: 'Phase 4 batch C/5 ("View as: Role" nav visibility)', before: 906, after: 915 },
+    { n: 30, date: '2026-09-07', title: 'Phase 4 batch D/5 (Attention & Triage tab)', before: 915, after: 932 },
+    { n: 31, date: '2026-09-07', title: 'Phase 4 batch E/5 (guided tour + printable one-pager)', before: 932, after: 956 },
+    { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973 },
+    { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974 },
+    { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (this round, 7 concepts)', before: 974, after: 1001 },
+  ];
+  window.HISTORY = HISTORY;
+
+  // ROADMAP_PHASES: hand-counted from UX_ROADMAP.md's real P0/P1/P2 backlog (lines 80-102) -- "done"
+  // is whatever's struck through with ~~...~~ there. Fixed one real staleness bug found while
+  // counting: idea #28 ("Continue where you left off") was already shipped but its P2 backlog line
+  // wasn't struck through like its own Phase-1 entry says -- corrected in UX_ROADMAP.md this round.
+  var ROADMAP_PHASES = [
+    { tier: 'P0', done: 4, total: 4 },
+    { tier: 'P1', done: 2, total: 7 },
+    { tier: 'P2', done: 1, total: 6 },
+  ];
+  window.ROADMAP_PHASES = ROADMAP_PHASES;
+
+  // SIBLING_METRICS: real structural facts about the sibling repo, hand-verified via `git log
+  // --oneline | wc -l`, `node stress.cjs` (its own tail line), and `wc -l index.html`, run directly
+  // against ~/dev/project-controls-command-center on 2026-09-07 -- not a live fetch (this page makes
+  // zero network calls by design), so this is a snapshot; re-verify before reusing.
+  var SIBLING_METRICS = {
+    name: 'Project Controls Command Center',
+    url: 'https://tjaiyen.github.io/project-controls-command-center/',
+    commits: 261, checks: 4235, lines: 14895,
+  };
+  // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
+  // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
+  // check-count badge above ("updated by hand each build round, not computed live").
+  var SELF_METRICS = { commits: 35, lines: 5515 };
+  window.SIBLING_METRICS = SIBLING_METRICS;
+  window.SELF_METRICS = SELF_METRICS;
+
+  function calcSelfAudit(){
+    var totalInteractive = 0, totalIllustrative = 0;
+    // Exclude this very section's own markup (between the SELFAUDIT_START/END comments, only present
+    // inside the Methodology tab) before counting -- otherwise the Methodology tab's own numbers would
+    // recursively inflate every time this section grows (its cairn-trail buttons counting as
+    // "interactive controls," its own explanatory prose counting as "illustrative" flags), which would
+    // make the one tab that's supposed to describe the page's real composition the least accurate
+    // measurement of it.
+    var perTab = panels.map(function(panel){
+      var scratch = document.createElement('div');
+      scratch.innerHTML = panel.innerHTML.replace(/<!--SELFAUDIT_START-->[\s\S]*?<!--SELFAUDIT_END-->/, '');
+      var count = scratch.querySelectorAll('input,button,select').length;
+      var illus = (scratch.innerHTML.match(/illustrative/gi) || []).length;
+      totalInteractive += count; totalIllustrative += illus;
+      var id = panel.id.replace(/^tab-/, '');
+      return { id: id, label: tabLabelFor(id), interactive: count, illustrative: illus };
+    });
+    var srcReal = document.querySelectorAll('.srctag.real').length;
+    var srcIllustrative = document.querySelectorAll('.srctag.illustrative').length;
+    var badge = document.getElementById('verifyBadge');
+    var m = badge ? badge.textContent.match(/✓ (\d+)\/(\d+) CHECKS PASSING/) : null;
+    return {
+      perTab: perTab,
+      totalInteractive: totalInteractive,
+      totalIllustrative: totalIllustrative,
+      srcReal: srcReal,
+      srcIllustrative: srcIllustrative,
+      liveChecks: m ? parseInt(m[1], 10) : null,
+    };
+  }
+  window.calcSelfAudit = calcSelfAudit;
+
+  function renderOnion(state){
+    var cx = 110, cy = 110, sw = 14;
+    var outerR = 86, midR = 60, innerR = 34;
+    var outerC = 2 * Math.PI * outerR, midC = 2 * Math.PI * midR, innerC = 2 * Math.PI * innerR;
+    var ledgerTotal = state.srcReal + state.srcIllustrative;
+    var fracReal = ledgerTotal ? state.srcReal / ledgerTotal : 0;
+    var detail = {
+      outer: state.totalInteractive + ' interactive controls (inputs/buttons/selects) across all 13 tabs, counted live from the DOM.',
+      mid: state.totalIllustrative + ' places the page’s own markup contains the word “illustrative” as an explicit flag (this includes the Source Ledger entries counted in the ring below).',
+      inner: state.srcReal + ' real-sourced + ' + state.srcIllustrative + ' illustrative claims in the Methodology tab’s own Source Ledger above.',
+    };
+    var ariaLabel = 'Content composition onion. Outer ring: ' + detail.outer + ' Middle ring: ' + detail.mid + ' Inner ring: ' + detail.inner;
+    var svg = '<svg viewBox="0 0 220 220" style="width:100%;max-width:260px;height:auto;display:block;margin:0 auto" role="img" aria-label="' + ariaLabel + '">' +
+      '<circle class="onion-ring" data-ring="outer" cx="' + cx + '" cy="' + cy + '" r="' + outerR + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="' + sw + '" stroke-linecap="round" opacity="0.85" style="cursor:pointer"/>' +
+      '<circle class="onion-ring" data-ring="mid" cx="' + cx + '" cy="' + cy + '" r="' + midR + '" fill="none" stroke="rgb(var(--c-warning))" stroke-width="' + sw + '" stroke-linecap="round" opacity="0.85" style="cursor:pointer"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + innerR + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="' + sw + '"/>' +
+      '<circle class="onion-ring" data-ring="inner" cx="' + cx + '" cy="' + cy + '" r="' + innerR + '" fill="none" stroke="rgb(var(--c-success))" stroke-width="' + sw + '" stroke-dasharray="' + (innerC * fracReal).toFixed(1) + ' ' + (innerC * (1 - fracReal)).toFixed(1) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')" opacity="0.9" style="cursor:pointer"/>' +
+      '<circle class="onion-ring" data-ring="inner" cx="' + cx + '" cy="' + cy + '" r="' + innerR + '" fill="none" stroke="rgb(var(--c-warning))" stroke-width="' + sw + '" stroke-dasharray="' + (innerC * (1 - fracReal)).toFixed(1) + ' ' + (innerC * fracReal).toFixed(1) + '" stroke-dashoffset="-' + (innerC * fracReal).toFixed(1) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')" opacity="0.9" style="cursor:pointer"/>' +
+      '</svg>';
+    var wrap = document.getElementById('onionWrap');
+    wrap.innerHTML = svg;
+    wrap.querySelectorAll('[data-ring]').forEach(function(el){
+      el.addEventListener('click', function(){
+        document.getElementById('onionCaption').textContent = detail[el.getAttribute('data-ring')];
+      });
+    });
+  }
+  window.renderOnion = renderOnion;
+
+  function renderThermo(){
+    var maxH = 90;
+    var html = '<div style="display:flex;gap:22px;justify-content:center;align-items:flex-end;flex-wrap:wrap">';
+    ROADMAP_PHASES.forEach(function(p){
+      var pct = p.total ? p.done / p.total : 0;
+      var fillH = maxH * pct;
+      var color = pct >= 0.9 ? 'var(--c-success)' : (pct >= 0.4 ? 'var(--c-warning)' : 'var(--c-danger)');
+      html += '<div style="text-align:center">' +
+        '<svg viewBox="0 0 40 120" width="40" height="120" role="img" aria-label="' + p.tier + ' backlog: ' + p.done + ' of ' + p.total + ' shipped, ' + Math.round(pct * 100) + '%">' +
+        '<rect x="12" y="10" width="16" height="' + maxH + '" rx="8" fill="none" stroke="rgb(var(--c-line))" stroke-width="2"/>' +
+        '<circle cx="20" cy="106" r="12" fill="none" stroke="rgb(var(--c-line))" stroke-width="2"/>' +
+        '<rect x="14" y="' + (10 + maxH - fillH).toFixed(1) + '" width="12" height="' + fillH.toFixed(1) + '" rx="6" fill="rgb(' + color + ')"/>' +
+        '<circle cx="20" cy="106" r="9" fill="rgb(' + color + ')"/>' +
+        '</svg>' +
+        '<div style="font-size:11px;font-weight:700;margin-top:4px">' + p.tier + '</div>' +
+        '<div class="kpi-foot">' + p.done + '/' + p.total + ' · ' + Math.round(pct * 100) + '%</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    document.getElementById('thermoWrap').innerHTML = html;
+  }
+  window.renderThermo = renderThermo;
+
+  function renderHeartbeat(){
+    var W = 760, H = 140, baseline = 100;
+    var stepX = W / HISTORY.length;
+    var tracked = HISTORY.filter(function(h){ return h.after !== null; });
+    var maxDelta = Math.max.apply(null, tracked.map(function(h){ return h.after - h.before; }));
+    var points = '', spikes = '';
+    HISTORY.forEach(function(h, i){
+      var x = stepX * i + stepX / 2;
+      if (h.after === null){
+        points += (i === 0 ? '' : ' ') + (x - stepX / 2).toFixed(1) + ',' + baseline + ' ' + (x + stepX / 2).toFixed(1) + ',' + baseline;
+      } else {
+        var d = h.after - h.before;
+        var amp = maxDelta ? (d / maxDelta) * 55 : 0;
+        var peakY = (baseline - amp).toFixed(1);
+        points += (i === 0 ? '' : ' ') + (x - stepX / 2).toFixed(1) + ',' + baseline + ' ' + x.toFixed(1) + ',' + peakY + ' ' + (x + stepX / 2).toFixed(1) + ',' + baseline;
+        spikes += '<circle cx="' + x.toFixed(1) + '" cy="' + peakY + '" r="4" fill="rgb(var(--c-accent))"><title>Round ' + h.n + ' (' + h.date + '): ' + h.title + '. Checks ' + h.before + ' → ' + h.after + ' (+' + d + ').</title></circle>';
+      }
+    });
+    var firstTracked = tracked[0];
+    var last = HISTORY[HISTORY.length - 1];
+    var ariaLabel = HISTORY.length + ' build rounds, ' + HISTORY[0].date + ' to ' + last.date + '. Check-count tracking starts round ' + firstTracked.n + ' (' + firstTracked.before + ' checks) and reaches ' + last.after + ' by round ' + last.n + '. Hover a beat, or use the Milestone Trail below, for any round’s detail.';
+    var boundaryX = stepX * tracked.length && stepX * (HISTORY.length - tracked.length);
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="0" y1="' + baseline + '" x2="' + W + '" y2="' + baseline + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + boundaryX.toFixed(1) + '" y1="8" x2="' + boundaryX.toFixed(1) + '" y2="' + (baseline + 8) + '" stroke="rgb(var(--c-text-secondary)/.4)" stroke-width="1" stroke-dasharray="3 3"/>' +
+      '<text x="' + (boundaryX + 4).toFixed(1) + '" y="14" font-size="8" fill="rgb(var(--c-text-secondary))">check-count tracking starts →</text>' +
+      '<polyline points="' + points + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="1.6"/>' +
+      spikes +
+      '</svg>';
+    document.getElementById('heartbeatWrap').innerHTML = svg;
+  }
+  window.renderHeartbeat = renderHeartbeat;
+
+  function renderCairnTrail(){
+    var html = '<div style="display:flex;gap:4px;overflow-x:auto;padding:8px 2px" role="list" aria-label="' + HISTORY.length + ' build rounds, in order">';
+    HISTORY.forEach(function(h){
+      var delta = (h.before !== null) ? ('checks ' + h.before + ' → ' + h.after + ' (+' + (h.after - h.before) + ')') : 'no check-count data (predates tracking)';
+      var label = 'Round ' + h.n + ', ' + h.date + ': ' + h.title + '. ' + delta + '.';
+      html += '<button type="button" class="cairn-btn" role="listitem" title="' + label + '" aria-label="' + label + '" style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 5px;border-radius:6px">' +
+        '<svg width="20" height="16" viewBox="0 0 22 18" aria-hidden="true"><path d="M2 17 L7 7 L11 12 L15 4 L20 17 Z" fill="rgb(var(--c-accent)/.75)" stroke="rgb(var(--c-accent))" stroke-width="1"/></svg>' +
+        '<span style="font-size:8.5px;color:rgb(var(--c-text-secondary))" aria-hidden="true">' + h.n + '</span>' +
+        '</button>';
+    });
+    html += '</div>';
+    document.getElementById('cairnWrap').innerHTML = html;
+  }
+  window.renderCairnTrail = renderCairnTrail;
+
+  function renderLeaderboard(state){
+    var sorted = state.perTab.slice().sort(function(a, b){ return b.interactive - a.interactive; });
+    var max = sorted[0] ? sorted[0].interactive : 1;
+    var html = '<div style="display:flex;flex-direction:column;gap:6px">';
+    sorted.forEach(function(t, i){
+      var pct = max ? (t.interactive / max * 100) : 0;
+      html += '<div style="display:grid;grid-template-columns:130px 1fr 30px;align-items:center;gap:8px;font-size:11.5px">' +
+        '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (i + 1) + '. ' + t.label + '</span>' +
+        '<span style="background:rgb(var(--c-line));border-radius:4px;overflow:hidden;height:14px"><span style="display:block;height:100%;width:' + pct.toFixed(1) + '%;background:rgb(var(--c-accent))"></span></span>' +
+        '<span style="text-align:right;font-weight:700">' + t.interactive + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+    document.getElementById('leaderboardWrap').innerHTML = html;
+  }
+  window.renderLeaderboard = renderLeaderboard;
+
+  function renderScorecard(state){
+    var max = Math.max.apply(null, state.perTab.map(function(t){ return t.interactive; })) || 1;
+    var r = 24, c = 2 * Math.PI * r;
+    var html = '<div class="grid cols-4" style="gap:10px">';
+    state.perTab.forEach(function(t){
+      var pct = t.interactive / max;
+      html += '<div style="text-align:center;padding:8px;border:1px solid var(--c-line);border-radius:8px">' +
+        '<svg width="56" height="56" viewBox="0 0 60 60" role="img" aria-label="' + t.label + ': ' + t.interactive + ' interactive controls, ' + Math.round(pct * 100) + '% of the busiest tab. ' + t.illustrative + ' illustrative flags.">' +
+        '<circle cx="30" cy="30" r="' + r + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="6"/>' +
+        '<circle cx="30" cy="30" r="' + r + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + (c * (1 - pct)).toFixed(1) + '" transform="rotate(-90 30 30)"/>' +
+        '<text x="30" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="rgb(var(--c-text-primary))">' + t.interactive + '</text>' +
+        '</svg>' +
+        '<div style="font-size:10px;margin-top:2px;color:rgb(var(--c-text-secondary));white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.label + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    document.getElementById('scorecardWrap').innerHTML = html;
+  }
+  window.renderScorecard = renderScorecard;
+
+  function renderSibling(state){
+    var rows = [
+      ['Build rounds / commits', SELF_METRICS.commits, SIBLING_METRICS.commits],
+      ['stress-test checks passing', state.liveChecks, SIBLING_METRICS.checks],
+      ['index.html lines', SELF_METRICS.lines, SIBLING_METRICS.lines],
+    ];
+    var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:360px">' +
+      '<thead><tr><th style="text-align:left;padding:4px 6px">Metric</th><th style="text-align:right;padding:4px 6px">This dashboard</th><th style="text-align:right;padding:4px 6px"><a href="' + SIBLING_METRICS.url + '">' + SIBLING_METRICS.name + '</a></th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      html += '<tr style="border-top:1px solid var(--c-line)"><td style="padding:4px 6px">' + r[0] + '</td><td style="text-align:right;padding:4px 6px;font-weight:700">' + r[1] + '</td><td style="text-align:right;padding:4px 6px">' + r[2] + '</td></tr>';
+    });
+    html += '</tbody></table></div><p class="kpi-foot" style="margin-top:8px">As of 2026-09-07 — a hand-verified snapshot, not a live fetch (this page makes zero network calls by design). Different domains on purpose (manufacturing cost vs. capital-program EVM/schedule controls) — see Methodology above.</p>';
+    document.getElementById('siblingWrap').innerHTML = html;
+  }
+  window.renderSibling = renderSibling;
+
+  function renderSelfAudit(){
+    var state = calcSelfAudit();
+    renderOnion(state);
+    renderThermo();
+    renderHeartbeat();
+    renderCairnTrail();
+    renderLeaderboard(state);
+    renderScorecard(state);
+    renderSibling(state);
+  }
+  window.renderSelfAudit = renderSelfAudit;
+
   // ---------- Initial render ----------
   calcMhrBuildup();
   calcMonteCarlo();
@@ -5170,6 +5507,8 @@
   // e.g. changing just the overhead rate announces "Overhead $16.23. Should-cost per unit $124.63."
   // without re-announcing the unchanged Material/Machine/Labor lines above it.
   document.querySelectorAll('.outline').forEach(function(el){ el.setAttribute('aria-live', 'polite'); });
+
+  renderSelfAudit();
 })();
 </script>
 </body>

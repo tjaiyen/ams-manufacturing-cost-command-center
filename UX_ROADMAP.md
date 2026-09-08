@@ -98,7 +98,9 @@ itself (not a reimplementation) — see the "Vertical side navigation" sections 
 - Side-by-side scenario comparison (idea #5)
 - Cross-tab metric highlighting (idea #4)
 - Playbook quiz mode (idea #26)
-- "Continue where you left off" resume chip (idea #28)
+- ~~"Continue where you left off" resume chip (idea #28)~~ — already done (see idea #28's own entry
+  above); this line had gone stale after that shipped, caught during the Dashboard Self-Audit build
+  (2026-09-07) while hand-counting this backlog for the Backlog Completion thermometer.
 
 **Declined, documented not silently dropped:** 3D/WebGL sculptor (#8), sensor oscilloscope (#15),
 dyslexia web-font (#21, pending a deliberate zero-dependency tradeoff revisit), milestone
@@ -170,6 +172,38 @@ idea got — closing that gap here before building any of them.
 this; building a second one would ship a near-duplicate. A "one root cause, N instruments" showcase
 (idea #36) — the one candidate pairing checked out as naming coincidence, not a real numeric link;
 fabricating one to fill the slot was never on the table.
+
+## Phase 5 — Dashboard Self-Audit (2026-09-07), a 30-concept catalog cut to 7 by stress-testing the plan itself
+
+A `/viz-innovation` pass ("upgrade the existing layout to make it more comprehensive") produced 30 new
+concepts about the dashboard's own build/structure — a genuinely different axis from every prior
+catalog (those were about the manufacturing-cost domain; this one is about the page itself). Before any
+`/plan-exec` batch ran, `/stress-test` ran against the PLAN, not code, and found real problems with the
+premise: UX_ROADMAP's own stated audience ("a hiring panel... not end-users of a product to 'engage'")
+argues directly against a dashboard that becomes about itself, and several of the 30 needed data this
+page will never have and never should fabricate (real click-through traffic, visitor dwell-time,
+click-distance — confirmed absent via `grep`, not assumed). Verdict: build only the survivors that need
+zero invented data, keep them quarantined to one tab, never make this the dashboard's subject.
+
+**Built (7 of 30):** Content Composition onion, Backlog Completion thermometer, Build Velocity
+heartbeat, Milestone Trail, Tab Density Leaderboard, Comprehensiveness Scorecard, Sibling Dashboard
+Comparator — see the Methodology tab's own "Dashboard Self-Audit" card for what each one measures and
+the README's thirty-fourth round for the build/bug-fix detail.
+
+**Declined, not built (23 of 30):** Cross-Tab Citation Web / Navigation Path Predictor — no real
+click-traffic data exists to drive either. Content Density Heightmap — a real walkable 3D terrain +
+orbiting camera is exactly the disproportionate-effort class the existing 3D/WebGL decline (#8) already
+covers. Whole-Dashboard Orbit Map — every tab is a real 1-click distance from every other in this flat
+side-nav, so "orbit radius = click-distance" is degenerate, not a real gradient. KPI Constellation Chart
+— hand-rolled soft-body drag physics for a data-viz add-on. Information Scent Trail Map — no dwell-time
+data exists or ever will. Feature Genealogy Tree, Feature Impact Ripple Pool, Braided Rope
+Visualization, Stale Content Rust Overlay, Regression Tripwire Timeline, Before/After Layout Twin
+Sliders, Round-by-Round Diff Filmstrip — each needs either labor-intensive, transcription-error-prone
+manual data extraction with no reliable source, or rendered screenshots of old commits this zero-build
+repo has no mechanism to produce. The remaining "buildable but redundant" concepts (Page Completeness
+variants, reflow/budget-allocator/progressive-disclosure simulators) overlapped existing patterns
+(the Advanced-inputs toggle, the existing print/role-view features) closely enough that building them
+would have shipped a near-duplicate rather than new signal.
 
 ## Technical architecture & component breakdown
 

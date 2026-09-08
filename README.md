@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 974 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1001 checks, all passing as of this writing.
 
 ## Status
 
@@ -1300,3 +1300,43 @@ chart now renders at 340×340px, filling 69.8% of its 487px-wide column, up from
 measured improvement, not just a style-string change. Confirmed live at a second CMAR value (not just
 the default) that the whole drawing still scales correctly, 0 console errors. Checks: 973 → 974 (+1).
 Committed locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-07, thirty-fourth round (Dashboard Self-Audit: 7 concepts, /plan-exec "all 30" stress-tested
+down to zero-fabrication):** TJ asked for 30 new "layout-comprehensiveness" data-visualization concepts
+(a `/viz-innovation` catalog about the dashboard's own build, not the manufacturing domain). Before
+building anything, `/stress-test` ran against the plan itself: it found the plan's own premise conflicted
+with UX_ROADMAP.md's stated audience test (a hiring-panel demo, not "a dashboard about itself"), that 3
+of the 30 needed data this page will never track (click-through traffic, visitor dwell-time, nav-distance
+— all confirmed absent via `grep`), that 2 more needed disproportionate hand-rolled 3D/physics, and that
+the plan's own "Batch 0" history-extraction step would have regex-missed ~45% of the real changelog's
+check-count deltas to line-wraps. TJ approved building only the 7 survivors that need zero invented data.
+
+Built as one new "Dashboard Self-Audit" section on the Methodology tab (deliberately not a 14th nav
+tab, so it stays a footnote about the build, not a drift of the page's own subject matter): a **Content
+Composition onion** (3 clickable concentric rings — interactive-element count, "illustrative"-flag count,
+and the Source Ledger's real 11/4 split, all read live from the DOM); a **Backlog Completion thermometer**
+(UX_ROADMAP's real P0/P1/P2 backlog, hand-counted — caught and fixed one real staleness bug in the
+process: idea #28 had shipped but its P2 line was never struck through); a **Build Velocity heartbeat**
+and **Milestone Trail** (both built from a hand-transcribed, chain-verified 30-round `HISTORY` array —
+rounds 5–9 shown as genuinely data-less, not an invented zero); a **Tab Density Leaderboard** and
+**Comprehensiveness Scorecard** (13 tabs ranked/gauged by real live interactive-element counts); and a
+**Sibling Dashboard Comparator** against `project-controls-command-center` (commits/checks/lines,
+hand-verified 2026-09-07, explicitly not a live fetch).
+
+Two real bugs found and fixed mid-build, both via live-browser verification catching what the stub
+alone couldn't: (1) the stub's DOM had no per-element `innerHTML`/`querySelectorAll`, crashing on first
+run — fixed generally (`STATIC_INNER_HTML` seeded from the real markup, a minimal tag-list
+`querySelectorAll`), the same "fix the stub at the root" pattern as prior rounds' `hasAttribute`/
+`className` gaps. (2) A live-browser check showed the Methodology tab's own reported numbers were
+recursively inflated by this very section's own cairn-trail buttons and prose (interactive count 0→30,
+"illustrative" mentions 11→26) — fixed by bracketing the section in `<!--SELFAUDIT_START/END-->`
+markers and excluding that span before counting; re-verified live that the tab's numbers return exactly
+to their pre-Self-Audit baseline (0 interactive / 11 illustrative). **Accepted limitation:** this specific
+exclusion can't be sabotage-tested inside `stress.cjs` itself — the stub's flat, non-hierarchical DOM
+model has no live parent-child `innerHTML` propagation, so it never reproduces the contamination the
+fix addresses (the same class of gap this file already notes for real Escape-key behavior); the fix is
+verified correct via live-browser measurement instead, documented here rather than silently assumed.
+The HISTORY chain-integrity check was itself sabotage-tested (temporarily broke one round's number,
+confirmed RED, restored, confirmed GREEN) the same way as prior rounds' critical new coverage. Checks:
+974 → 1001 (+27). Committed locally — pending push with explicit confirmation, same discipline as every
+prior round.
