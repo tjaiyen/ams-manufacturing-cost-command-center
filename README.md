@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1258 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1335 checks, all passing as of this writing.
 
 ## Status
 
@@ -1712,3 +1712,55 @@ converged state, not left pointing at a stale intermediate one. Flagged one unre
 staleness (the Milestone Trail's own "All 29 real build rounds" caption, now 37) as a follow-up task
 rather than fixing it inline. No accepted limitations this round. Checks: 1196 → 1258 (+62). Committed
 locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-08, forty-second round (`/viz-innovation` Batch E: 6 concepts) — the FINAL batch of the full
+30-concept viz-innovation plan.** All 6 built serially, same discipline as every prior batch —
+pre-registered (B35) via a standalone `node -e` before writing any `stress.cjs` assertion, verified live
+in-browser, then checked; every critical formula sabotage-tested. This closes the plan `/viz-innovation`
+generated on 2026-09-08 and TJ's own instruction to build every one of the 30 concepts, no exceptions.
+
+1. **Should-Cost Component Treemap Drill** — this limitation was already resolved during planning
+   ("Labor/Overhead not drillable" was a definitional error). A real 2-level slice-and-dice treemap
+   (Shneiderman's original recursive-halving technique) area-encodes the same 4 real should-cost
+   components; clicking any block reveals the real formula inputs that produced it, all 4 branches
+   genuinely decomposable (sabotage-tested: both the split-point formula and a reverted Labor drill
+   correctly failed).
+2. **Stakeholder Coverage Ribbon** — the same audited document's own real "Key Stakeholders" line per
+   domain, counted (not paraphrased) and traced as flows into a real total of 39 named roles across 10
+   domains; a real finding surfaced honestly: WIP Management names only 3 stakeholders, every other
+   domain names 4, not padded to match (sabotage-tested: a fabricated 4th stakeholder correctly failed).
+3. **Round-by-Round Feature-Family Streamgraph** — this limitation was already resolved during planning
+   (every HISTORY entry has a real, hand-classified `family` field). Real 8-round windows over the real
+   tracked history, silhouette (centered) baseline — the real technique behind d3's
+   `stackOffsetSilhouette` — stated honestly as distinct from the more elaborate Byron–Wattenberg
+   minimal-wiggle variant this session hand-derived earlier but can't fully re-verify from memory right
+   now (sabotage-tested: a wrong bucket size correctly failed).
+4. **Domain Trigger Threshold Comparator** — the same 10 real root-cause triggers grouped honestly by
+   their own real unit (5 genuinely different units extracted via regex from the real trigger text) —
+   only the 4 domains sharing a real percentage unit are directly compared; the rest are listed on their
+   own terms. A real finding this surfaces: Quality Control's inverted 98.5% floor and Finance/Costing's
+   1.5% ceiling both land on the exact same real 1.5-point tolerance, on two different metrics
+   (sabotage-tested: dropping the floor-to-tolerance inversion correctly failed).
+5. **Guardrail Gate Cohort Comparison** (redesigned to reuse Spatial Bookmarks, same as concept 23) —
+   each saved gate-input bookmark gets its own real pass/blocked row, using a newly-extracted `gatesFor()`
+   proven identical to `calcGates()`'s own live thresholds (sabotage-tested: both a doubled threshold and
+   a cross-tab bookmark leak correctly failed).
+6. **Cross-Domain Forum Cadence Grid** — the same 10 real "Cross-Silo Resolution Forum" names, classified
+   by the real cadence word each forum's own name states (Daily/Weekly/Bi-Weekly/Monthly), with the 3
+   real forums stating no cadence at all grouped honestly as Unspecified rather than guessed at
+   (sabotage-tested: a Weekly/Bi-Weekly substring-collision bug correctly failed — Data Governance's real
+   forum contains the literal substring "Weekly" inside "Bi-Weekly").
+
+No real bugs found and fixed during this build. One real, honest recalculation worth naming: adding
+round 42 shifted the Heartbeat's own mean/stdev a second time this session, dropping round 41 out of
+anomaly status while round 42 itself qualified — every cascading golden value (the Heartbeat anomaly
+stats, the Cadence Ring's now-10-spoke geometry, the Streamgraph's new 5th partial window, and the
+Sibling Radar's Checks/Commits/Lines axes) was recomputed against the true final converged state across
+several iterations, not left pointing at a stale intermediate one — the same self-referential
+convergence discipline every prior batch round has now required, documented plainly each time rather
+than glossed over. No accepted limitations this round.
+
+**All 30 concepts across all 5 batches are now built, live-verified, checked, and (where critical)
+sabotage-tested.** Checks: 1258 → 1335 (+77). SELF_METRICS and the sibling-comparator's own commit-count
+citation updated to the real 44 commits / 7348 lines. Committed locally — pending push with explicit
+confirmation, same discipline as every prior round.

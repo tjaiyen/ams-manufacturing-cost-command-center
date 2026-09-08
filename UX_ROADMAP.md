@@ -245,7 +245,7 @@ ideas) was stress-tested again before folding in — this section is the resolve
 all of it, the durable record a prior stress-test flagged as missing (it only existed in session
 transcript until now).
 
-**Batches (5 of 6, by real data dependency — order is sequencing, not priority; none declined):**
+**Batches (5 of 6, by real data dependency — order is sequencing, not priority; none declined). ✅ ALL 5 BATCHES BUILT as of 2026-09-08 (README's thirty-eighth through forty-second rounds) — the full 30-concept plan is complete:**
 
 - **Batch A ✅ built (2026-09-08, README's thirty-eighth round):** 1 Living Variance Waterfall, 3 MDQS
   Deduction Flow, 4 Threshold Disagreement Bridge (AMS's real MDQS 93% red-band vs. this document's real
@@ -279,10 +279,14 @@ transcript until now).
   critical formula sabotage-tested; no real bugs found this round. See README for the one real, honest
   finding (adding round 41 shifted the Heartbeat's own anomaly-detection stats, correctly changing which
   rounds flag as outliers) and the zero accepted limitations.
-- **Batch E** (hardest last, patterns proven by then): 17\* Should-Cost Component Treemap Drill, 25
-  Stakeholder Coverage Ribbon, 27\* Round-by-Round Feature-Family Streamgraph, 28 Domain Trigger
-  Threshold Comparator, 29\* Guardrail Gate Cohort Comparison (redesigned to reuse Bookmarks, same as
-  #23), 30 Cross-Domain Forum Cadence Grid.
+- **Batch E ✅ built (2026-09-08, README's forty-second round) — the FINAL batch:** 17\* Should-Cost
+  Component Treemap Drill, 25 Stakeholder Coverage Ribbon, 27\* Round-by-Round Feature-Family
+  Streamgraph, 28 Domain Trigger Threshold Comparator, 29\* Guardrail Gate Cohort Comparison (redesigned
+  to reuse Bookmarks, same as #23), 30 Cross-Domain Forum Cadence Grid. All 6 verified live + every
+  critical formula sabotage-tested; no real bugs found this round. **All 30 concepts across all 5
+  batches are now built.** See README for the one real, honest recalculation this round required
+  (adding round 42 shifted the Heartbeat's own anomaly stats a second time, correctly re-flagging which
+  rounds are outliers) and the zero accepted limitations.
 
 (\* = built to a redesigned spec, not the concept's original literal wording — see below.)
 

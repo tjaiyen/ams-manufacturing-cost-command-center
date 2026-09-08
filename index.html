@@ -465,7 +465,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1258/1258 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1335/1335 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -740,6 +740,16 @@
         an evenly-round shape means the 4 pillars are genuinely balanced, and a spiked shape shows
         exactly which one dominates.</p>
       <div id="costRadarWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Should-Cost Component Treemap Drill</h2><span class="tag">SAME 4 COMPONENTS ABOVE, AREA-PROPORTIONAL — CLICK TO DRILL</span></div>
+      <p class="lede" style="margin-bottom:12px">A 5th re-framing — area (not length or radius) encodes
+        dollar value this time, via a real 2-level slice-and-dice split. Click any block to drill into
+        the real formula inputs that produced it — Labor and Overhead decompose into real, named,
+        already-computed factors exactly like Material and Machine do, not a dead end.</p>
+      <div id="costTreemapWrap"></div>
+      <p id="treemapDrillOut" style="font-size:11.5px;color:rgb(var(--c-text-secondary));margin-top:8px"></p>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -1315,6 +1325,13 @@
         <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Thresholds are
           taken directly from the source document's own stated numbers — this simulates the gate
           logic, it does not claim AMS's real SAP instance enforces exactly these values.</p>
+
+        <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Guardrail Gate Cohort Comparison</h2></div>
+        <p class="lede" style="margin-bottom:8px">Save the gate inputs above as a Spatial Bookmark and
+          it appears here as its own row — a real way to compare several saved input scenarios' real
+          pass/blocked pattern side by side, reusing the same real thresholds and the existing, opt-in
+          Bookmarks mechanism rather than inventing history this page doesn't keep.</p>
+        <div id="gateCohortWrap"></div>
       </div>
     </div>
 
@@ -1326,6 +1343,37 @@
         starts collapsed to a single line; click to zoom into the full detail. No calculation here —
         this is reference data, not a formula, so it carries no Explain-the-Math button.</p>
       <div id="domainMatrixWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Stakeholder Coverage Ribbon</h2><span class="tag">REAL, SOURCED — 39 NAMED ROLES ACROSS 10 DOMAINS</span></div>
+      <p class="lede" style="margin-bottom:12px">The same source document's own "Key Stakeholders" line
+        for each of the 10 domains above, counted (not paraphrased) and traced as flows into the real
+        total — a real finding this surfaces honestly: WIP Management is the one domain that names only
+        3 stakeholders, every other domain names 4; not padded to match.</p>
+      <div id="stakeholderRibbonWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Domain Trigger Threshold Comparator</h2><span class="tag">REAL, SOURCED — GROUPED BY UNIT TYPE, NOT FORCED ONTO ONE SCALE</span></div>
+      <p class="lede" style="margin-bottom:12px">The same 10 real root-cause triggers above use 5
+        genuinely different units (minutes, hours, percentage, a ratio, a day-count, plus 2 binary
+        events) — plotting "15 min" against "2%" on one shared axis would be a false equivalence, so
+        this only directly compares the 4 domains that share a real percentage unit, and lists the rest
+        honestly on their own terms. A real finding this surfaces: Quality (yield ≥98.5%) and
+        Finance (variance ≤1.5%) tolerate the exact same 1.5-point deviation before triggering, on two
+        completely different metrics.</p>
+      <div id="triggerComparatorWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Cross-Domain Forum Cadence Grid</h2><span class="tag">REAL, SOURCED — NO FORMULA, A REFERENCE GRID</span></div>
+      <p class="lede" style="margin-bottom:12px">The same 10 real "Cross-Silo Resolution Forum" names
+        above, grouped by the real cadence word each forum's own name states — Daily, Weekly,
+        Bi-Weekly, Monthly, or genuinely Unspecified. 3 of the 10 real forums (Engineering Change Board,
+        8D/CAPA Review, the Sourcing-Operations Escalation Meeting) state no cadence at all in the
+        source document — grouped honestly as Unspecified, not guessed at.</p>
+      <div id="forumCadenceGridWrap"></div>
     </div>
   </section>
 
@@ -1706,6 +1754,16 @@
         length is the real number of rounds since the PREVIOUS sabotage-tested round, so an even ring
         means a steady rigor cadence and a spiked one shows exactly where the gap widened.</p>
       <div id="cadenceRingWrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Round-by-Round Feature-Family Streamgraph</h2></div>
+      <p class="lede" style="margin-bottom:10px">The same real 9 `family` tags and real per-round check
+        deltas above, grouped into 4 real 8-round windows and stacked as a streamgraph — a silhouette
+        (centered) baseline, the same real technique behind d3's `stackOffsetSilhouette`, not the more
+        elaborate Byron–Wattenberg minimal-wiggle variant this page can't fully re-verify from memory
+        right now. Real values only; no interpolation invented between rounds.</p>
+      <div id="streamgraphWrap"></div>
     </div>
 
     <div class="card">
@@ -2245,16 +2303,18 @@
         escapeHtml(bm.name) + ' <span style="opacity:.6">(' + bm.tab + ')</span></button>' +
         '<button type="button" class="bookmarks-delete" data-idx="' + i + '" aria-label="Delete ' + escapeHtml(bm.name) + '">×</button></li>';
     }).join('') : '<li class="bookmarks-empty">No saved scenarios yet.</li>';
-    // /viz-innovation Batch B/C, concepts 12 and 23: the Compass Rose Scenario Blend and the Quality
-    // Pareto Velocity Overlay both read the SAME bookmarks list, so both refresh at every point this
-    // list itself changes (init/save/delete) -- one shared hook, not separate wiring calls that could
-    // fall out of sync. Guarded on PLAYBOOK being defined: renderBookmarksList()'s own init call (just
-    // below) runs earlier in this script's top-to-bottom execution than `var PLAYBOOK = [...]` further
-    // down, so the very first call here would otherwise read PLAYBOOK as still-undefined -- harmless
-    // to skip once, since renderQualityParetoChart() already has its own correctly-ordered init call
-    // later in this script, after PLAYBOOK is real.
+    // /viz-innovation Batch B/C/E, concepts 12, 23, and 29: the Compass Rose Scenario Blend, the
+    // Quality Pareto Velocity Overlay, and the Guardrail Gate Cohort Comparison all read the SAME
+    // bookmarks list, so all three refresh at every point this list itself changes (init/save/delete)
+    // -- one shared hook, not separate wiring calls that could fall out of sync. Guarded on PLAYBOOK
+    // being defined: renderBookmarksList()'s own init call (just below) runs earlier in this script's
+    // top-to-bottom execution than `var PLAYBOOK = [...]` further down, so the very first call here
+    // would otherwise read PLAYBOOK as still-undefined -- harmless to skip once, since
+    // renderQualityParetoChart() already has its own correctly-ordered init call later in this script,
+    // after PLAYBOOK is real. gatesFor/calcGateCohort have no such dependency, so no guard needed there.
     renderCompassBlend(calcCompassBlend());
     if (typeof PLAYBOOK !== 'undefined') renderQualityParetoChart();
+    renderGateCohort(calcGateCohort());
   }
   window.loadBookmarks = loadBookmarks;
   window.captureCurrentScenario = captureCurrentScenario;
@@ -3373,9 +3433,88 @@
     renderNestingDoll(calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost));
     renderCirculatory(calcCirculatory(matCost, machineCost, laborCost, overheadCost, totalCost));
     renderCostPillarRadar(calcCostPillarRadar(matCost, machineCost, laborCost, overheadCost));
+    renderCostTreemap(calcCostTreemap({
+      matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost,
+      grossMass: grossMass, scrapMass: scrapMass, matRate: matRate, reclaimPct: reclaimPct,
+      totalHours: totalHours, mhr: mhr, laborRate: laborRate, manning: manning, ohPct: ohPct,
+    }));
     return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };
   }
   window.calcShouldCost = calcShouldCost;
+
+  // /viz-innovation Batch E, concept 17 "Should-Cost Component Treemap Drill" (this limitation was
+  // already resolved during planning: "Labor/Overhead not drillable" was a definitional error --
+  // calcShouldCost() already decomposes both into real, named, already-computed factors, so "drill"
+  // consistently means "reveal the real formula inputs" for all 4 branches, see UX_ROADMAP.md).
+  // Layout: a real 2-level slice-and-dice treemap split (Shneiderman's original recursive-halving
+  // technique) -- sort descending, split at the first point cumulative value reaches half the total,
+  // each side becomes a strip whose own items stack proportionally within it.
+  function calcCostTreemap(raw){
+    var branches = [
+      { key: 'material', label: 'Material', value: raw.matCost,
+        formula: 'grossMass × matRate − scrapMass × matRate × reclaimPct',
+        detail: 'grossMass=' + raw.grossMass.toFixed(3) + 'kg, scrapMass=' + raw.scrapMass.toFixed(3) + 'kg, matRate=$' + raw.matRate.toFixed(2) + '/kg, reclaimPct=' + (raw.reclaimPct * 100).toFixed(0) + '%' },
+      { key: 'machine', label: 'Machine', value: raw.machineCost,
+        formula: 'totalHours × mhr',
+        detail: 'totalHours=' + raw.totalHours.toFixed(4) + 'hrs, mhr=$' + raw.mhr.toFixed(2) + '/hr' },
+      { key: 'labor', label: 'Labor', value: raw.laborCost,
+        formula: 'totalHours × laborRate × manning',
+        detail: 'totalHours=' + raw.totalHours.toFixed(4) + 'hrs, laborRate=$' + raw.laborRate.toFixed(2) + '/hr, manning=' + raw.manning },
+      { key: 'overhead', label: 'Overhead', value: raw.overheadCost,
+        formula: '(matCost + machineCost + laborCost) × ohPct',
+        detail: 'subtotal=$' + (raw.matCost + raw.machineCost + raw.laborCost).toFixed(2) + ', ohPct=' + (raw.ohPct * 100).toFixed(0) + '%' },
+    ];
+    var sorted = branches.slice().sort(function(a, b){ return b.value - a.value; });
+    var half = raw.totalCost / 2;
+    var cum = 0, splitIdx = 0;
+    for (var i = 0; i < sorted.length; i++){
+      cum += sorted[i].value;
+      if (cum >= half){ splitIdx = i; break; }
+    }
+    var groupA = sorted.slice(0, splitIdx + 1);
+    var groupB = sorted.slice(splitIdx + 1);
+    var groupASum = groupA.reduce(function(s, b){ return s + b.value; }, 0);
+    var groupBSum = groupB.reduce(function(s, b){ return s + b.value; }, 0);
+    return { branches: branches, groupA: groupA, groupB: groupB, groupASum: groupASum, groupBSum: groupBSum, total: raw.totalCost };
+  }
+  window.calcCostTreemap = calcCostTreemap;
+
+  var TREEMAP_COLORS = { material: 'rgb(var(--c-accent)/.55)', machine: 'rgb(var(--c-success)/.55)', labor: 'rgb(var(--c-warning)/.55)', overhead: 'rgb(var(--c-danger)/.55)' };
+  var treemapState = null; // session-only: the last real calcCostTreemap() result, so a click can re-render without re-running calcShouldCost()
+  function renderCostTreemap(state){
+    treemapState = state;
+    var wrap = document.getElementById('costTreemapWrap');
+    if (!wrap) return;
+    var W = 360, H = 160;
+    var widthA = state.total > 0 ? (state.groupASum / state.total) * W : 0;
+    var widthB = W - widthA;
+    var rectsSvg = '';
+    function layoutGroup(group, groupSum, x, w){
+      var y = 0;
+      group.forEach(function(b){
+        var h = groupSum > 0 ? (b.value / groupSum) * H : 0;
+        rectsSvg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + TREEMAP_COLORS[b.key] + '" stroke="rgb(var(--c-bg-card))" stroke-width="1.5" style="cursor:pointer" onclick="selectTreemapBranch(\'' + b.key + '\')" role="button" tabindex="0" aria-label="' + b.label + ', $' + b.value.toFixed(2) + ' -- click to see the real formula inputs"/>' +
+          (h > 16 ? '<text x="' + (x + 6).toFixed(1) + '" y="' + (y + 14).toFixed(1) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" style="pointer-events:none">' + b.label + ' $' + b.value.toFixed(2) + '</text>' : '');
+        y += h;
+      });
+    }
+    layoutGroup(state.groupA, state.groupASum, 0, widthA);
+    layoutGroup(state.groupB, state.groupBSum, widthA, widthB);
+    var ariaLabel = 'Should-cost component treemap. ' + state.branches.map(function(b){ return b.label + ': $' + b.value.toFixed(2); }).join(', ') + '. Click any block to see its real formula inputs.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:360px" role="img" aria-label="' + ariaLabel + '">' + rectsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderCostTreemap = renderCostTreemap;
+
+  function selectTreemapBranch(key){
+    if (!treemapState) return;
+    var branch = treemapState.branches.filter(function(b){ return b.key === key; })[0];
+    var out = document.getElementById('treemapDrillOut');
+    if (branch && out){
+      out.textContent = branch.label + ' = ' + branch.formula + '. Real inputs: ' + branch.detail + '.';
+    }
+  }
+  window.selectTreemapBranch = selectTreemapBranch;
 
   // /viz-innovation Batch D, concept 18 "Cost Pillar Radar Lens": the same 4 real should-cost
   // components above, a 4th re-framing distinct from Nesting Doll (concentric), Circulatory Flow
@@ -5155,13 +5294,20 @@
   });
 
   function gatePill(pass){ return '<span class="status-pill ' + (pass ? 'green' : 'red') + '">' + statusSymbol(pass ? 'green' : 'red') + ' ' + (pass ? 'PASS' : 'BLOCKED') + '</span>'; }
+  // /viz-innovation Batch E, concept 29 "Guardrail Gate Cohort Comparison" (redesigned to reuse
+  // Spatial Bookmarks, same as concept 23): pulled the real gate-threshold logic itself one level
+  // further out of calcGates, so each saved bookmark's own gate replay calls the exact SAME real
+  // thresholds instead of a 2nd copy of them.
+  function gatesFor(bom, po, conf){
+    return { bomPass: Math.abs(bom) <= 15, poPass: Math.abs(po) <= 5, confPass: Math.abs(conf) <= 15 };
+  }
+  window.gatesFor = gatesFor;
   function calcGates(){
     var bom = parseFloat(document.getElementById('gateBom').value) || 0;
     var po = parseFloat(document.getElementById('gatePo').value) || 0;
     var conf = parseFloat(document.getElementById('gateConf').value) || 0;
-    var bomPass = Math.abs(bom) <= 15;
-    var poPass = Math.abs(po) <= 5;
-    var confPass = Math.abs(conf) <= 15;
+    var g = gatesFor(bom, po, conf);
+    var bomPass = g.bomPass, poPass = g.poPass, confPass = g.confPass;
     document.getElementById('gateBomOut').innerHTML = gatePill(bomPass);
     document.getElementById('gatePoOut').innerHTML = gatePill(poPass);
     document.getElementById('gateConfOut').innerHTML = gatePill(confPass);
@@ -5201,6 +5347,38 @@
   }
   window.renderGateRings = renderGateRings;
 
+  function calcGateCohort(){
+    var scenarios = loadBookmarks().filter(function(bm){ return bm.tab === 'governance'; }).map(function(bm){
+      var v = bm.values;
+      var bom = parseFloat(v.gateBom) || 0;
+      var po = parseFloat(v.gatePo) || 0;
+      var conf = parseFloat(v.gateConf) || 0;
+      var g = gatesFor(bom, po, conf);
+      return { name: bm.name, bom: bom, po: po, conf: conf, bomPass: g.bomPass, poPass: g.poPass, confPass: g.confPass };
+    });
+    return { scenarios: scenarios };
+  }
+  window.calcGateCohort = calcGateCohort;
+
+  function renderGateCohort(state){
+    var wrap = document.getElementById('gateCohortWrap');
+    if (!wrap) return;
+    if (state.scenarios.length === 0){
+      wrap.innerHTML = '<p style="font-size:11px;color:rgb(var(--c-text-secondary));font-style:italic">No saved scenarios yet — use the Spatial Bookmarks panel to save one or more gate-input scenarios, and each will appear here as its own row.</p>';
+      return;
+    }
+    var rows = state.scenarios.map(function(sc){
+      return '<tr style="border-top:1px solid var(--c-line)"><td style="padding:4px 6px">' + escapeHtml(sc.name) + '</td>' +
+        '<td style="padding:4px 6px;text-align:center">' + gatePill(sc.bomPass) + '</td>' +
+        '<td style="padding:4px 6px;text-align:center">' + gatePill(sc.poPass) + '</td>' +
+        '<td style="padding:4px 6px;text-align:center">' + gatePill(sc.confPass) + '</td></tr>';
+    }).join('');
+    wrap.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:320px">' +
+      '<thead><tr><th style="text-align:left;padding:4px 6px">Scenario</th><th style="padding:4px 6px">BOM</th><th style="padding:4px 6px">PO</th><th style="padding:4px 6px">Confirmation</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div>';
+  }
+  window.renderGateCohort = renderGateCohort;
+
   // /viz-innovation Batch D, concept 13 "Ten-Domain Zoomable Matrix": the same audited operational-
   // visibility document already cited by the Threshold Disagreement Bridge above -- its own real
   // "Enterprise Operating Architecture Matrix" table, transcribed verbatim (owner/SAP module/metric/
@@ -5223,6 +5401,149 @@
     { domain: 'Data Governance', owner: 'Head of Enterprise BI', sapModule: 'MDG / Lakehouse', metric: 'Data Accuracy', trigger: 'Incomplete Master Record', forum: 'Data Stewards Bi-Weekly Review' },
   ];
   window.DOMAIN_MATRIX = DOMAIN_MATRIX;
+
+  // /viz-innovation Batch E, concept 25 "Stakeholder Coverage Ribbon": the SAME audited document's own
+  // "Key Stakeholders" line for each of the 10 domains above, transcribed verbatim (re-read straight
+  // from the source .docx, not from memory) -- a real finding this surfaces honestly: 9 of 10 domains
+  // name exactly 4 stakeholders, but WIP Management names only 3 (Master Production Scheduler, Shop
+  // Floor Dispatchers, Area Production Control Leads) -- not padded to a fabricated 4th to make the
+  // ribbons look uniform.
+  var DOMAIN_STAKEHOLDERS = [
+    { domain: 'Operations', roles: ['VP of Manufacturing', 'Plant Managers', 'Production Supervisors', 'Value Stream Leaders'] },
+    { domain: 'Materials/Receiving', roles: ['Materials Director', 'Warehouse Managers', 'Logistics Leads', 'Dock/Receiving Supervisors'] },
+    { domain: 'Mfg Engineering', roles: ['Chief Engineer', 'Lead Manufacturing Engineers', 'Industrial Engineers', 'Configuration Management Board'] },
+    { domain: 'Quality Control', roles: ['VP of Quality', 'Site Quality Directors', 'Supplier Quality Engineers (SQEs)', 'Metrology Technicians'] },
+    { domain: 'WIP Management', roles: ['Master Production Scheduler', 'Shop Floor Dispatchers', 'Area Production Control Leads'] },
+    { domain: 'Procurement', roles: ['Chief Procurement Officer (CPO)', 'Strategic Commodity Directors', 'Category Buyers', 'Vendor Managers'] },
+    { domain: 'Finance/Costing', roles: ['CFO', 'Corporate Controller', 'Senior Cost Accounting Managers', 'Financial Planning & Analysis (FP&A)'] },
+    { domain: 'Program Mgmt', roles: ['Program Vice Presidents', 'Lead Project Controllers', 'EVM Specialists', 'Risk Managers'] },
+    { domain: 'Sales / S&OP', roles: ['Chief Commercial Officer', 'VP of Supply Chain', 'Master Schedulers', 'Contract Managers'] },
+    { domain: 'Data Governance', roles: ['Chief Data Officer', 'Enterprise Risk Directors', 'Head of Enterprise Business Intelligence/Analytics', 'Global Systems Architect'] },
+  ];
+  window.DOMAIN_STAKEHOLDERS = DOMAIN_STAKEHOLDERS;
+
+  function calcStakeholderRibbon(){
+    var domains = DOMAIN_STAKEHOLDERS.map(function(d){ return { domain: d.domain, count: d.roles.length }; });
+    var total = domains.reduce(function(s, d){ return s + d.count; }, 0);
+    return { domains: domains, total: total };
+  }
+  window.calcStakeholderRibbon = calcStakeholderRibbon;
+
+  function renderStakeholderRibbon(state){
+    var wrap = document.getElementById('stakeholderRibbonWrap');
+    if (!wrap) return;
+    var W = 420, H = 260, sourceX = 30, heartX = 380, heartY = H / 2;
+    var n = state.domains.length;
+    var rowH = H / n;
+    var maxCount = Math.max.apply(null, state.domains.map(function(d){ return d.count; }));
+    var vesselsSvg = '', labelsSvg = '';
+    state.domains.forEach(function(d, i){
+      var sourceY = rowH * i + rowH / 2;
+      var midX = (sourceX + heartX) / 2;
+      var width = Math.max(2, (d.count / maxCount) * 10);
+      var path = 'M ' + sourceX + ' ' + sourceY.toFixed(1) + ' C ' + midX.toFixed(1) + ' ' + sourceY.toFixed(1) + ', ' + midX.toFixed(1) + ' ' + heartY.toFixed(1) + ', ' + heartX + ' ' + heartY.toFixed(1);
+      var isUndersized = d.count < maxCount;
+      vesselsSvg += '<path d="' + path + '" fill="none" stroke="' + (isUndersized ? 'rgb(var(--c-warning))' : 'rgb(var(--c-accent))') + '" stroke-width="' + width.toFixed(1) + '" stroke-linecap="round" opacity="' + (isUndersized ? '0.85' : '0.55') + '"/>';
+      labelsSvg += '<circle cx="' + sourceX + '" cy="' + sourceY.toFixed(1) + '" r="3" fill="rgb(var(--c-text-secondary))"/>' +
+        '<text x="' + (sourceX - 6) + '" y="' + (sourceY + 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="end">' + d.domain + ' (' + d.count + ')' + (isUndersized ? ' ⚠' : '') + '</text>';
+    });
+    labelsSvg += '<circle cx="' + heartX + '" cy="' + heartY + '" r="9" fill="rgb(var(--c-bg-card))" stroke="rgb(var(--c-text-primary))" stroke-width="2"/>' +
+      '<text x="' + (heartX + 14) + '" y="' + (heartY + 3) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="start">' + state.total + ' roles total</text>';
+    var ariaLabel = 'Stakeholder coverage ribbon. ' + state.domains.map(function(d){ return d.domain + ': ' + d.count + ' named stakeholders'; }).join(', ') + '. ' + state.total + ' total named roles across all 10 domains. WIP Management is the one domain naming fewer than the standard 4.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:420px" role="img" aria-label="' + ariaLabel + '">' + vesselsSvg + labelsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderStakeholderRibbon = renderStakeholderRibbon;
+  renderStakeholderRibbon(calcStakeholderRibbon());
+
+  // /viz-innovation Batch E, concept 28 "Domain Trigger Threshold Comparator": the SAME real 10
+  // domain triggers above, classified by their own REAL unit (extracted from the real trigger text
+  // itself via regex, not hand-typed separately -- can't silently drift from DOMAIN_MATRIX). Only the
+  // 4 domains that genuinely share a real percentage unit are plotted on one comparable axis; the
+  // other 6 (2 different time units, a ratio, a day-count, 2 non-numeric events) are listed honestly
+  // on their own terms rather than forced onto a misleading shared scale.
+  function calcTriggerComparator(){
+    var classified = DOMAIN_MATRIX.map(function(d){
+      var t = d.trigger, m;
+      if ((m = t.match(/(\d+(?:\.\d+)?)\s*min/))) return { domain: d.domain, trigger: t, unitType: 'time-minutes', numValue: parseFloat(m[1]) };
+      if ((m = t.match(/(\d+(?:\.\d+)?)\s*hrs/))) return { domain: d.domain, trigger: t, unitType: 'time-hours', numValue: parseFloat(m[1]) };
+      if ((m = t.match(/(\d+(?:\.\d+)?)x target/))) return { domain: d.domain, trigger: t, unitType: 'ratio', numValue: parseFloat(m[1]) };
+      if ((m = t.match(/(-?\d+(?:\.\d+)?)\s*days/))) return { domain: d.domain, trigger: t, unitType: 'count-days', numValue: parseFloat(m[1]) };
+      // "< X%" is a floor threshold (e.g. yield must stay above it) -- converted to the real deviation
+      // tolerance (100-X) so it's directly comparable to the ">" ceiling-style percentage triggers.
+      if ((m = t.match(/<\s*(\d+(?:\.\d+)?)%/))) return { domain: d.domain, trigger: t, unitType: 'percentage', numValue: 100 - parseFloat(m[1]) };
+      if ((m = t.match(/>\s*(\d+(?:\.\d+)?)%/))) return { domain: d.domain, trigger: t, unitType: 'percentage', numValue: parseFloat(m[1]) };
+      return { domain: d.domain, trigger: t, unitType: 'event', numValue: null };
+    });
+    var percentageGroup = classified.filter(function(c){ return c.unitType === 'percentage'; });
+    var otherGroup = classified.filter(function(c){ return c.unitType !== 'percentage'; });
+    return { classified: classified, percentageGroup: percentageGroup, otherGroup: otherGroup };
+  }
+  window.calcTriggerComparator = calcTriggerComparator;
+
+  function renderTriggerComparator(state){
+    var wrap = document.getElementById('triggerComparatorWrap');
+    if (!wrap) return;
+    var W = 380, marginLeft = 130, marginRight = 40, barH = 20, gap = 10, marginTop = 10;
+    var maxVal = Math.max.apply(null, state.percentageGroup.map(function(c){ return c.numValue; }));
+    var plotW = W - marginLeft - marginRight;
+    var n = state.percentageGroup.length;
+    var H = marginTop + n * (barH + gap);
+    var barsSvg = '';
+    state.percentageGroup.forEach(function(c, i){
+      var y = marginTop + i * (barH + gap);
+      var w = maxVal > 0 ? (c.numValue / maxVal) * plotW : 0;
+      barsSvg += '<text x="' + (marginLeft - 8) + '" y="' + (y + barH / 2 + 4) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">' + c.domain + '</text>' +
+        '<rect x="' + marginLeft + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + barH + '" fill="rgb(var(--c-accent)/.6)" stroke="rgb(var(--c-accent))" stroke-width="1"/>' +
+        '<text x="' + (marginLeft + w + 6).toFixed(1) + '" y="' + (y + barH / 2 + 4) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))">' + c.numValue + '%</text>';
+    });
+    var ariaLabel = 'Domain trigger threshold comparator. Directly comparable (real percentage unit): ' + state.percentageGroup.map(function(c){ return c.domain + ' ' + c.numValue + '%'; }).join(', ') + '. Not directly comparable (different real units): ' + state.otherGroup.map(function(c){ return c.domain + ': ' + c.trigger; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:380px" role="img" aria-label="' + ariaLabel + '">' + barsSvg + '</svg>';
+    var otherList = '<ul style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:10px;padding-left:16px">' +
+      state.otherGroup.map(function(c){ return '<li>' + c.domain + ': ' + c.trigger + '</li>'; }).join('') + '</ul>';
+    wrap.innerHTML = svg + otherList;
+  }
+  window.renderTriggerComparator = renderTriggerComparator;
+  renderTriggerComparator(calcTriggerComparator());
+
+  // /viz-innovation Batch E, concept 30 "Cross-Domain Forum Cadence Grid": the SAME real 10
+  // "Cross-Silo Resolution Forum" names DOMAIN_MATRIX already carries, classified by the real cadence
+  // word each forum's own name states (extracted via regex from the real text, not hand-typed
+  // separately). No formula here -- a real, sourced reference grid, deliberately carrying no
+  // Explain-the-Math button, same stance as concepts 13 and 25.
+  var CADENCE_ORDER = ['Daily', 'Weekly', 'Bi-Weekly', 'Monthly', 'Unspecified'];
+  function calcForumCadenceGrid(){
+    var classified = DOMAIN_MATRIX.map(function(d){
+      var f = d.forum, cadence = 'Unspecified';
+      // "Bi-Weekly" contains "Weekly" as a substring -- checked first so it's never misclassified.
+      if (/Daily/i.test(f)) cadence = 'Daily';
+      else if (/Bi-Weekly/i.test(f)) cadence = 'Bi-Weekly';
+      else if (/Weekly/i.test(f)) cadence = 'Weekly';
+      else if (/Monthly/i.test(f)) cadence = 'Monthly';
+      return { domain: d.domain, forum: f, cadence: cadence };
+    });
+    var grid = {};
+    CADENCE_ORDER.forEach(function(c){ grid[c] = classified.filter(function(x){ return x.cadence === c; }); });
+    return { classified: classified, grid: grid };
+  }
+  window.calcForumCadenceGrid = calcForumCadenceGrid;
+
+  function renderForumCadenceGrid(state){
+    var wrap = document.getElementById('forumCadenceGridWrap');
+    if (!wrap) return;
+    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
+    CADENCE_ORDER.forEach(function(cadence){
+      var items = state.grid[cadence];
+      html += '<div class="outline" style="padding:8px 10px">' +
+        '<div style="font-size:11px;font-weight:700;color:rgb(var(--c-text-secondary));margin-bottom:4px">' + cadence + ' (' + items.length + ')</div>' +
+        (items.length ? items.map(function(it){ return '<div style="font-size:11px;padding:2px 0">' + it.domain + '</div>'; }).join('') : '<div style="font-size:11px;font-style:italic;color:rgb(var(--c-text-secondary))">none</div>') +
+        '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+  window.renderForumCadenceGrid = renderForumCadenceGrid;
+  renderForumCadenceGrid(calcForumCadenceGrid());
   function renderDomainMatrix(){
     var html = DOMAIN_MATRIX.map(function(d, i){
       return '<details class="domain-matrix-row" id="domainRow' + i + '">' +
@@ -6491,6 +6812,7 @@
     { n: 39, date: '2026-09-08', title: '/viz-innovation Batch B (6 concepts: Should-Cost Peel Recompute Trail, Monte Carlo Should-Cost Cloud, DFM Penalty Lever Board, Q* Crossover Fog, Break-Even Playground Depth Layers, Compass Rose Scenario Blend)', before: 1059, after: 1117, family: 'viz-innovation', sabotageTested: true },
     { n: 40, date: '2026-09-08', title: '/viz-innovation Batch C (6 concepts: Learning Curve Forecast Ribbon, Risk Register P/S/D Cube, Aurora Correlation Depth Explorer, RCA Trigger-Duration Pulse, Capacity SPC Break Cascade, Quality Pareto Velocity Overlay)', before: 1117, after: 1196, family: 'viz-innovation', sabotageTested: true },
     { n: 41, date: '2026-09-08', title: '/viz-innovation Batch D (6 concepts: Ten-Domain Zoomable Matrix, Cost Pillar Radar Lens, Build Velocity Heartbeat Anomaly-Annotated, Milestone Cairn Distance Rings, Threshold-Break Cadence Ring, Sibling Dashboard Benchmark Radar)', before: 1196, after: 1258, family: 'viz-innovation', sabotageTested: true },
+    { n: 42, date: '2026-09-08', title: '/viz-innovation Batch E (6 concepts: Should-Cost Component Treemap Drill, Stakeholder Coverage Ribbon, Round-by-Round Feature-Family Streamgraph, Domain Trigger Threshold Comparator, Guardrail Gate Cohort Comparison, Cross-Domain Forum Cadence Grid) -- the FINAL batch of the full 30-concept viz-innovation plan', before: 1258, after: 1335, family: 'viz-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -6517,7 +6839,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 43, lines: 6956 };
+  var SELF_METRICS = { commits: 44, lines: 7348 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 
@@ -6722,6 +7044,76 @@
     wrap.innerHTML = svg;
   }
   window.renderCadenceRing = renderCadenceRing;
+
+  // /viz-innovation Batch E, concept 27 "Round-by-Round Feature-Family Streamgraph" (this limitation
+  // was already resolved during planning: every HISTORY entry has a real, hand-classified `family`
+  // field, see UX_ROADMAP.md). Real 8-round windows over the real 32 tracked rounds; each window's
+  // real per-family check-delta sum becomes one streamgraph layer value. Baseline: the SILHOUETTE
+  // (centered) technique -- d3's stackOffsetSilhouette, y0 = -0.5 x sum of all layers at that step --
+  // not the more elaborate Byron-Wattenberg minimal-wiggle variant, which this session hand-derived and
+  // numerically validated earlier but can't re-verify from memory right now; stated honestly rather
+  // than claimed without being able to stand behind it.
+  var STREAM_FAMILIES = ['feature', 'stress-test', 'research', 'fix', 'viz-innovation', 'phase4', 'self-audit', 'nav-innovation', 'planning'];
+  var STREAM_BUCKET_SIZE = 8;
+  function calcFeatureStreamgraph(){
+    var tracked = HISTORY.filter(function(h){ return h.after !== null; });
+    var buckets = [];
+    for (var i = 0; i < tracked.length; i += STREAM_BUCKET_SIZE){
+      buckets.push(tracked.slice(i, i + STREAM_BUCKET_SIZE));
+    }
+    var series = buckets.map(function(bucket){
+      var byFamily = {};
+      STREAM_FAMILIES.forEach(function(f){ byFamily[f] = 0; });
+      bucket.forEach(function(h){
+        var delta = h.after - h.before;
+        byFamily[h.family] = (byFamily[h.family] || 0) + delta;
+      });
+      return byFamily;
+    });
+    var windows = buckets.map(function(b){ return { start: b[0].n, end: b[b.length - 1].n }; });
+    return { families: STREAM_FAMILIES, windows: windows, series: series };
+  }
+  window.calcFeatureStreamgraph = calcFeatureStreamgraph;
+
+  var STREAM_COLORS = ['rgb(var(--c-accent))', 'rgb(var(--c-danger))', 'rgb(var(--c-success))', 'rgb(var(--c-warning))', 'rgb(var(--c-text-secondary))', 'rgb(var(--c-accent)/.6)', 'rgb(var(--c-danger)/.6)', 'rgb(var(--c-success)/.6)', 'rgb(var(--c-warning)/.6)'];
+  function renderFeatureStreamgraph(state){
+    var wrap = document.getElementById('streamgraphWrap');
+    if (!wrap) return;
+    var W = 420, H = 200, marginLeft = 10, marginRight = 10, marginTop = 10, marginBottom = 20;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var n = state.series.length;
+    var stepX = n > 1 ? plotW / (n - 1) : plotW;
+    // Silhouette baseline: at each step, y0 = -0.5 * (sum of all real layer values at that step).
+    var totals = state.series.map(function(s){ return state.families.reduce(function(sum, f){ return sum + s[f]; }, 0); });
+    var maxTotal = Math.max.apply(null, totals);
+    var scale = maxTotal > 0 ? (plotH / 2) / maxTotal : 0;
+    var baselines = totals.map(function(t){ return -0.5 * t; });
+    var layersSvg = '';
+    state.families.forEach(function(f, fi){
+      var topPoints = [], bottomPoints = [];
+      var cum = baselines.slice();
+      state.families.slice(0, fi).forEach(function(prevF){
+        state.series.forEach(function(s, j){ cum[j] += s[prevF]; });
+      });
+      state.series.forEach(function(s, j){
+        var x = marginLeft + j * stepX;
+        var yBottom = marginTop + plotH / 2 - cum[j] * scale;
+        var yTop = marginTop + plotH / 2 - (cum[j] + s[f]) * scale;
+        topPoints.push(x.toFixed(1) + ',' + yTop.toFixed(1));
+        bottomPoints.unshift(x.toFixed(1) + ',' + yBottom.toFixed(1));
+      });
+      layersSvg += '<polygon points="' + topPoints.join(' ') + ' ' + bottomPoints.join(' ') + '" fill="' + STREAM_COLORS[fi] + '" opacity="0.8"/>';
+    });
+    var windowLabels = state.windows.map(function(w, j){
+      var x = marginLeft + j * stepX;
+      return '<text x="' + x.toFixed(1) + '" y="' + (H - 4) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">R' + w.start + '-' + w.end + '</text>';
+    }).join('');
+    var ariaLabel = 'Round-by-round feature-family streamgraph, ' + n + ' real 8-round windows, silhouette baseline. ' + state.windows.map(function(w, j){ return 'rounds ' + w.start + '-' + w.end + ': ' + STREAM_FAMILIES.filter(function(f){ return state.series[j][f] > 0; }).map(function(f){ return f + ' +' + state.series[j][f]; }).join(', '); }).join('; ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:420px" role="img" aria-label="' + ariaLabel + '">' + layersSvg + windowLabels + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderFeatureStreamgraph = renderFeatureStreamgraph;
+  renderFeatureStreamgraph(calcFeatureStreamgraph());
 
   function renderCairnTrail(){
     var distances = calcCairnDistances();
