@@ -139,9 +139,15 @@ idea got — closing that gap here before building any of them.
     strongest idea in this batch** — reuses only real, already-computed data (MDQS band, Gate
     Simulator results, capacity utilization bands, risk-register severities), zero new fabrication.
     Scope rule (needed because a naive build would range from 4 items to 30+): one item per real
-    *distinct mechanism*, with multi-row mechanisms (capacity weeks, risk-register entries, playbook
-    scenarios) rolled up into one aggregate item each — never exploded per-row, which would just
-    duplicate the tab that already owns that detail.
+    *distinct mechanism*, with multi-row mechanisms (capacity weeks, risk-register entries) rolled up
+    into one aggregate item each — never exploded per-row, which would just duplicate the tab that
+    already owns that detail. **Built as 7 items exactly** (PO gate, live CRPN scorer, commodity
+    price exposure, capacity weeks, MDQS, OAE, risk-register aggregate) — a Playbook rollup was
+    considered at design time (this paragraph originally named it) but never actually built: the
+    Diagnostic Playbook's 30 scenarios don't reduce to a single clean non-green/PASS signal the way
+    the other 6 mechanisms do, and forcing one in would have meant inventing a threshold that doesn't
+    exist elsewhere on the page. Caught and corrected by a `/stress-test` pass that checked this
+    paragraph's claim against the real `calcTriage()` implementation.
 35. **Colorblind-safe status-pill symbol audit (idea #23, reaffirmed)** — this is the one already-P0
     idea the stress-test caught missing from the new plan entirely. Not a new idea; restored to its
     original P0 priority.

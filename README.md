@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 956 checks, all passing as of this writing.
+Run: `node stress.cjs` — 973 checks, all passing as of this writing.
 
 ## Status
 
@@ -1231,3 +1231,54 @@ every other means available. 0 console errors elsewhere. Checks: 932 → 956 (+2
 in batch C, 1 in batch D, 2 in batch E), plus 2 CRIT plan-level course-corrections caught by the
 `/stress-test` pass before any of batches C/D were built. Committed locally — pending push with
 explicit confirmation, same discipline as every prior round.
+
+**2026-09-07, thirty-second round (`/stress-test` of the whole Phase 4 arc, batches A–E, before
+push):**
+
+A fresh review of all 5 unpushed commits together — the full 1,063-line diff — plus an independent
+fresh-context reviewer, found 5 real findings after the 5 individual batches had each already been
+verified in isolation:
+
+1. **HIGH — a genuinely false claim, self-contradicting the page's own existing honesty.** The
+   "three layers" card (batch A) said `stress.cjs` is "re-run on every load." It isn't — it's a Node
+   harness run by hand before every round, exactly as `#verifyBadge`'s own adjacent tooltip already
+   correctly says ("updated by hand each build round, not computed live"). Fixed, and guarded with a
+   dedicated check so this specific inaccuracy can't recur silently.
+2. **MED — `CHORD_MAP` was never updated for the new 13th tab.** Batch D added Attention & Triage
+   but nobody gave it a "g then [letter]" chord — every other tab had one. Added `a` for "Attention",
+   updated the on-screen chord-hint text and 3 dependent golden counts (12→13).
+3. **MED — `UX_ROADMAP.md`'s own idea #34 write-up drifted from what was actually built.** It
+   described a Playbook-scenario rollup as part of Attention & Triage's scope; the real
+   `calcTriage()` never touches Playbook data at all (a Playbook rollup was considered, then dropped
+   at build time because the 30 scenarios don't reduce to one clean non-green signal the way the
+   other 6 mechanisms do). Corrected the doc to match the real 7-item implementation.
+4. **MED — a genuine test-coverage gap, proven by sabotage.** Every existing modal check asserted
+   that opening Explain/Palette closes *other* modals, but nothing ever asserted the reverse for
+   Shortcuts or the tour — confirmed by literally removing them from the close-others array and
+   watching the full suite stay green. Added checks in both directions for all 4 modals; sabotage-
+   and-restore re-confirmed they now correctly go red on the same regression and clean again after.
+5. **MED — zero test coverage for the entire "Mark Acknowledged" mechanism** (batch D). Grepped and
+   confirmed: nothing asserted the checkbox's markup, that toggling it persists to localStorage, that
+   an unrelated change event is correctly ignored, or that a prior acknowledgment renders pre-checked
+   on the next load. Added all 4, working around this stub's lack of a real DOM tree by firing the
+   real delegated listener with a synthetic checkbox-shaped event target (not a reimplementation of
+   its logic) — sabotage-tested to confirm they catch a real regression, not just currently green.
+
+Also fixed, LOW severity: 2 stale developer comments still said "12 tabs" (cosmetic only, never
+user-visible).
+
+Re-verified after every fix, including 3 explicit sabotage-and-restore cycles (temporarily
+reintroducing each of findings #1/#4/#5's underlying bugs, confirming the new/updated checks catch
+them, then restoring and re-confirming a clean suite) — not just re-running once and calling it done.
+Live-verified the one new *behavior* change (the `a` chord) in a real browser: "g then a" correctly
+lands on Attention & Triage, 0 console errors.
+
+**Accepted limitation, stated not hidden:** the checkbox class-toggle-on-click side of "Mark
+Acknowledged" (dimming the row visually the instant a user clicks, as opposed to on the next render)
+still can't be exercised in this stub — it depends on `Element.closest()` walking from a synthetic
+event target to a real parent node, which requires an actual DOM tree this Node-based harness doesn't
+have. That specific behavior was confirmed live in a real browser during batch D's own round (see
+that round's entry above) and isn't re-verified here; everything else about the mechanism now is.
+
+Checks: 956 → 973 (+17). Committed locally, then **pushed** to `origin/main` per this round's
+explicit instruction.

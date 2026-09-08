@@ -404,7 +404,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 956/956 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 973/973 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -1709,7 +1709,7 @@
       <div class="outline">
         <div class="line"><span><b>Layer 1 — Leading indicators.</b> Moves before a cost or schedule problem shows up in the ledger: the Capacity Forecast tab's utilization trend and I-MR control chart, and the Tooling Amortization tab's wear-related signals.</span><span></span></div>
         <div class="line"><span><b>Layer 2 — Confirming metrics.</b> Says whether a leading signal actually became a real cost problem: the Should-Cost &amp; MHR Simulator and the Variance Waterfall — the numbers a leading signal has to actually move before they react.</span><span></span></div>
-        <div class="line"><span><b>Layer 3 — Independent assurance.</b> Checks that every number in the two layers above is honest before it's ever shown: the full <code>stress.cjs</code> suite (re-run on every load — see the passing-count badge in the nav), plus the Explain-the-Math modal on every calculator.</span><span></span></div>
+        <div class="line"><span><b>Layer 3 — Independent assurance.</b> Checks that every number in the two layers above is honest before it's ever shipped: the full <code>stress.cjs</code> suite (a Node harness run by hand before every round — see the passing-count badge in the nav for the most recent run, and its own tooltip for exactly how it's produced), plus the Explain-the-Math modal on every calculator.</span><span></span></div>
       </div>
       <p style="font-size:12.5px;color:rgb(var(--c-text-secondary));margin-top:10px">A drift that only
         shows up in one layer is worth watching; the same root cause confirmed independently in more
@@ -1853,7 +1853,7 @@
     <span class="mono">s</span>hould-cost · <span class="mono">v</span>ariance · <span class="mono">b</span>uild-vs-buy ·
     <span class="mono">c</span>apacity · <span class="mono">t</span>ooling · <span class="mono">d</span>fm ·
     <span class="mono">g</span>overnance · <span class="mono">p</span>laybook · <span class="mono">r</span>isk ·
-    <span class="mono">f</span>ramework · <span class="mono">m</span>ethodology</div>
+    <span class="mono">f</span>ramework · <span class="mono">m</span>ethodology · <span class="mono">a</span>ttention</div>
   <div class="kbd-toast" id="mruToast" hidden aria-live="polite" role="status"></div>
 
   <footer>
@@ -1911,7 +1911,7 @@
 
   // ---------- Spatial Bookmarks (saved scenarios) ----------
   // Captures the active tab name + every <input>/<select> value inside that tab's own panel, named
-  // and restorable later -- generic across all 12 tabs (no per-tab special-casing). Uses
+  // and restorable later -- generic across all 13 tabs (no per-tab special-casing). Uses
   // document.querySelectorAll with a scoped selector string ("#tab-x input") rather than
   // panel.querySelectorAll(...): this dashboard's stress.cjs DOM stub supports the former (already
   // exercised by the existing sidenav-tab query above) but not element-scoped querySelector calls,
@@ -2499,10 +2499,14 @@
 
   // ---------- Keyboard Chord Navigation (g, then a mnemonic letter) ----------
   // A sequential (not simultaneous) keybinding layer, same pattern as Gmail's "g then i" -- extends
-  // the addressable shortcut space past what single-modifier combos allow across 12 tabs. Guarded by
+  // the addressable shortcut space past what single-modifier combos allow across 13 tabs. Guarded by
   // isTypingTarget so a plain "g" keystroke while editing any calculator input is never intercepted.
   var CHORD_MAP = { e: 'exec', s: 'shouldcost', v: 'variance', b: 'buildbuy', c: 'capacity',
-    t: 'tooling', d: 'dfm', g: 'governance', p: 'playbook', r: 'risk', f: 'framework', m: 'methodology' };
+    t: 'tooling', d: 'dfm', g: 'governance', p: 'playbook', r: 'risk', f: 'framework', m: 'methodology',
+    a: 'triage' }; // Phase 4 batch D added the 13th real tab but never added its own chord letter --
+    // a real gap a /stress-test pass caught: every OTHER tab had one, so Attention & Triage was the
+    // one tab unreachable via "g then a letter", an inconsistency with the page's own established
+    // pattern, not a deliberate omission.
   var chordPending = false;
   var chordTimer = null;
   var chordHintEl = document.getElementById('chordHint');

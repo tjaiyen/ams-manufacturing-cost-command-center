@@ -1646,7 +1646,7 @@ console.log("--- Phase 4 batch A (2026-09-07): Keyboard Shortcuts overlay (UX_RO
 // Golden CHORD_MAP size pre-registered by reading the real object (window.CHORD_MAP, not a
 // hand-copied duplicate) before writing this check (B35): 12 tabs, 12 chord letters.
 check(typeof sandbox.openShortcuts === "function" && typeof sandbox.closeShortcuts === "function", "openShortcuts/closeShortcuts are exposed as functions");
-check(Object.keys(sandbox.CHORD_MAP).length === 12, "CHORD_MAP has exactly 12 entries (one per real tab)", Object.keys(sandbox.CHORD_MAP).length);
+check(Object.keys(sandbox.CHORD_MAP).length === 13, "CHORD_MAP has exactly 13 entries (one per real tab, +1: a /stress-test pass found Attention & Triage had never gotten its own chord letter)", Object.keys(sandbox.CHORD_MAP).length);
 sandbox.openExplain("cmar");
 check(elements.explainModal.classList.contains("open"), "sanity: explainModal is open before testing the shortcuts overlay's own close-others behavior");
 sandbox.openShortcuts();
@@ -1658,11 +1658,27 @@ check(documentStub.activeElement === elements.shortcutsClose, "opening the overl
 // text for a sample of real tabs, keyed off their real chord letters.
 check(elements.shortcutsBody.innerHTML.includes('then <span class="mono">e</span></span><span>Executive Overview</span>'), "the \"g then e\" row names the real Executive Overview tab (via CHORD_MAP+tabLabelFor, not a hand-typed string)", elements.shortcutsBody.innerHTML);
 check(elements.shortcutsBody.innerHTML.includes('then <span class="mono">g</span></span><span>Data Governance</span>'), "the \"g then g\" row names the real Data Governance tab", elements.shortcutsBody.innerHTML);
-check((elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length === 12, "exactly 12 chord rows are rendered, matching CHORD_MAP's own size (not a stale hardcoded count)", (elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length);
+check((elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length === 13, "exactly 13 chord rows are rendered, matching CHORD_MAP's own size (not a stale hardcoded count)", (elements.shortcutsBody.innerHTML.match(/then <span class="mono">/g) || []).length);
 check(elements.shortcutsBody.innerHTML.includes("⌘K") && elements.shortcutsBody.innerHTML.includes("Esc"), "the overlay also documents the non-chord shortcuts (Quick Jump, Esc)", "");
 sandbox.closeShortcuts();
 check(!elements.shortcutsModal.classList.contains("open"), "closeShortcuts() removes the 'open' class");
 check(documentStub.activeElement === preModalTrigger, "closing the shortcuts overlay restores focus to the real pre-modal trigger, same discipline as every other modal on this page");
+
+// A fresh /stress-test pass (2026-09-07) found this file only ever asserted that OTHER modals close
+// when Explain or the palette opens -- never the reverse (that shortcutsModal/tourModal themselves
+// get closed when something else opens). Confirmed by sabotage-testing: removing shortcutsModal and
+// tourModal from openModal's close-others array left every existing check green. Closing that
+// specific coverage gap here, checking the mutual exclusion in both directions for all 4 modals.
+sandbox.openShortcuts();
+check(elements.shortcutsModal.classList.contains("open"), "sanity: shortcutsModal is open before testing that a DIFFERENT modal opening closes it");
+sandbox.openTour();
+check(elements.tourModal.classList.contains("open"), "openTour() opens tourModal");
+check(!elements.shortcutsModal.classList.contains("open"), "opening the tour while Shortcuts was open closes Shortcuts -- the specific direction the prior checks never covered");
+sandbox.openShortcuts();
+check(!elements.tourModal.classList.contains("open"), "opening Shortcuts while the tour was open closes the tour -- confirms the exclusion works in both directions, not just one");
+sandbox.closeShortcuts();
+check(!elements.shortcutsModal.classList.contains("open") && !elements.tourModal.classList.contains("open") && !elements.explainModal.classList.contains("open") && !elements.paletteModal.classList.contains("open"), "all 4 modals are closed after the sequence above, no stray 'open' class left behind on any of them");
+check(documentStub.activeElement === preModalTrigger, "after this whole modal-exclusion sequence, focus still correctly returns to the original pre-modal trigger");
 
 console.log("--- Phase 4 batch A (2026-09-07): colorblind-safe status-pill symbol audit (UX_ROADMAP idea #23, P0) ---");
 check(typeof sandbox.statusSymbol === "function", "statusSymbol is exposed as a function");
@@ -1686,6 +1702,13 @@ console.log("--- Phase 4 batch A (2026-09-07): \"three layers\" methodology refr
 // Methodology tab only, not a new nav tab.
 check(html.includes("How this page's own numbers earn trust"), "the three-layers card is present in the page");
 check(html.includes("cuts <em>across</em> the Operating Framework tab's 4-pillar taxonomy, not a"), "the card explicitly reconciles against the existing 4-pillar taxonomy rather than presenting a competing, unreconciled framework");
+// A fresh /stress-test pass (2026-09-07) found this card's Layer 3 line originally claimed stress.cjs
+// is "re-run on every load" -- a real, self-contradicting inaccuracy: stress.cjs is a Node harness
+// run by hand before every round, never re-executed in-browser, exactly as #verifyBadge's OWN
+// tooltip already correctly says ("updated by hand each build round, not computed live"). Guarded
+// here so this specific false claim about the page's own testing mechanism can't recur silently.
+check(!html.includes("stress.cjs</code> suite (re-run on every load"), "Layer 3's description of stress.cjs no longer claims it's re-run in-browser on every load (it's a hand-run Node harness, matching the verifyBadge tooltip's own accurate framing)");
+check(html.includes("a Node harness run by hand before every round"), "Layer 3 correctly describes stress.cjs as a hand-run Node harness, not an in-browser live process");
 ["Capacity Forecast", "Tooling Amortization", "Should-Cost &amp; MHR Simulator", "Variance Waterfall"].forEach((label) => {
   check(html.includes(label), `the three-layers card only names real, existing features/tabs ("${label}" exists elsewhere on the page)`);
 });
@@ -1777,7 +1800,7 @@ console.log("--- 2. Keyboard Chord Navigation (g, then a mnemonic letter) ---");
 check(typeof sandbox.cancelChord === "function", "window.cancelChord is exposed (the pending-chord state; the 2s timeout and the actual keydown interception are verified live, since this stub's document.addEventListener is an intentional no-op -- see stress.cjs's own comment on the Escape-key handler above)");
 check(typeof sandbox.CHORD_MAP === "object" && sandbox.CHORD_MAP !== null, "window.CHORD_MAP is exposed (checking the real map, not a hand-copied duplicate)");
 const chordEntries = Object.keys(sandbox.CHORD_MAP || {});
-check(chordEntries.length === 12, "the chord map has exactly 12 entries, one per tab", chordEntries.length);
+check(chordEntries.length === 13, "the chord map has exactly 13 entries, one per tab", chordEntries.length);
 chordEntries.forEach((letter) => {
   const tab = sandbox.CHORD_MAP[letter];
   check(TABPANEL_IDS.includes("tab-" + tab), `chord "g then ${letter}" maps to a real, existing tab ("${tab}")`, TABPANEL_IDS.join(","));
@@ -1946,6 +1969,45 @@ const triageAfterFix = sandbox.calcTriage();
 check(!triageAfterFix.tier1.some((i) => i.id === "po-gate") && !triageAfterFix.tier2.some((i) => i.id === "po-gate"), "fixing the PO gate's real input (7% -> 2%, back under the 5% threshold) removes the po-gate item from calcTriage() entirely, in either tier", JSON.stringify(triageAfterFix.tier1.concat(triageAfterFix.tier2).map((i) => i.id)));
 elements.gatePo.value = "7";
 sandbox.calcGates(); // restore the default before any later check in this file relies on the gate's real state
+
+// A fresh /stress-test pass (2026-09-07) found ZERO test coverage anywhere in this file for the
+// "Mark Acknowledged" checkbox mechanism -- confirmed by grep, not assumed. Closing that gap here.
+// This stub has no real DOM tree (innerHTML is a plain string, not parsed into child nodes), so a
+// dynamically-generated checkbox can't be fetched by id the way a static element can -- tested
+// instead via (1) the generated row STRING actually containing the right markup, and (2) firing the
+// real delegated change-listener (attached once to the stable list container, not the replaced
+// checkboxes -- see index.html) with a synthetic event target shaped like a real checkbox, so the
+// actual listener function runs, not a reimplementation of what it's supposed to do.
+try{ sandbox.localStorage.setItem("ams-cc-triage-ack-po-gate", "0"); }catch(e){}
+const triageForAck = sandbox.calcTriage();
+sandbox.renderTriage(triageForAck);
+check(elements.triageTier1List.innerHTML.includes('class="triage-ack-box" data-triage-id="po-gate"') && elements.triageTier1List.innerHTML.includes("> Acknowledged</label>"), "the po-gate row's generated HTML includes a real checkbox with the correct class and data-triage-id, wrapped in a real <label>...Acknowledged</label>", elements.triageTier1List.innerHTML.includes('class="triage-ack-box" data-triage-id="po-gate"'));
+check(!elements.triageTier1List.innerHTML.match(/data-triage-id="po-gate"[^>]*checked/), "with no prior acknowledgment in localStorage, the po-gate checkbox does NOT render checked");
+const fakeCheckbox = {
+  classList: { contains: (c) => c === "triage-ack-box" },
+  getAttribute: (name) => (name === "data-triage-id" ? "po-gate" : null),
+  checked: true,
+  closest: () => null, // this stub can't traverse from a synthetic target to a real parent .line -- the class-toggle side of this same listener was confirmed live in a real browser instead (see README)
+};
+elements.triageTier1List.fire("change", { target: fakeCheckbox });
+check(sandbox.localStorage._s["ams-cc-triage-ack-po-gate"] === "1", "firing the real delegated change-listener with checked=true persists the acknowledgment to localStorage under the real item id, not a reimplementation of the listener's own logic");
+fakeCheckbox.checked = false;
+elements.triageTier1List.fire("change", { target: fakeCheckbox });
+check(sandbox.localStorage._s["ams-cc-triage-ack-po-gate"] === "0", "un-checking persists '0', not leaving a stale '1' behind");
+// A change event whose target ISN'T a triage-ack-box (e.g. some other future control sharing this
+// container) must be ignored, not misread as an acknowledgment for whatever id happens to be there.
+try{ sandbox.localStorage.setItem("ams-cc-triage-ack-decoy", "0"); }catch(e){}
+elements.triageTier1List.fire("change", { target: { classList: { contains: () => false }, getAttribute: () => "decoy", checked: true } });
+check(sandbox.localStorage._s["ams-cc-triage-ack-decoy"] === "0", "the delegated listener correctly ignores a change event from a non-checkbox target, not writing a spurious acknowledgment", sandbox.localStorage._s["ams-cc-triage-ack-decoy"]);
+// Reflects-on-render: an already-true prior acknowledgment must render the checkbox pre-checked AND
+// the row pre-dimmed, confirmed via the generated string (the class-toggle-on-click side of this was
+// confirmed live; this confirms the READ side, on initial render, which the live check didn't cover).
+sandbox.localStorage.setItem("ams-cc-triage-ack-po-gate", "1");
+sandbox.renderTriage(sandbox.calcTriage());
+check(!!elements.triageTier1List.innerHTML.match(/data-triage-id="po-gate"[^>]*checked/), "with a prior '1' acknowledgment in localStorage, the po-gate checkbox renders pre-checked on the very next render");
+check(elements.triageTier1List.innerHTML.includes('class="line triage-acked" data-triage-id="po-gate"'), "the po-gate row itself renders with the triage-acked (dimmed) class from the start, not only after a user interaction");
+sandbox.localStorage.setItem("ams-cc-triage-ack-po-gate", "0");
+sandbox.renderTriage(sandbox.calcTriage()); // restore to the un-acknowledged default before any later check in this file
 
 console.log("--- Phase 4 batch E (2026-09-07): printable one-pager (idea #14) ---");
 check(html.includes('class="print-only" id="printOnePager"'), "the print-only summary section exists in the static markup");
