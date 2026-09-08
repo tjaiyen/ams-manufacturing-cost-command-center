@@ -98,6 +98,11 @@
      interpolate its own fill from a "previous" state that no longer exists in the DOM. */
   @keyframes waterfallBarPulse{0%{stroke:rgb(var(--c-accent));stroke-width:3}100%{stroke:none;stroke-width:0}}
   .waterfall-bar-pulse{animation:waterfallBarPulse .6s ease-out}
+  /* /viz-innovation Batch B, concept 10 "Break-Even Playground Depth Layers": a real fading ghost of
+     the curve's own previous position after a drag, not decorative -- opacity only (never touches
+     layout), so it composes safely with the real, already-tested drag-handle math above it. */
+  @keyframes qsGhostFade{0%{opacity:0.45}100%{opacity:0}}
+  .qs-ghost-fade{animation:qsGhostFade 1.5s ease-out forwards}
   .sidenav-item.boundary-bounce{animation:boundaryBounce .22s ease}
   /* /nav-innovation, scaled-down "Directional Transition Choreography": the newly active panel
      slides in from the direction it came from in the real sidenav order -- entrance-only (the old
@@ -373,6 +378,7 @@
     .metronome-arm{animation:none}
     .sidenav-item.boundary-bounce{animation:none}
     .waterfall-bar-pulse{animation:none}
+    .qs-ghost-fade{display:none}
     .tabpanel.panel-enter-down,.tabpanel.panel-enter-up{animation:none}
     html{scroll-behavior:auto}
   }
@@ -453,7 +459,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1059/1059 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1117/1117 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -790,6 +796,7 @@
           <div class="line" style="margin-top:8px;font-size:11px;color:rgb(var(--c-text-secondary))"><span>Simulated range</span><span class="mono" id="mcRangeOut">$0.00 – $0.00</span></div>
         </div>
       </div>
+      <div id="monteCarloCloudWrap" style="margin-top:12px"></div>
     </div>
   </section>
 
@@ -983,6 +990,16 @@
     </div>
 
     <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Compass Rose Scenario Blend <button class="explain-btn" data-explain="compassblend" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">EVERY SAVED SCENARIO, ONE SHARED COMPASS</span></div>
+      <p class="lede" style="margin-bottom:12px">The Navigator above shows one needle for whatever's
+        currently typed in. This overlays every scenario you've saved to Spatial Bookmarks as its own
+        needle on the same compass — a real way to compare several what-ifs at a glance, using the
+        existing, real, opt-in Bookmarks mechanism rather than inventing cross-session history this
+        page doesn't actually keep.</p>
+      <div id="compassBlendWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Volume Crossover Point (Q*) <button class="explain-btn" data-explain="qstar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">POWER-LAW VENDOR PRICING</span></div>
       <p class="lede" style="margin-bottom:12px">The NPV analyzer above assumes flat per-unit prices
         at one stated volume. This asks a different question: a commercial vendor's per-unit price
@@ -993,10 +1010,12 @@
           <div class="field"><label for="qsInternalMc">Internal marginal cost ($/unit)</label><input type="number" id="qsInternalMc" value="180.00" step="1"></div>
           <div class="field"><label for="qsVendorP0">Vendor price at Q=1 ($/unit)</label><input type="number" id="qsVendorP0" value="420.00" step="1"></div>
           <div class="field"><label for="qsGamma">Vendor scale elasticity γ</label><input type="number" id="qsGamma" value="0.12" step="0.01" min="0.01"></div>
+          <div class="field"><label for="qsUncertainty">Assumed input uncertainty <b id="qsUncertaintyLabel">±10%</b></label><input type="range" id="qsUncertainty" min="0" max="30" step="1" value="10"></div>
         </div>
         <div class="outline">
           <div class="line total"><span>Crossover volume (Q*)</span><span class="mono" id="qsOut">0</span></div>
           <div class="line"><span>Vendor price at Q*</span><span class="mono" id="qsVendorAtStar">$0.00</span></div>
+          <div class="line" style="margin-top:8px;font-size:11px;color:rgb(var(--c-text-secondary))"><span>Crossover fog (at the uncertainty above)</span><span class="mono" id="qsFogOut">—</span></div>
         </div>
       </div>
       <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Below Q*, the
@@ -1175,6 +1194,16 @@
         most" — a live marginal-sensitivity view. Note a parameter can go silent: past the 3.0mm
         reference thickness, moving the slider further stops changing anything.</p>
       <div id="kaleidophoneWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>DFM Penalty Lever Board <button class="explain-btn" data-explain="dfmlevers" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 3 PENALTIES ABOVE, AS HEADROOM GAUGES</span></div>
+      <p class="lede" style="margin-bottom:12px">Not "which lever moves the total fastest" (Kaleidophone,
+        above) but "how much of each lever's own real ceiling is currently pulled" — each gauge fills
+        toward the maximum penalty that slider could ever contribute at its own extreme setting, so a
+        half-full wall-thickness gauge and a half-full build-height gauge represent very different real
+        dollar exposure per point of travel.</p>
+      <div id="dfmLeverBoardWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -2146,6 +2175,10 @@
         escapeHtml(bm.name) + ' <span style="opacity:.6">(' + bm.tab + ')</span></button>' +
         '<button type="button" class="bookmarks-delete" data-idx="' + i + '" aria-label="Delete ' + escapeHtml(bm.name) + '">×</button></li>';
     }).join('') : '<li class="bookmarks-empty">No saved scenarios yet.</li>';
+    // /viz-innovation Batch B, concept 12: the Compass Rose Scenario Blend reads the SAME bookmarks
+    // list, so it refreshes at every point this list itself changes (init/save/delete) -- one shared
+    // hook, not three separate wiring calls that could fall out of sync.
+    renderCompassBlend(calcCompassBlend());
   }
   window.loadBookmarks = loadBookmarks;
   window.captureCurrentScenario = captureCurrentScenario;
@@ -2515,7 +2548,7 @@
     tightrope: { title: 'Tightrope Confidence Walk (Coefficient of Variation)', formula: 'CoV = σ / μ  (undefined when μ=0)', body: 'The M-VaR card above answers "how big is the dollar buffer" (z·σ); this asks a related but distinct question — how large is that uncertainty RELATIVE to the expected value itself? A $10,000 buffer means something very different on an $8,500 mean (CoV≈120%, a genuinely shaky forecast) than on an $85,000 mean (CoV≈12%, comfortably stable). Coefficient of variation is a standard, named statistics concept (unitless, so it\'s comparable across metrics with different scales), not this dashboard\'s own invention — used here to reframe the same already-computed M-VaR inputs, not new data.' },
     ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above. Commodity-finance literature typically cites this specific application by name — Schwartz (1997), "The Stochastic Behavior of Commodity Prices," *Journal of Finance* — rather than bare "Ornstein-Uhlenbeck," since the latter is a generic process name used across many unrelated domains.' },
     pendulum: { title: 'Equilibrium Pendulum (OU decay path)', formula: 'settle time = ln(20) / θ  — the s solving (P_t−P̄)·e^(−θs) = 0.05·(P_t−P̄)', body: 'The same Ornstein-Uhlenbeck process as the Mean-Reversion Forward Band above, just plotted as a full curve instead of a single horizon\'s point estimate — the current spot price is a "displaced pendulum" that decays back toward equilibrium at rate θ. "Settle time" is a real, exactly-derivable number (not an animation cue): the time at which the expected price has closed 95% of its original gap to equilibrium. Not a named industry technique — an original visualization of this dashboard\'s own already-computed, already-verified OU formula, not a new claim about AMS.' },
-    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab). The chart\'s two dots are draggable: the left one directly sets P₀, the right one (holding P₀ fixed) implies a new γ from where you drop it — a pointer-driven second input surface on top of, not instead of, the number fields above, which remain the full keyboard/screen-reader path.' },
+    qstar: { title: 'Build-vs-Buy Volume Crossover (Q*)', formula: 'Q* = (P₀ / MCᵢₙₜₑᵣₙₐₗ)^(1/γ)   — solves P₀·Q^(−γ) = MCᵢₙₜₑᵣₙₐₗ; fog band = Q* evaluated at (MC∓u, P₀±u) for the assumed uncertainty u', body: 'The vendor’s per-unit price falls as volume grows (power-law scale pricing); your own internal marginal cost stays flat. Q* is the single volume where the two are equal — below it the vendor is still pricier per unit, above it the vendor undercuts you. A cleaner, closed-form version of the same "when does outsourcing win" question a downloaded document also tried to answer with a fixed-tooling total-cost integral — whose own worked example never actually finds a crossover when run (see Methodology tab). The chart\'s two dots are draggable: the left one directly sets P₀, the right one (holding P₀ fixed) implies a new γ from where you drop it — a pointer-driven second input surface on top of, not instead of, the number fields above, which remain the full keyboard/screen-reader path. The shaded "fog" band is the SAME closed-form Q* solver, re-evaluated at your own stated ± uncertainty slider pushing MC and P₀ to their worst-case bounds — not a statistical confidence interval (no distribution is assumed for any input), just an honest range of where crossover could land if your inputs are off by that much.' },
     montecarlo: { title: 'Monte Carlo Should-Cost Explorer', formula: 'C̃ᵤₙᵢₜ = C̃ₘₐₜ + C̃ᶜᵒⁿᵛ,  each ~ Uniform(baseline × (1 ± variation)), 5,000 trials → P50/P80/P95', body: 'Should-cost is a distribution, not a point estimate — the same idea behind a downloaded document’s LogNormal/Beta-PERT stochastic should-cost proposal, simplified here to a uniform-variation model (an illustrative heuristic, like the DFM/DFC tab, not the full distributional machinery). Deterministically seeded (mulberry32, not Math.random()) so the same inputs always reproduce the same percentiles — reproducibility over unseeded randomness, standard practice for a demonstration like this.' },
     honeycomb: { title: 'Honeycomb Capacity Lattice', formula: 'Same util% per week as the table above; delta = util(week N) − util(week N−1)', body: 'The same 6-week Capacity table, laid out as a density grid instead of rows — utilization reads as cell color/fill at a glance, and the connecting edge between two adjacent weeks is colored/thickened by their real week-over-week delta, making a swing (like the week-4-to-5 jump) visible without cross-referencing two separate rows. Cell "adjacency" here is purely temporal (week N next to week N+1) — not a claim about cross-trained backup capacity between physical resources.' },
     nestingdoll: { title: 'Nesting Doll Cost Peel', formula: 'doll[i] = total − sum(components larger than i-th), ordered descending by value', body: 'The same 4 should-cost components (material/machine/labor/overhead) shown in the outline above, re-ordered by size and nested so peeling off the largest reveals a smaller doll worth exactly the sum of what remains — down to the single smallest component at the core. These 4 components are siblings, not a true multi-level hierarchy, so this is a size-ordered peel of one flat breakdown, not a claim about deeper recursive cost structure that doesn\'t exist in this calculator.' },
@@ -2526,6 +2559,7 @@
     thresholdbridge: { title: 'Threshold Disagreement Bridge', formula: 'This page’s real MDQS red band: <93%.  A separate, independently-verified document’s Master Data Quality Index red band: <99%.', body: 'Both numbers are real and independently sourced — this page cites the source document that gives it its own real 93%/98% bands (Methodology tab), and a second, separately-audited document this session states a Master Data Quality Index at a different, real 99% red threshold. That disagreement is a genuine fact about two real sources, not a bug in either one — shown here explicitly rather than silently picking one, or averaging them into a number neither document actually states.' },
     kaleidophone: { title: 'Kaleidophone Resonance Chart', formula: 'sensitivity = |d(penalty)/d(param)| × slider step, evaluated at the CURRENT value (0 once a threshold is crossed)', body: 'The same 3 DFM penalty formulas above, differentiated with respect to each slider and evaluated at exactly where it sits right now — "if I nudge this one slider by one step from here, how much does the total move?" Wall-thickness and pocket-depth are threshold formulas (their real derivative is 0 once thickness ≥ 3.0mm or pocket ≤ 4:1), so a rod can go fully silent; build-height has no threshold and always contributes. Not a claim about which lever "matters most" in general — only which one has leverage from the CURRENT design point.' },
     compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' },
+    compassblend: { title: 'Compass Rose Scenario Blend', formula: 'same NPV/magnitude formula as the Navigator above, re-evaluated at each saved bookmark\'s own recorded input values instead of the live DOM', body: 'Every scenario you\'ve saved to Spatial Bookmarks (the real, opt-in save-a-snapshot panel — see the Navigation tab) gets its own needle on ONE shared compass, using the exact same NPV/magnitude math as the single-scenario Navigator above, just replayed against each bookmark\'s own recorded numbers instead of whatever\'s currently typed in. With zero saved scenarios this correctly shows an empty prompt, not a fabricated example — this page never invents cross-session history it doesn\'t actually keep.' },
     domino: { title: 'Domino Effect Probability Cascade', formula: 'P(neither)=(1−p1)(1−p2), P(exactly one)=p1(1−p2)+(1−p1)p2, P(both)=p1×p2', body: 'The 2 real, literature-confirmed cross-KPI tradeoffs from the map above have no attached likelihood in the source research — this applies illustrative EXAMPLE probabilities (adjustable) to the exact, standard compound-probability formula for 2 independent events, teaching how real tradeoffs compound even without a claimed real-world frequency for either one. The 3 outcome bars always sum to exactly 100%.' },
     aurora: { title: 'Aurora Layer Correlation Map', formula: 'Pearson r between each pair of {Probability, Severity, Detection} across the 10 real risk-register entries', body: 'Probability, Severity, and Detection are assigned independently for each of the 10 risks above — nothing here derives one from another — so a real Pearson correlation between any pair is a genuine finding, not a trivial identity. As of this writing: P and S correlate at ≈−0.71 (higher-probability risks in this register tend to carry lower dollar severity, a real and intuitive pattern), while P-D and S-D show little linear relationship.' },
     sonar: { title: 'Sonar Ping Anomaly Sweep', formula: 'distance ratio = (util − mean) / (UCL − mean)  — exactly 1.0 at the control limit, by I-MR construction', body: 'The same 6-week SPC control-chart data above (center line and control limits derived from this shop\'s own history), re-plotted as distance from the mean instead of a time-ordered trend line — a ping that reaches the outer ring is genuinely out of statistical control, not just a fixed-band "red" reading. Angle around the sonar screen is purely for visual separation between the 6 weeks and carries no data meaning; only radial distance does.' },
@@ -2534,6 +2568,7 @@
     capsankey: { title: 'Capacity Absorption Sankey', formula: 'absorbed_hrs = min(avail, booked);  unabsorbed_hrs = max(0, avail − booked);  unabsorbed_$ = unabsorbed_hrs × overhead_rate', body: 'The exact same per-week split and overhead-rate formula the 6-week table above already computes, re-read directly (not recalculated in parallel) and traced as two flows per week instead of two table columns — where each week’s real hours actually end up, and the running real dollar total unabsorbed hours are already costing at the same overhead rate used everywhere else on this tab.' },
     suspensionbridge: { title: 'Suspension Bridge Load Monitor', formula: 'each cable rate = (fixed component / productive hours) for depreciation/floor/service, or the raw $/hr rate for power/consumables — all 5 sum exactly to the fully burdened MHR', body: 'The same 5 real cost drivers the MHR Build-Up Calculator above sums into one blended rate, converted to a consistent $/hr basis so each cable\'s sag is directly proportional to its real share of the total load. The heaviest-loaded cable (marked in red) updates live as any of the 10 MHR inputs change.' },
     shadowpuppet: { title: 'Shadow Puppet Overlay Comparator', formula: 'excess = max(0, DFM-adjusted estimate − $100 reference)', body: 'The same $100 reference should-cost and DFM-adjusted actual estimate the outline above already states as two separate lines, drawn as two overlapping silhouettes instead — bar height is directly proportional to dollar value, so the excess is a felt visual gap, not a percentage requiring mental translation. Updates live with the same 3 DFM sliders.' },
+    dfmlevers: { title: 'DFM Penalty Lever Board', formula: 'fillPct = current penalty ÷ ceiling penalty, where ceiling = the same DFM formula evaluated at that slider\'s own min/max extreme (thickness 0.5mm→40%, pocket 8:1→20%, height 200mm→60%)', body: 'A third re-framing of the same 3 DFM penalties, distinct from both the outline (current magnitude) and Kaleidophone (per-step marginal leverage): how much of each lever\'s own real ceiling — the worst penalty that slider could ever contribute at its documented extreme — is currently pulled. A half-full wall-thickness gauge and a half-full build-height gauge are not equivalent: their ceilings (40% vs. 60%) differ, so equal fill fractions represent different real dollar exposure.' },
     relayrace: { title: 'Relay Race Baton Pass Timeline', formula: 'gap = interval(tier N) − interval(tier N−1), using the same 4 cadence intervals as the Metronome above', body: 'The same 4 named cadences and their real standard intervals (daily=1, weekly=7, monthly=30, OP1/OP2≈182), one derivative further than the metronome above: the GAP between consecutive tiers is the real, structural worst-case wait before an unresolved issue reaches the next level of visibility — a generic property of the cadence definitions, not a claim about any specific AMS issue.' },
     thermostat: { title: 'Thermostat Feedback Loop', formula: 'gap = 85% (this page\'s own established green threshold) − current overall utilization', body: 'The same overall 6-week utilization already computed above, compared against the SAME 85% green-band threshold this page already uses (utilStatus). This is an illustrative heuristic only, exactly like the DFM/DFC tab\'s design-sensitivity model — it demonstrates what a negative-feedback correction toward a real, already-stated target would look like. AMS is never claimed to run an actual automated rebalancing system.' },
     cardcatalog: { title: 'Card Catalog Drawer Cohort Browser', formula: 'index clamped to [0, 29] — the real bounds of the same 30-item PLAYBOOK array the grid above renders', body: 'The same 30 real Cost Diagnostic Playbook scenarios shown as a filterable grid above, browsed one card at a time instead — a bounded, tactile alternate navigation surface over the identical data, not a second copy of it.' }
@@ -2617,6 +2652,7 @@
     { label: 'Equilibrium Pendulum', tab: 'variance', scrollTo: 'pendDisplacementOut' },
     { label: 'Build-vs-Buy / CapEx', tab: 'buildbuy' },
     { label: 'Compass Rose Scenario Navigator', tab: 'buildbuy', scrollTo: 'compassRoseWrap' },
+    { label: 'Compass Rose Scenario Blend', tab: 'buildbuy', scrollTo: 'compassBlendWrap' },
     { label: 'Volume Crossover Point (Q*)', tab: 'buildbuy', scrollTo: 'qsOut' },
     { label: 'Capacity & Absorption Forecast', tab: 'capacity' },
     { label: 'Sonar Ping Anomaly Sweep', tab: 'capacity', scrollTo: 'sonarWrap' },
@@ -3107,17 +3143,58 @@
     }
     results.sort(function(a, b){ return a - b; });
     function pct(p){ return results[Math.floor(p * MC_TRIALS)]; }
-    var p50 = pct(0.50), p80 = pct(0.80), p95 = pct(0.95);
+    var p10 = pct(0.10), p50 = pct(0.50), p80 = pct(0.80), p90 = pct(0.90), p95 = pct(0.95);
     document.getElementById('mcP50Out').textContent = '$' + p50.toFixed(2);
     document.getElementById('mcP80Out').textContent = '$' + p80.toFixed(2);
     document.getElementById('mcP95Out').textContent = '$' + p95.toFixed(2);
     document.getElementById('mcRangeOut').textContent = '$' + results[0].toFixed(2) + ' – $' + results[MC_TRIALS - 1].toFixed(2);
-    return { p50: p50, p80: p80, p95: p95, min: results[0], max: results[MC_TRIALS - 1] };
+    renderMonteCarloCloud(results, p10, p50, p90);
+    return { p50: p50, p80: p80, p95: p95, min: results[0], max: results[MC_TRIALS - 1], results: results, p10: p10, p90: p90 };
   }
   window.calcMonteCarlo = calcMonteCarlo;
   ['mcMatBaseline', 'mcMatVariation', 'mcConvBaseline', 'mcConvVariation'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcMonteCarlo);
   });
+
+  // /viz-innovation Batch B, concept 7 "Monte Carlo Should-Cost Cloud, Live-Reshaped": the same real
+  // 5,000-trial simulation above, binned into a real histogram (5,000 individual dots would be an
+  // unreasonable SVG) -- reshapes live because it's called from inside calcMonteCarlo() itself, off
+  // the same real input listeners, not a separate draggable overlay (kept the interaction surface to
+  // the existing real sliders, not a new drag gesture, given this batch already ships one).
+  function renderMonteCarloCloud(results, p10, p50, p90){
+    var W = 380, H = 130, marginLeft = 10, marginRight = 10, marginBottom = 18, plotTop = 10;
+    var plotW = W - marginLeft - marginRight;
+    var min = results[0], max = results[results.length - 1];
+    var range = max - min || 1;
+    var BINS = 28;
+    var counts = new Array(BINS).fill(0);
+    results.forEach(function(v){
+      var bin = Math.min(BINS - 1, Math.floor(((v - min) / range) * BINS));
+      counts[bin]++;
+    });
+    var maxCount = Math.max.apply(null, counts) || 1;
+    var plotH = H - plotTop - marginBottom;
+    var binW = plotW / BINS;
+    function xAt(v){ return marginLeft + ((v - min) / range) * plotW; }
+    var barsSvg = '';
+    counts.forEach(function(c, i){
+      var barH = (c / maxCount) * plotH;
+      var x = marginLeft + i * binW;
+      barsSvg += '<rect x="' + x.toFixed(1) + '" y="' + (plotTop + plotH - barH).toFixed(1) + '" width="' + (binW - 1).toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="rgb(var(--c-accent)/.5)"/>';
+    });
+    var p10X = xAt(p10), p50X = xAt(p50), p90X = xAt(p90);
+    var markersSvg = '<line x1="' + p10X.toFixed(1) + '" y1="' + plotTop + '" x2="' + p10X.toFixed(1) + '" y2="' + (plotTop + plotH) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="2 2"/>' +
+      '<line x1="' + p50X.toFixed(1) + '" y1="' + plotTop + '" x2="' + p50X.toFixed(1) + '" y2="' + (plotTop + plotH) + '" stroke="rgb(var(--c-danger))" stroke-width="1.5"/>' +
+      '<line x1="' + p90X.toFixed(1) + '" y1="' + plotTop + '" x2="' + p90X.toFixed(1) + '" y2="' + (plotTop + plotH) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="2 2"/>' +
+      '<text x="' + p10X.toFixed(1) + '" y="' + (H - 4) + '" font-size="10" text-anchor="middle" fill="rgb(var(--c-text-secondary))">P10</text>' +
+      '<text x="' + p50X.toFixed(1) + '" y="' + (H - 4) + '" font-size="10" font-weight="700" text-anchor="middle" fill="rgb(var(--c-danger))">P50</text>' +
+      '<text x="' + p90X.toFixed(1) + '" y="' + (H - 4) + '" font-size="10" text-anchor="middle" fill="rgb(var(--c-text-secondary))">P90</text>';
+    var ariaLabel = 'Monte Carlo should-cost cloud, ' + results.length + ' real simulated trials binned into a histogram. P10 $' + p10.toFixed(2) + ', P50 $' + p50.toFixed(2) + ', P90 $' + p90.toFixed(2) + '. Wider spread means the current input uncertainty ranges dominate the total cost estimate more.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:380px" role="img" aria-label="' + ariaLabel + '">' + barsSvg + markersSvg + '</svg>';
+    var wrap = document.getElementById('monteCarloCloudWrap');
+    if (wrap) wrap.innerHTML = svg;
+  }
+  window.renderMonteCarloCloud = renderMonteCarloCloud;
 
   // ---------- Site Accuracy Explorer (Executive tab): CMAR per site, live-editable versions of the
   // same 3 sites shown as static rows in the multi-site rollup table above. Pure state computation
@@ -3243,6 +3320,12 @@
   }
   window.calcNestingDoll = calcNestingDoll;
 
+  // /viz-innovation Batch B, concept 2 "Should-Cost Peel Recompute Trail" (redesigned during
+  // planning from a fabricated cross-session history to a real, live, within-session delta -- this
+  // page has no real record of past should-cost inputs, and never will by design; see
+  // UX_ROADMAP.md's explicit no-persisted-scenario-data rule). Module-level, session-only memory of
+  // the last real total, so a genuine edit gets a real delta readout and pulse, not invented history.
+  var previousNestingDollTotal = null;
   function renderNestingDoll(state){
     var W = 400, maxRadius = 110, ryMult = 1.15;
     // The outer "Total" ellipse's radius is ALWAYS exactly maxRadius by construction (scale =
@@ -3262,11 +3345,13 @@
     var minPeelGap = 18; // minimum baseline-to-baseline spacing between "peeled" labels so two
     // similarly-sized components (e.g. Overhead $14.90 vs Machine $14.67) never crowd/overlap
     var prevPeelY = null;
+    var totalChanged = previousNestingDollTotal !== null && previousNestingDollTotal !== state.totalCost;
+    var totalDelta = totalChanged ? state.totalCost - previousNestingDollTotal : null;
     state.dolls.forEach(function(d, i){
       var r = Math.max(6, d.value * scale);
-      dollsSvg += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r.toFixed(1) + '" ry="' + (r * ryMult).toFixed(1) + '" fill="' + colors[i] + '" stroke="' + strokes[i] + '" stroke-width="2"/>';
+      dollsSvg += '<ellipse' + (i === 0 && totalChanged ? ' class="waterfall-bar-pulse"' : '') + ' cx="' + cx + '" cy="' + cy + '" rx="' + r.toFixed(1) + '" ry="' + (r * ryMult).toFixed(1) + '" fill="' + colors[i] + '" stroke="' + strokes[i] + '" stroke-width="2"/>';
       if (i === 0){
-        labelsSvg += '<text x="' + cx + '" y="' + (cy - r * ryMult - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Total $' + d.value.toFixed(2) + '</text>';
+        labelsSvg += '<text x="' + cx + '" y="' + (cy - r * ryMult - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">Total $' + d.value.toFixed(2) + (totalDelta !== null ? ' (' + (totalDelta > 0 ? '+' : '−') + '$' + Math.abs(totalDelta).toFixed(2) + ')' : '') + '</text>';
       } else {
         var prevR = Math.max(6, state.dolls[i - 1].value * scale);
         var labelY = cy - (prevR + r) / 2 * ryMult;
@@ -3277,11 +3362,12 @@
     });
     var innermost = state.dolls[state.dolls.length - 1];
     labelsSvg += '<text x="' + cx + '" y="' + (cy + 4) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">core: $' + innermost.value.toFixed(2) + '</text>';
-    var ariaLabel = 'Nesting doll cost peel, largest to smallest: ' + state.components.map(function(c){ return c.label + ' $' + c.value.toFixed(2); }).join(', ') + '. Total $' + state.totalCost.toFixed(2) + '.';
+    var ariaLabel = 'Nesting doll cost peel, largest to smallest: ' + state.components.map(function(c){ return c.label + ' $' + c.value.toFixed(2); }).join(', ') + '. Total $' + state.totalCost.toFixed(2) + '.' + (totalDelta !== null ? ' Changed by ' + (totalDelta > 0 ? '+' : '−') + '$' + Math.abs(totalDelta).toFixed(2) + ' since the last edit.' : '');
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
       dollsSvg + labelsSvg +
       '</svg>';
     document.getElementById('nestingDollWrap').innerHTML = svg;
+    previousNestingDollTotal = state.totalCost;
   }
   window.renderNestingDoll = renderNestingDoll;
 
@@ -3804,6 +3890,82 @@
     document.getElementById('compassRoseWrap').innerHTML = svg;
   }
   window.renderCompassRose = renderCompassRose;
+
+  // /viz-innovation Batch B, concept 12 "Compass Rose Scenario Blend": overlays every REAL saved
+  // Spatial Bookmark's own build-vs-buy scenario as its own needle on ONE shared compass -- reuses
+  // the existing, real, opt-in Bookmarks mechanism (captureCurrentScenario/loadBookmarks, above),
+  // never fabricates cross-session history this page doesn't actually keep. npvFor() is a standalone
+  // pure re-implementation of calcBuildBuy()'s own NPV formula, needed because a bookmarked
+  // scenario's values aren't the live DOM state calcBuildBuy() reads -- proven identical (not
+  // drifted) by a stress.cjs check comparing its output directly against calcBuildBuy()'s own live
+  // result at the same inputs.
+  function npvFor(internal, external, volume, transition, ratePct, years){
+    var rate = (ratePct || 0) / 100;
+    years = Math.max(1, Math.round(years || 1));
+    var unitSave = external - internal;
+    var annualSave = unitSave * volume;
+    var npv = -transition;
+    for (var y = 1; y <= years; y++){
+      npv += annualSave / Math.pow(1 + rate, y);
+    }
+    return { npv: npv, unitSave: unitSave, annualSave: annualSave };
+  }
+  window.npvFor = npvFor;
+
+  function calcCompassBlend(){
+    var scenarios = loadBookmarks().filter(function(bm){ return bm.tab === 'buildbuy'; }).map(function(bm){
+      var v = bm.values;
+      var internal = parseFloat(v.bbInternal) || 0;
+      var external = parseFloat(v.bbExternal) || 0;
+      var volume = parseFloat(v.bbVolume) || 0;
+      var transition = parseFloat(v.bbTransition) || 0;
+      var rate = parseFloat(v.bbRate) || 0;
+      var years = parseFloat(v.bbYears) || 1;
+      var result = npvFor(internal, external, volume, transition, rate, years);
+      var compass = calcCompassRose(result.npv, transition);
+      return { name: bm.name, npv: result.npv, transition: transition, magnitude: compass.magnitude, favorsBuild: compass.favorsBuild };
+    });
+    return { scenarios: scenarios };
+  }
+  window.calcCompassBlend = calcCompassBlend;
+
+  function renderCompassBlend(state){
+    var wrap = document.getElementById('compassBlendWrap');
+    if (!wrap) return;
+    if (state.scenarios.length === 0){
+      wrap.innerHTML = '<p style="font-size:11px;color:rgb(var(--c-text-secondary));font-style:italic">No saved scenarios yet — use the Spatial Bookmarks panel to save one or more Build-vs-Buy scenarios, and each will appear here as its own needle on this shared compass.</p>';
+      return;
+    }
+    var W = 240, H = 240, cx = W / 2, cy = H / 2, outerR = 95, maxNeedle = 85;
+    var compassSvg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + outerR + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + cx + '" y1="' + (cy - outerR) + '" x2="' + cx + '" y2="' + (cy + outerR) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + (cx - outerR) + '" y1="' + cy + '" x2="' + (cx + outerR) + '" y2="' + cy + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<text x="' + cx + '" y="' + (cy - outerR - 8) + '" font-size="10" font-weight="700" fill="rgb(var(--c-success))" text-anchor="middle">BUILD IN-HOUSE</text>' +
+      '<text x="' + cx + '" y="' + (cy + outerR + 16) + '" font-size="10" font-weight="700" fill="rgb(var(--c-danger))" text-anchor="middle">OUTSOURCE</text>';
+    var needlesSvg = '', labelParts = [];
+    // The fan angle is a purely visual separator so overlapping needles stay distinguishable -- same
+    // "decorative, not a data encoding" stance as the Navigator's own East/West axis above; the real
+    // encoding stays direction (favorsBuild) + length (magnitude) + each needle's own real text label.
+    var spreadDeg = state.scenarios.length > 1 ? Math.min(50, (state.scenarios.length - 1) * 14) : 0;
+    state.scenarios.forEach(function(sc, i){
+      var angleDeg = state.scenarios.length > 1 ? -spreadDeg / 2 + (spreadDeg / (state.scenarios.length - 1)) * i : 0;
+      var angleRad = angleDeg * Math.PI / 180;
+      var needleLen = sc.magnitude * maxNeedle;
+      var verticalSign = sc.favorsBuild ? -1 : 1;
+      var tipX = cx + Math.sin(angleRad) * needleLen;
+      var tipY = cy + verticalSign * Math.cos(angleRad) * needleLen;
+      var color = sc.favorsBuild ? 'rgb(var(--c-success))' : 'rgb(var(--c-danger))';
+      needlesSvg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + tipX.toFixed(1) + '" y2="' + tipY.toFixed(1) + '" stroke="' + color + '" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="' + tipX.toFixed(1) + '" cy="' + tipY.toFixed(1) + '" r="3" fill="' + color + '"/>' +
+        '<text x="' + tipX.toFixed(1) + '" y="' + (tipY + (sc.favorsBuild ? -6 : 12)).toFixed(1) + '" font-size="10" fill="' + color + '" text-anchor="middle">' + escapeHtml(sc.name) + '</text>';
+      labelParts.push(sc.name + ': ' + (sc.favorsBuild ? 'favors build in-house' : 'favors outsource') + ' at ' + (sc.magnitude * 100).toFixed(0) + '% confidence');
+    });
+    var ariaLabel = 'Compass rose scenario blend, ' + state.scenarios.length + ' saved scenario' + (state.scenarios.length === 1 ? '' : 's') + ' overlaid. ' + labelParts.join('. ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:240px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' + compassSvg + needlesSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderCompassBlend = renderCompassBlend;
+
   ['bbInternal','bbExternal','bbVolume','bbTransition','bbRate','bbYears'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcBuildBuy);
   });
@@ -3819,10 +3981,10 @@
   // same formula (calcQStar and renderQStarChart already each had their own) that could silently
   // drift from the other two. Pulled into one shared helper -- calcQStar, renderQStarChart, and the
   // drag handler all read the SAME computation now, not three copies that happen to agree today.
-  function qsComputeState(){
-    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
-    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
-    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
+  // /viz-innovation Batch B, concept 9 "Q* Crossover Fog": pulled the qStar formula itself one level
+  // further out of qsComputeState (below), so the fog band's low/high evaluations at perturbed
+  // mc/p0 (see calcQStarFog) call the exact SAME closed-form solver instead of a 4th copy of it.
+  function qStarFor(mc, p0, gamma){
     // /stress-test finding (2026-09-06): qsVendorP0 has no min="" attribute (the same pre-existing
     // gap qsGammaFromPrice's own safeP0 floor already closed below, 2026-09-05), so a directly-typed
     // negative price made p0/mc negative -- raising a negative number to a fractional power (1/gamma)
@@ -3830,7 +3992,14 @@
     // error indication. Floored only for the qStar exponentiation (not the p0 field itself, which
     // renderQStarChart's yMax/vendorAtStar still use as-typed) so qStar degrades to ~0 instead of NaN.
     var safeP0 = Math.max(0.01, p0);
-    var qStar = (mc > 0 && gamma > 0) ? Math.pow(safeP0 / mc, 1 / gamma) : 0;
+    return (mc > 0 && gamma > 0) ? Math.pow(safeP0 / mc, 1 / gamma) : 0;
+  }
+  window.qStarFor = qStarFor;
+  function qsComputeState(){
+    var mc = parseFloat(document.getElementById('qsInternalMc').value) || 0;
+    var p0 = parseFloat(document.getElementById('qsVendorP0').value) || 0;
+    var gamma = parseFloat(document.getElementById('qsGamma').value) || 0.01;
+    var qStar = qStarFor(mc, p0, gamma);
     var qMax = Math.max(Math.round(qStar * 2), 200);
     var yMax = Math.max(p0, mc) * 1.15;
     return { mc: mc, p0: p0, gamma: gamma, qStar: qStar, qMax: qMax, yMax: yMax };
@@ -3856,6 +4025,10 @@
   QS_LAYOUT.plotW = QS_LAYOUT.W - QS_LAYOUT.marginLeft - QS_LAYOUT.marginRight;
   QS_LAYOUT.plotH = QS_LAYOUT.H - QS_LAYOUT.marginTop - QS_LAYOUT.marginBottom;
 
+  // /viz-innovation Batch B, concept 10 "Break-Even Playground Depth Layers": module-level,
+  // session-only memory of the LAST real render's curve + Q*, so renderQStarChart (below) can draw a
+  // real fading "ghost" of where the curve was before this drag, plus the real delta it moved by.
+  var previousQStarState = null;
   function renderQStarChart(){
     var s = qsComputeState();
     var mc = s.mc, p0 = s.p0, gamma = s.gamma, qStar = s.qStar, qMax = s.qMax, yMax = s.yMax;
@@ -3874,6 +4047,10 @@
     }
     var pathD = pathPoints.join(' ');
     var qStarX = xScale(qStar), mcY = yScale(mc);
+    var fogState = calcQStarFog(s);
+    var fogLowX = xScale(Math.max(1, Math.min(qMax, fogState.qStarLow)));
+    var fogHighX = xScale(Math.max(1, Math.min(qMax, fogState.qStarHigh)));
+    var fogSvg = fogState.uncertaintyPct > 0 ? '<rect x="' + fogLowX.toFixed(1) + '" y="' + marginTop + '" width="' + Math.max(0, fogHighX - fogLowX).toFixed(1) + '" height="' + plotH + '" fill="rgb(var(--c-danger)/.12)"/>' : '';
 
     // Two draggable handles -- Break-Even Crossover Playground (viz-innovation concept #11): the
     // vendor curve becomes a second input surface, not just a display. Handle 1 sits at q=1, where
@@ -3888,10 +4065,23 @@
     // if that parent role ever changes.
     var handleP0Y = yScale(p0), handleGammaY = yScale(p0 * Math.pow(qMax, -gamma));
 
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" id="qsSvg" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked. Drag either circle to reshape the vendor price curve.">' +
+    // A real ghost of the curve's PREVIOUS position, only drawn when something actually changed
+    // (never on the very first render, and never a no-op re-render) -- fades out via the
+    // qs-ghost-fade CSS animation below, a real trailing-comet effect on the user's own last action.
+    var ghostSvg = '';
+    var qStarDelta = null;
+    if (previousQStarState && previousQStarState.pathD !== pathD){
+      ghostSvg = '<path class="qs-ghost-fade" d="' + previousQStarState.pathD + '" fill="none" stroke="rgb(var(--c-text-secondary))" stroke-width="2"/>';
+      qStarDelta = qStar - previousQStarState.qStar;
+    }
+    previousQStarState = { pathD: pathD, qStar: qStar };
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" id="qsSvg" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Internal cost versus vendor price by volume, with crossover marked. Drag either circle to reshape the vendor price curve.' + (qStarDelta !== null ? ' Break-even moved ' + (qStarDelta > 0 ? '+' : '') + Math.round(qStarDelta).toLocaleString() + ' units from the last position.' : '') + (fogState.uncertaintyPct > 0 ? ' At ±' + fogState.uncertaintyPct + '% assumed input uncertainty, crossover could fall anywhere from ' + Math.round(fogState.qStarLow).toLocaleString() + ' to ' + Math.round(fogState.qStarHigh).toLocaleString() + ' units.' : '') + '">' +
       '<line x1="' + marginLeft + '" y1="' + (H - marginBottom) + '" x2="' + (W - marginRight) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       '<line x1="' + marginLeft + '" y1="' + mcY.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + mcY.toFixed(1) + '" stroke="rgb(var(--c-text-secondary))" stroke-width="1" stroke-dasharray="4,3"/>' +
+      fogSvg +
+      ghostSvg +
       '<path d="' + pathD + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
       '<line x1="' + qStarX.toFixed(1) + '" y1="' + marginTop + '" x2="' + qStarX.toFixed(1) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-danger))" stroke-width="1" stroke-dasharray="3,3"/>' +
       '<circle cx="' + qStarX.toFixed(1) + '" cy="' + mcY.toFixed(1) + '" r="4" fill="rgb(var(--c-danger))"/>' +
@@ -3908,6 +4098,7 @@
       '<text x="' + marginLeft + '" y="14" font-size="10" fill="rgb(var(--c-text-secondary))">Vendor unit price vs. volume (Q) — drag either dot</text>' +
       '<text x="' + (marginLeft + 4) + '" y="' + (mcY - 5).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))">Internal marginal cost $' + mc.toFixed(2) + '</text>' +
       '<text x="' + (qStarX + 6).toFixed(1) + '" y="' + (marginTop + 10) + '" font-size="10" fill="rgb(var(--c-danger))">Q* = ' + Math.round(qStar).toLocaleString() + '</text>' +
+      (qStarDelta !== null ? '<text x="' + (W - marginRight) + '" y="' + (marginTop + 10) + '" font-size="10" font-weight="700" text-anchor="end" fill="rgb(var(--c-accent))">break-even ' + (qStarDelta > 0 ? '+' : '') + Math.round(qStarDelta).toLocaleString() + '</text>' : '') +
       '<text x="' + marginLeft + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))">1</text>' +
       '<text x="' + (W - marginRight) + '" y="' + (H - 8) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">' + qMax.toLocaleString() + ' units</text>' +
       '</svg>';
@@ -4037,6 +4228,26 @@
   ['qsInternalMc', 'qsVendorP0', 'qsGamma'].forEach(function(id){
     document.getElementById(id).addEventListener('input', function(){ calcQStar(); renderQStarChart(); });
   });
+
+  // /viz-innovation Batch B, concept 9 "Q* Crossover Fog": a real, user-set "assumed input
+  // uncertainty" slider (NOT an invented statistical confidence interval -- no distribution is
+  // claimed for mc/p0/gamma) evaluated at the SAME closed-form qStarFor() solver, perturbed to its
+  // own worst-case low/high bounds. Widening this slider genuinely widens the fog band; it never
+  // touches the crisp Q* line itself, which stays the single-point answer at the stated inputs.
+  function calcQStarFog(s){
+    var uncertaintyPct = parseFloat(document.getElementById('qsUncertainty').value) || 0;
+    document.getElementById('qsUncertaintyLabel').textContent = '±' + uncertaintyPct + '%';
+    var u = uncertaintyPct / 100;
+    var qStarLow = qStarFor(s.mc * (1 + u), s.p0 * (1 - u), s.gamma);
+    var qStarHigh = qStarFor(s.mc * (1 - u), s.p0 * (1 + u), s.gamma);
+    var fogOut = document.getElementById('qsFogOut');
+    if (fogOut){
+      fogOut.textContent = uncertaintyPct > 0 ? Math.round(qStarLow).toLocaleString() + ' – ' + Math.round(qStarHigh).toLocaleString() + ' units' : 'none (0% uncertainty)';
+    }
+    return { qStarLow: qStarLow, qStarHigh: qStarHigh, uncertaintyPct: uncertaintyPct };
+  }
+  window.calcQStarFog = calcQStarFog;
+  document.getElementById('qsUncertainty').addEventListener('input', function(){ renderQStarChart(); });
 
   // ---------- Capacity & Absorption Forecast ----------
   var CAP_WEEKS = [
@@ -4467,9 +4678,11 @@
     document.getElementById('dfmHeightOut').textContent = '+' + (heightFactor * 100).toFixed(1) + '%';
     document.getElementById('dfmTotalOut').textContent = '+' + (total * 100).toFixed(1) + '%';
     document.getElementById('dfmCostOut').textContent = '$' + estCost.toFixed(2);
+    var dfmState = { wallFactor: wallFactor, pocketFactor: pocketFactor, heightFactor: heightFactor, total: total, estCost: estCost };
     renderKaleidophone(calcKaleidophone(thickness, pocket));
     renderShadowPuppet(calcShadowPuppet(estCost));
-    return { wallFactor: wallFactor, pocketFactor: pocketFactor, heightFactor: heightFactor, total: total, estCost: estCost };
+    renderDfmLeverBoard(calcDfmLeverBoard(dfmState));
+    return dfmState;
   }
   window.calcDfm = calcDfm;
   ['dfmThickness', 'dfmPocket', 'dfmHeight'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcDfm); });
@@ -4546,6 +4759,45 @@
     document.getElementById('kaleidophoneWrap').innerHTML = svg;
   }
   window.renderKaleidophone = renderKaleidophone;
+
+  // /viz-innovation Batch B, concept 8 "DFM Penalty Lever Board": the same 3 real DFM penalty factors
+  // above, re-framed a third way -- not "biggest right now" (the outline) and not "fastest-moving per
+  // step" (Kaleidophone) but "how much of this lever's own real ceiling is pulled" -- each slider's
+  // real min/max range bounds a real maximum penalty it could ever contribute; reads calcDfm()'s own
+  // already-computed factors (never re-derives them).
+  function calcDfmLeverBoard(dfmState){
+    // Real ceilings, derived the same way calcDfm() derives the live factors, but at each slider's own
+    // documented min/max (see the <input type="range" min/max> attributes this reads from):
+    // thickness floor 0.5mm -> ((3.0-0.5)/2.5)*0.40 = 0.40; pocket ceiling 8 -> (8-4)*0.05 = 0.20;
+    // height ceiling 200mm -> 200*0.003 = 0.60.
+    var levers = [
+      { label: 'Wall thickness', current: dfmState.wallFactor, ceiling: 0.40 },
+      { label: 'Pocket depth', current: dfmState.pocketFactor, ceiling: 0.20 },
+      { label: 'Build height', current: dfmState.heightFactor, ceiling: 0.60 },
+    ];
+    levers.forEach(function(l){ l.fillPct = l.ceiling > 0 ? l.current / l.ceiling : 0; });
+    return { levers: levers, total: dfmState.total };
+  }
+  window.calcDfmLeverBoard = calcDfmLeverBoard;
+
+  function renderDfmLeverBoard(state){
+    var W = 340, rowH = 34, gaugeX = 130, gaugeW = 160, gaugeH = 14;
+    var H = state.levers.length * rowH + 10;
+    var rowsSvg = '';
+    state.levers.forEach(function(l, i){
+      var y = 10 + i * rowH;
+      var fillW = Math.max(0, Math.min(1, l.fillPct)) * gaugeW;
+      var pulledPct = (l.fillPct * 100).toFixed(0);
+      rowsSvg += '<text x="0" y="' + (y + gaugeH - 3) + '" font-size="10" fill="rgb(var(--c-text-secondary))">' + l.label + '</text>' +
+        '<rect x="' + gaugeX + '" y="' + y + '" width="' + gaugeW + '" height="' + gaugeH + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+        '<rect x="' + gaugeX + '" y="' + y + '" width="' + fillW.toFixed(1) + '" height="' + gaugeH + '" fill="rgb(var(--c-accent)/.55)"/>' +
+        '<text x="' + (gaugeX + gaugeW + 8) + '" y="' + (y + gaugeH - 3) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))">' + pulledPct + '% of ceiling</text>';
+    });
+    var ariaLabel = 'DFM penalty lever board. ' + state.levers.map(function(l){ return l.label + ' pulled to ' + (l.fillPct * 100).toFixed(0) + ' percent of its own real ceiling'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:340px" role="img" aria-label="' + ariaLabel + '">' + rowsSvg + '</svg>';
+    document.getElementById('dfmLeverBoardWrap').innerHTML = svg;
+  }
+  window.renderDfmLeverBoard = renderDfmLeverBoard;
 
   // ---------- Data Governance: MDQS + Guardrail Gate Simulator ----------
   var MDQS_WEIGHTS = { routing: 0.30, confirmation: 0.30, scrap: 0.25, stale: 0.15 };
@@ -5761,6 +6013,7 @@
     { n: 36, date: '2026-09-08', title: '/stress-test "resolve all limitations" pass on the viz-innovation batch plan', before: 1036, after: 1039, family: 'fix', sabotageTested: false },
     { n: 37, date: '2026-09-08', title: '/brainstorm batch-plan upgrades + /stress-test the top cluster (planning round, no code executed)', before: 1039, after: 1041, family: 'planning', sabotageTested: false },
     { n: 38, date: '2026-09-08', title: '/viz-innovation Batch A (6 concepts: Living Variance Waterfall, Commodity Exposure Tide, Capacity Absorption Sankey, Governance Gate Nested Rings, MDQS Deduction Flow, Threshold Disagreement Bridge)', before: 1041, after: 1059, family: 'viz-innovation', sabotageTested: true },
+    { n: 39, date: '2026-09-08', title: '/viz-innovation Batch B (6 concepts: Should-Cost Peel Recompute Trail, Monte Carlo Should-Cost Cloud, DFM Penalty Lever Board, Q* Crossover Fog, Break-Even Playground Depth Layers, Compass Rose Scenario Blend)', before: 1059, after: 1117, family: 'viz-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -5787,7 +6040,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 40, lines: 6077 };
+  var SELF_METRICS = { commits: 41, lines: 6330 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 

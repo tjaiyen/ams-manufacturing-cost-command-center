@@ -254,11 +254,15 @@ transcript until now).
   for the one real bug found (an illegible-font-size regression) and the one accepted limitation (a
   transient `getBoundingClientRect()` zero-read confirmed as the known "Browser pane hidden" artifact,
   not a layout bug).
-- **Batch B** (Should-Cost/DFM/Build-vs-Buy; 2 redesigns): 2\* Should-Cost Peel Recompute Trail
-  (redesigned as a live within-session ghost-trail, not fabricated cross-session history), 7 Monte
+- **Batch B ✅ built (2026-09-08, README's thirty-ninth round):** 2\* Should-Cost Peel Recompute Trail
+  (redesigned as a live within-session total-delta pulse, not fabricated cross-session history), 7 Monte
   Carlo Should-Cost Cloud, 8 DFM Penalty Lever Board, 9\* Q\* Crossover Fog (redesigned: a real,
-  user-set "assumed uncertainty ±%" slider drives the band, not an invented confidence interval), 10
-  Break-Even Playground Depth Layers, 12 Compass Rose Scenario Blend.
+  user-set "assumed uncertainty ±%" slider drives the band, not an invented confidence interval — a real
+  finding surfaced building it: at the page's default γ=0.12, the crossover band is far wider than
+  intuition suggests), 10 Break-Even Playground Depth Layers, 12 Compass Rose Scenario Blend. All 6
+  verified live + 5 critical claims sabotage-tested; see README for the 2 real bugs found (an
+  illegible-font-size regression, and a rounded-literal-vs-real-float false positive in the Concept 2
+  test itself) and the zero accepted limitations this round.
 - **Batch C** (Risk/Playbook/Triage; new real instrumentation): 11\* Learning Curve Forecast Ribbon
   (same real-slider redesign as #9), 14 Risk Register P/S/D Cube, 15 Aurora Correlation Depth Explorer,
   19\* RCA Trigger-Duration Pulse (redesigned: real, session-only in-memory onset tracking, never

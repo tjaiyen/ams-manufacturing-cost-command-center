@@ -230,7 +230,7 @@ const DEFAULTS = {
   vLSR: "42.00", vLAR: "44.50", vVOSR: "8.00", vVOAct: "4750", vBudHrs: "500", vFOHR: "24.00",
   bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000",
   bbRate: "10", bbYears: "3",
-  qsInternalMc: "180.00", qsVendorP0: "420.00", qsGamma: "0.12",
+  qsInternalMc: "180.00", qsVendorP0: "420.00", qsGamma: "0.12", qsUncertainty: "10",
   mcMatBaseline: "85.00", mcMatVariation: "15", mcConvBaseline: "65.00", mcConvVariation: "20",
   cpFrozen: "26.00", cpSpot: "29.50", cpVolume: "2200",
   tlCost: "18000", tlRun: "2400", tlBatch: "24",
@@ -665,6 +665,32 @@ if (peelYs.length === 3) {
 sandbox.calcShouldCost(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
 check(elements.nestingDollWrap.innerHTML.includes("<svg"), "calcShouldCost() itself re-renders the nesting-doll chart on every recalculation, not just at page load");
 
+console.log("--- concept 2: Should-Cost Peel Recompute Trail (redesigned -- real, session-only total-delta pulse, not fabricated cross-session history) ---");
+// Establish a clean real baseline via TWO consecutive identical real recalculations (same inputs ->
+// the same real, unrounded float total both times) -- NOT compared against the pre-existing block's
+// hardcoded-121.31 literal above, which is a rounded DISPLAY value, not calcShouldCost()'s own real
+// unrounded totalCost (121.30603833333332 at these defaults) -- comparing a raw float against that
+// rounded literal would falsely "detect" a change on every recalculation and pulse when nothing
+// actually changed. A genuine no-op needs two REAL calls, not one real vs. one hand-typed literal.
+sandbox.calcShouldCost();
+check(!elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"), "no pulse across two consecutive identical real recalculations (a genuine no-op, not a rounded-literal-vs-real-float false positive)", elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"));
+// Same 4 real components, a different totalCost (150.00) to isolate the delta mechanism: delta =
+// 150.00 - 121.31 = 28.69 exactly.
+sandbox.renderNestingDoll(sandbox.calcNestingDoll(81.35, 14.67, 10.39, 14.90, 150.00));
+check(elements.nestingDollWrap.innerHTML.includes('class="waterfall-bar-pulse"'), "the outer ellipse pulses (reusing the existing waterfall-bar-pulse class) when the real total changes across renders");
+check(elements.nestingDollWrap.innerHTML.includes("(+$28.69)"), "the Total label carries the exact real delta suffix", elements.nestingDollWrap.innerHTML);
+check(elements.nestingDollWrap.innerHTML.includes("Changed by +$28.69 since the last edit"), "the aria-label states the exact real delta for screen-reader users", elements.nestingDollWrap.innerHTML);
+// Re-rendering at the SAME total (no real change) must NOT pulse -- proves this reads a genuine
+// before/after comparison, not "always pulse on every render."
+sandbox.renderNestingDoll(sandbox.calcNestingDoll(81.35, 14.67, 10.39, 14.90, 150.00));
+check(!elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"), "no pulse when re-rendered at the identical total (150.00 -> 150.00, a genuine no-op)", elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"));
+check(!elements.nestingDollWrap.innerHTML.includes("(+$0.00)") && !elements.nestingDollWrap.innerHTML.includes("Changed by"), "no delta suffix/sentence at all for a genuine no-op re-render (not a degenerate +$0.00)", elements.nestingDollWrap.innerHTML);
+// Restore real defaults so nothing downstream in this file runs against this edge-case total.
+sandbox.calcShouldCost();
+check(elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"), "restoring the real default total (121.31, changed from the 150.00 edge-case value) correctly pulses one more time", elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"));
+sandbox.calcShouldCost();
+check(!elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"), "defaults restored cleanly after the Nesting Doll delta edge-case tests -- a second identical recalculation shows no pulse, confirming no residual state leaked", elements.nestingDollWrap.innerHTML.includes("waterfall-bar-pulse"));
+
 console.log("--- viz-innovation batch 2: Circulatory Cost Flow golden values (same 4 should-cost components, as vessel width) ---");
 // maxValue = matCost (81.35, the largest). Vessel widths = max(MIN_WIDTH=2, (value/maxValue)*14):
 // material=14.0 (itself the max), machine=2.5246, labor=2.0 (floored, real value 1.787), overhead=2.5642.
@@ -784,6 +810,54 @@ const compassNegState = sandbox.calcCompassRose(-50000, 38000);
 check(compassNegState.favorsBuild === false, "with a negative NPV, the compass correctly favors Outsource", compassNegState.favorsBuild);
 sandbox.calcBuildBuy(); // re-trigger via the real calculator (not a parallel path) to restore the default rendered state
 check(elements.compassRoseWrap.innerHTML.includes("90.6% confidence"), "calcBuildBuy() itself re-renders the compass rose back to the default golden state on every recalculation", elements.compassRoseWrap.innerHTML);
+
+console.log("--- concept 12: Compass Rose Scenario Blend (every REAL saved Bookmark, overlaid on one shared compass) ---");
+check(typeof sandbox.npvFor === "function", "window.npvFor is exposed as a function");
+check(typeof sandbox.calcCompassBlend === "function", "window.calcCompassBlend is exposed as a function");
+// npvFor() proven identical to calcBuildBuy()'s own live formula: same 6 default inputs must
+// reproduce the exact same golden $365,855 NPV, not a drifted second implementation.
+const npvForResult = sandbox.npvFor(95.78, 186.00, 1800, 38000, 10, 3);
+check(Math.abs(npvForResult.npv - 365854.8159278737) < 1e-6, "npvFor() reproduces the exact same golden NPV as calcBuildBuy()'s own live computation at the same inputs (proves no formula drift)", npvForResult.npv);
+// Empty state: zero bookmarks -> zero scenarios, not a fabricated example.
+check(sandbox.loadBookmarks().length === 0, "the sandboxed page starts with zero real bookmarks (localStorage stub is empty by default)", sandbox.loadBookmarks().length);
+const emptyBlend = sandbox.calcCompassBlend();
+check(emptyBlend.scenarios.length === 0, "with zero saved bookmarks, calcCompassBlend() correctly returns zero scenarios", emptyBlend.scenarios.length);
+sandbox.renderCompassBlend(emptyBlend);
+check(elements.compassBlendWrap.innerHTML.includes("No saved scenarios yet") && !elements.compassBlendWrap.innerHTML.includes("<svg"), "with zero scenarios, an honest empty-state prompt is shown -- no fabricated example needle", elements.compassBlendWrap.innerHTML);
+// saveBookmarksToStorage() isn't exposed on window (only loadBookmarks/captureCurrentScenario/
+// restoreScenario/renderBookmarksList are) -- write directly to the same real localStorage key
+// (BOOKMARKS_KEY = "ams-cc-bookmarks") instead of adding a test-only export to production code.
+function setBookmarks(list){ sandbox.localStorage.setItem("ams-cc-bookmarks", JSON.stringify(list)); }
+// Two real saved scenarios (matching the live-browser-verified round): "Baseline" = exact page
+// defaults, "High Transition Cost" = same defaults but transition=150000. Golden: baseline npv
+// 365855 -> magnitude 90.59% -> "91%" rounded; high npv 253855 -> magnitude 62.86% -> "63%" rounded.
+setBookmarks([
+  { name: "Baseline", tab: "buildbuy", ts: 1, values: { bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000", bbRate: "10", bbYears: "3" } },
+  { name: "High Transition Cost", tab: "buildbuy", ts: 2, values: { bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "150000", bbRate: "10", bbYears: "3" } },
+]);
+const twoScenarioBlend = sandbox.calcCompassBlend();
+check(twoScenarioBlend.scenarios.length === 2, "calcCompassBlend() correctly picks up both real saved bookmarks", twoScenarioBlend.scenarios.length);
+check(Math.abs(twoScenarioBlend.scenarios[0].npv - 365855) < 1, "the Baseline scenario's replayed NPV matches the golden value exactly", twoScenarioBlend.scenarios[0].npv);
+check(Math.abs(twoScenarioBlend.scenarios[1].npv - 253855) < 1, "the High Transition Cost scenario's replayed NPV matches the golden value exactly", twoScenarioBlend.scenarios[1].npv);
+check(Math.round(twoScenarioBlend.scenarios[0].magnitude * 100) === 91, "the Baseline scenario's magnitude rounds to the golden 91%", twoScenarioBlend.scenarios[0].magnitude);
+check(Math.round(twoScenarioBlend.scenarios[1].magnitude * 100) === 63, "the High Transition Cost scenario's magnitude rounds to the golden 63%", twoScenarioBlend.scenarios[1].magnitude);
+check(twoScenarioBlend.scenarios[0].favorsBuild === true && twoScenarioBlend.scenarios[1].favorsBuild === true, "both scenarios correctly favor Build In-House (positive NPV in both cases)", twoScenarioBlend.scenarios);
+sandbox.renderCompassBlend(twoScenarioBlend);
+check(elements.compassBlendWrap.innerHTML.includes("<svg") && elements.compassBlendWrap.innerHTML.includes('role="img"'), "renderCompassBlend() renders an actual accessible <svg> with 2 real scenarios, not just an empty prompt");
+check((elements.compassBlendWrap.innerHTML.match(/<line/g) || []).length === 4, "renders exactly 4 real lines (2 compass axes + 1 needle per scenario)", (elements.compassBlendWrap.innerHTML.match(/<line/g) || []).length);
+check(elements.compassBlendWrap.innerHTML.includes("Baseline") && elements.compassBlendWrap.innerHTML.includes("High Transition Cost"), "both real bookmark names are labeled on their own needles, not a generic 'scenario 1/2'");
+check(!elements.compassBlendWrap.innerHTML.includes('font-size="9"') && !elements.compassBlendWrap.innerHTML.includes('font-size="9.5"'), "no illegible 9px/9.5px SVG text in the blend chart (matches the page-wide minimum-legible-size convention)");
+// A bookmark on a DIFFERENT tab (not buildbuy) must never leak into this blend.
+setBookmarks([
+  { name: "Baseline", tab: "buildbuy", ts: 1, values: { bbInternal: "95.78", bbExternal: "186.00", bbVolume: "1800", bbTransition: "38000", bbRate: "10", bbYears: "3" } },
+  { name: "A DFM scenario", tab: "dfm", ts: 3, values: { dfmThickness: "0.5" } },
+]);
+const mixedTabBlend = sandbox.calcCompassBlend();
+check(mixedTabBlend.scenarios.length === 1 && mixedTabBlend.scenarios[0].name === "Baseline", "a bookmark saved on a different tab (e.g. dfm) is correctly excluded from the build-vs-buy compass blend", mixedTabBlend.scenarios);
+// Restore real defaults so nothing downstream in this file runs against this edge-case bookmark state.
+setBookmarks([]);
+sandbox.renderCompassBlend(sandbox.calcCompassBlend());
+check(elements.compassBlendWrap.innerHTML.includes("No saved scenarios yet"), "defaults restored cleanly after the Compass Blend edge-case tests, confirming no residual bookmark state leaked", elements.compassBlendWrap.innerHTML);
 
 console.log("--- Volume Crossover Point (Q*): golden values (pre-registered via Python, confirms the closed-form model — NOT the source document's own broken total-cost script) ---");
 check(elements.qsOut.textContent === "1,165 units", "crossover volume matches golden value ((420/180)^(1/0.12))", elements.qsOut.textContent);
@@ -930,6 +1004,27 @@ sandbox.calcQStar();
 sandbox.renderQStarChart();
 check(elements.qsOut.textContent === "1,165 units", "defaults restored cleanly after this edge-case test, confirming no residual state leaked", elements.qsOut.textContent);
 
+console.log("--- concept 9: Q* Crossover Fog (real user-set uncertainty slider, not an invented confidence interval) ---");
+check(typeof sandbox.qStarFor === "function", "window.qStarFor is exposed as a function (the single shared closed-form solver, not a 4th duplicate)");
+check(typeof sandbox.calcQStarFog === "function", "window.calcQStarFog is exposed as a function");
+// At golden defaults (mc=180, p0=420, gamma=0.12) with the default ±10% uncertainty slider:
+// qStarLow = qStarFor(198, 378, 0.12) = 219 (rounded), qStarHigh = qStarFor(162, 462, 0.12) = 6,205 (rounded).
+check(elements.qsUncertaintyLabel.textContent === "±10%", "the uncertainty slider's own live label matches its default 10% value", elements.qsUncertaintyLabel.textContent);
+check(elements.qsFogOut.textContent === "219 – 6,205 units", "the fog band's low-high range matches the pre-registered golden value (same qStarFor solver, evaluated at the perturbed input bounds)", elements.qsFogOut.textContent);
+check(Math.abs(sandbox.qStarFor(180, 420, 0.12) - 1165.3952) < 0.01, "qStarFor() standalone matches the same golden Q* value calcQStar() already produces (single shared formula, not a drifted copy)", sandbox.qStarFor(180, 420, 0.12));
+check(elements.qsChartWrap.innerHTML.includes('fill="rgb(var(--c-danger)/.12)"'), "a real shaded fog-band rect is rendered in the chart at nonzero uncertainty");
+check(elements.qsChartWrap.innerHTML.includes("At ±10% assumed input uncertainty"), "the chart's aria-label includes the real fog-band sentence for screen-reader users", elements.qsChartWrap.innerHTML.includes("At ±10% assumed input uncertainty"));
+// Edge case: 0% uncertainty must show NO fog band at all (not a zero-width one silently rendered).
+sandbox.document.getElementById("qsUncertainty").value = "0";
+sandbox.renderQStarChart();
+check(elements.qsFogOut.textContent === "none (0% uncertainty)", "at 0% uncertainty the fog readout explicitly says 'none', not a degenerate 1,165-1,165 range", elements.qsFogOut.textContent);
+check(!elements.qsChartWrap.innerHTML.includes('fill="rgb(var(--c-danger)/.12)"'), "at 0% uncertainty no fog rect is rendered at all", elements.qsChartWrap.innerHTML.includes('fill="rgb(var(--c-danger)/.12)"'));
+check(elements.qsOut.textContent === "1,165 units", "the crisp Q* line itself never moves when the uncertainty slider changes -- fog only widens/narrows a band around the same single-point answer", elements.qsOut.textContent);
+// Restore real defaults so nothing downstream in this file runs against this edge-case input.
+sandbox.document.getElementById("qsUncertainty").value = "10";
+sandbox.renderQStarChart();
+check(elements.qsFogOut.textContent === "219 – 6,205 units", "defaults restored cleanly after the fog-band edge-case test, confirming no residual state leaked", elements.qsFogOut.textContent);
+
 console.log("--- Monte Carlo Should-Cost Explorer: golden values (seeded PRNG -- deterministic, not a copy of the source document's LogNormal/PERT machinery) ---");
 check(elements.mcP50Out.textContent === "$149.88", "P50 matches golden value (seed=42, 5000 trials)", elements.mcP50Out.textContent);
 check(elements.mcP80Out.textContent === "$159.28", "P80 matches golden value", elements.mcP80Out.textContent);
@@ -939,14 +1034,34 @@ const mcRun1 = sandbox.calcMonteCarlo();
 const mcRun2 = sandbox.calcMonteCarlo();
 check(mcRun1.p50 === mcRun2.p50 && mcRun1.p95 === mcRun2.p95, "calling the real calcMonteCarlo() twice in a row with the same inputs reproduces an identical result (deterministic seeded PRNG, not Math.random())", `run1=${mcRun1.p50}/${mcRun1.p95} run2=${mcRun2.p50}/${mcRun2.p95}`);
 
+console.log("--- concept 7: Monte Carlo Should-Cost Cloud (same real 5,000-trial simulation, binned into a real histogram) ---");
+check(typeof sandbox.renderMonteCarloCloud === "function", "renderMonteCarloCloud is exposed as a function");
+check(mcRun1.results.length === 5000, "calcMonteCarlo()'s return object now exposes the full real 5,000-trial results array, not just the 5 summary percentiles (never duplicate the simulation to draw the cloud)", mcRun1.results.length);
+check(Math.abs(mcRun1.p10 - 135.8987) < 0.001, "real P10 matches the pre-registered golden value (seed=42, 5000 trials)", mcRun1.p10);
+check(Math.abs(mcRun1.p90 - 164.0190) < 0.001, "real P90 matches the pre-registered golden value", mcRun1.p90);
+const mcCloudRectCount = (elements.monteCarloCloudWrap.innerHTML.match(/<rect/g) || []).length;
+check(mcCloudRectCount === 28, "renders exactly 28 real histogram bars, one per bin, not a hardcoded placeholder count", mcCloudRectCount);
+check(elements.monteCarloCloudWrap.innerHTML.includes('aria-label="Monte Carlo should-cost cloud'), "the SVG carries a real, non-generic aria-label describing the actual P10/P50/P90 readout for screen readers");
+check(elements.monteCarloCloudWrap.innerHTML.includes("P10 $135.90") && elements.monteCarloCloudWrap.innerHTML.includes("P50 $149.88") && elements.monteCarloCloudWrap.innerHTML.includes("P90 $164.02"), "the aria-label's embedded percentile figures match the same real golden values as the text readouts, not a stale re-description", elements.monteCarloCloudWrap.innerHTML);
+// Sabotage-testable: a re-simulation bug (re-running mulberry32 fresh, independent of calcMonteCarlo's
+// own results) would silently disagree with mcP50Out on a changed input; this proves it doesn't.
+sandbox.document.getElementById("mcMatVariation").value = "30";
+const mcRunWide = sandbox.calcMonteCarlo();
+check(elements.monteCarloCloudWrap.innerHTML.includes("P50 $" + mcRunWide.p50.toFixed(2)), "after a live input change, the re-rendered cloud's aria-label P50 matches the SAME real recomputed calcMonteCarlo() result, not a stale or independently-reseeded one", mcRunWide.p50.toFixed(2));
+check(mcRunWide.p10 < mcRun1.p10 && mcRunWide.p90 > mcRun1.p90, "widening the material-cost variation input genuinely widens the real simulated spread (P10 drops, P90 rises), not a cosmetic-only change", `p10 ${mcRun1.p10}->${mcRunWide.p10}, p90 ${mcRun1.p90}->${mcRunWide.p90}`);
+// Restore real defaults so nothing downstream in this file runs against this widened-variation input.
+sandbox.document.getElementById("mcMatVariation").value = "15";
+sandbox.calcMonteCarlo();
+check(elements.mcP50Out.textContent === "$149.88", "defaults restored cleanly after the Monte Carlo Cloud reactivity test, confirming no residual state leaked", elements.mcP50Out.textContent);
+
 console.log("--- Universal Command Palette: structural + filter checks ---");
 check(Array.isArray(sandbox.COMMAND_INDEX), "window.COMMAND_INDEX is exposed as an array");
-check(sandbox.COMMAND_INDEX.length === 43, "exactly 43 navigable items in the command index (+1: Phase 4 batch D's Attention & Triage)", sandbox.COMMAND_INDEX.length);
-check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 43, "all 43 command labels are unique");
+check(sandbox.COMMAND_INDEX.length === 44, "exactly 44 navigable items in the command index (+1: viz-innovation Batch B's Compass Rose Scenario Blend)", sandbox.COMMAND_INDEX.length);
+check(new Set(sandbox.COMMAND_INDEX.map((c) => c.label)).size === 44, "all 44 command labels are unique");
 const KNOWN_TABS = ["exec", "shouldcost", "variance", "buildbuy", "capacity", "tooling", "dfm", "governance", "playbook", "risk", "framework", "methodology", "triage"];
 check(sandbox.COMMAND_INDEX.every((c) => KNOWN_TABS.includes(c.tab)), "every command index entry points at a real, known tab id");
 const allMatch = sandbox.renderPaletteList("");
-check(allMatch.length === 43, "empty-query search returns all 43 items", allMatch.length);
+check(allMatch.length === 44, "empty-query search returns all 44 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
 // /stress-test finding (2026-09-07): the first fuzzyScore version ranked "Variance Waterfall" (a
@@ -1164,6 +1279,26 @@ sandbox.renderShadowPuppet(shadowNoExcess);
 check(!elements.shadowPuppetWrap.innerHTML.includes("over reference"), "no excess label is rendered when there's nothing to show", elements.shadowPuppetWrap.innerHTML);
 sandbox.calcDfm(); // re-trigger via the real calculator (not a parallel path) to restore the default golden state
 check(elements.shadowPuppetWrap.innerHTML.includes("+$53.00 over reference"), "calcDfm() itself re-renders the shadow puppet comparator back to the default golden state on every recalculation", elements.shadowPuppetWrap.innerHTML);
+
+console.log("--- concept 8: DFM Penalty Lever Board (same 3 real DFM penalties, as headroom-to-ceiling gauges) ---");
+// At defaults (wallFactor=0.24, pocketFactor=0.05, heightFactor=0.24, from the golden DFM values
+// above) against each slider's own real ceiling (thickness floor 0.5mm->0.40, pocket ceiling 8->0.20,
+// height ceiling 200mm->0.60): fillPct = 0.24/0.40=60%, 0.05/0.20=25%, 0.24/0.60=40%.
+check(typeof sandbox.calcDfmLeverBoard === "function", "window.calcDfmLeverBoard is exposed as a function");
+const leverState = sandbox.calcDfmLeverBoard({ wallFactor: 0.24, pocketFactor: 0.05, heightFactor: 0.24, total: 0.53 });
+check(Math.abs(leverState.levers[0].fillPct - 0.60) < 1e-9, "wall-thickness lever fill matches golden value (0.24 / 0.40 ceiling)", leverState.levers[0].fillPct);
+check(Math.abs(leverState.levers[1].fillPct - 0.25) < 1e-9, "pocket-depth lever fill matches golden value (0.05 / 0.20 ceiling)", leverState.levers[1].fillPct);
+check(Math.abs(leverState.levers[2].fillPct - 0.40) < 1e-9, "build-height lever fill matches golden value (0.24 / 0.60 ceiling)", leverState.levers[2].fillPct);
+sandbox.renderDfmLeverBoard(leverState);
+check(elements.dfmLeverBoardWrap.innerHTML.includes("<svg") && elements.dfmLeverBoardWrap.innerHTML.includes('role="img"'), "renderDfmLeverBoard() renders an actual accessible <svg>, not just numbers");
+check((elements.dfmLeverBoardWrap.innerHTML.match(/<rect/g) || []).length === 6, "exactly 6 real rects (2 per lever -- track + fill), one pair per DFM parameter", (elements.dfmLeverBoardWrap.innerHTML.match(/<rect/g) || []).length);
+check(elements.dfmLeverBoardWrap.innerHTML.includes("60% of ceiling") && elements.dfmLeverBoardWrap.innerHTML.includes("25% of ceiling") && elements.dfmLeverBoardWrap.innerHTML.includes("40% of ceiling"), "all 3 lever fill percentages are labeled on the chart with the exact golden values", elements.dfmLeverBoardWrap.innerHTML);
+// Edge case: pushing wall thickness to its floor (0.5mm) should saturate that lever at exactly 100%,
+// proving the ceiling is a real derived bound, not an arbitrary display cap.
+const leverAtFloor = sandbox.calcDfmLeverBoard({ wallFactor: 0.40, pocketFactor: 0.05, heightFactor: 0.24, total: 0.69 });
+check(leverAtFloor.levers[0].fillPct === 1, "wall-thickness lever correctly saturates at exactly 100% when the slider is pushed to its documented floor (0.5mm)", leverAtFloor.levers[0].fillPct);
+sandbox.calcDfm(); // re-trigger via the real calculator to restore the default golden state
+check(elements.dfmLeverBoardWrap.innerHTML.includes("60% of ceiling"), "calcDfm() itself re-renders the lever board back to the default golden state on every recalculation", elements.dfmLeverBoardWrap.innerHTML);
 
 console.log("--- Commodity Price Exposure Early Warning: golden values ---");
 check(elements.cpShiftPct.textContent === "13.46%", "price shift % matches golden value ($29.50 vs $26.00 frozen)", elements.cpShiftPct.textContent);
@@ -1643,7 +1778,7 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // re-rendered control, not a lapse in the static-markup convention this check actually guards.
 const totalLabels = (staticMarkup.match(/<label\b/g) || []).length;
 const labelsWithFor = staticMarkup.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 91, "exactly 91 <label> elements exist in the static markup (90 + 1 from Phase 4 batch C's roleSelect)", totalLabels);
+check(totalLabels === 92, "exactly 92 <label> elements exist in the static markup (91 + 1 from viz-innovation Batch B's Q* Crossover Fog uncertainty slider)", totalLabels);
 check(labelsWithFor.length === totalLabels, "every single static-markup <label> carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
@@ -1663,7 +1798,7 @@ check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.E
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 41, "exactly 41 explain buttons are wired in the HTML (38 from before + viz-innovation Batch A's capsankey/mdqsflow/thresholdbridge)", explainButtonCount);
+check(explainButtonCount === 43, "exactly 43 explain buttons are wired in the HTML (41 from before + viz-innovation Batch B's dfmlevers/compassblend)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");
@@ -2114,16 +2249,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 34, "HISTORY has all 34 real build rounds (5 through 38)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 35, "HISTORY has all 35 real build rounds (5 through 39)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 7, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 34 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 8, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 35 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
-check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38]), "HISTORY's real sabotageTested tags match exactly the 6 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39]), "HISTORY's real sabotageTested tags match exactly the 7 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
@@ -2143,11 +2278,12 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 6].n === 33 && trackedRounds[trackedRounds.length - 6].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 5].n === 34 && trackedRounds[trackedRounds.length - 5].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
-check(trackedRounds[trackedRounds.length - 4].n === 35 && trackedRounds[trackedRounds.length - 4].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
-check(trackedRounds[trackedRounds.length - 3].n === 36 && trackedRounds[trackedRounds.length - 3].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
-check(trackedRounds[trackedRounds.length - 2].n === 37 && trackedRounds[trackedRounds.length - 2].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
+check(trackedRounds[trackedRounds.length - 7].n === 33 && trackedRounds[trackedRounds.length - 7].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 6].n === 34 && trackedRounds[trackedRounds.length - 6].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 5].n === 35 && trackedRounds[trackedRounds.length - 5].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 4].n === 36 && trackedRounds[trackedRounds.length - 4].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 3].n === 37 && trackedRounds[trackedRounds.length - 3].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
+check(trackedRounds[trackedRounds.length - 2].n === 38 && trackedRounds[trackedRounds.length - 2].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2183,7 +2319,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("40") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("41") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");

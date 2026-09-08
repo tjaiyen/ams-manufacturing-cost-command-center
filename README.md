@@ -11,8 +11,8 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (41 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
-directly to any of the 43 indexed modules, and a **collapsible vertical side navigation** (real
+modals (43 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+directly to any of the 44 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
 30-idea UX brainstorm and backlog this round drew from.
@@ -197,7 +197,7 @@ proposed as something to actually dispatch. Another (a "Parity Proof Heartbeat W
 displaying **"1,520 Parity Tests Passing"** as a persistent header badge — the fabricated figure,
 live and prominent, a second time. Four proposals were a genuinely good fit — feasible in plain
 JS/CSS/SVG, no fabricated data required — and are now built: a **Universal Command Palette**
-(⌘K/Ctrl+K quick navigation across all 43 indexed modules), a **Build-vs-Buy Crossover chart** (a
+(⌘K/Ctrl+K quick navigation across all 44 indexed modules), a **Build-vs-Buy Crossover chart** (a
 real SVG line-chart visualization of the Q\* solver, the first chart of its kind on this page since
 a continuous curve doesn't fit the existing bar-chart pattern), a **Monte Carlo Should-Cost
 Explorer** (5,000 simulated trials via a seeded, reproducible PRNG rather than the source document's
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1059 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1117 checks, all passing as of this writing.
 
 ## Status
 
@@ -1571,3 +1571,54 @@ confirmed via `tabs_context` to be this session's own already-documented "Browse
 not a real layout bug (the same SVG verified correct via its real `innerHTML`/`aria-label` content
 instead). Checks: 1041 → 1059 (+18). Committed locally — pending push with explicit confirmation, same
 discipline as every prior round.
+
+**2026-09-08, thirty-ninth round (`/viz-innovation` Batch B: 6 concepts, Should-Cost/DFM/Build-vs-Buy
+domain):** All 6 built serially, same discipline as Batch A — pre-registered (B35) via a standalone
+`node -e` before writing any `stress.cjs` assertion, verified live in-browser, then checked; 5 critical
+claims across 4 concepts sabotage-tested (the pulse-detection formula, a DFM ceiling constant, the Q\*
+fog perturbation bounds, and the Compass Blend's tab filter + shared NPV formula).
+
+1. **Should-Cost Peel Recompute Trail\*** (redesigned) — the Nesting Doll's outermost ellipse now
+   pulses and its total gets a real `(+/−$X.XX)` delta suffix on a within-session change, reusing the
+   already-shipped `.waterfall-bar-pulse` CSS class rather than a duplicate keyframe. Redesigned from
+   the original spec's cross-session history (this page's own `UX_ROADMAP.md` explicitly bars
+   persisting scenario data) down to real, in-memory, session-only comparison.
+2. **Monte Carlo Should-Cost Cloud** — the same real seeded 5,000-trial simulation, binned into a real
+   28-bar histogram with a P10–P90 band overlay; `calcMonteCarlo()`'s return object now exposes the
+   full real `results` array so the cloud reads the actual trial data instead of re-simulating (proven
+   deterministic: the same seed/inputs reproduce byte-identical percentiles).
+3. **DFM Penalty Lever Board** — the same 3 real DFM penalty factors, a third re-framing distinct from
+   both the outline (current magnitude) and the existing Kaleidophone chart (per-step marginal
+   leverage): how much of each lever's own real ceiling — the worst penalty that slider could ever
+   contribute at its documented min/max extreme — is currently pulled (sabotage-tested: a wrong ceiling
+   constant correctly failed the check).
+4. **Q\* Crossover Fog\*** (redesigned) — a real, user-set "assumed input uncertainty ±%" slider (NOT an
+   invented statistical confidence interval) evaluates the SAME closed-form Q\* solver at its perturbed
+   worst-case bounds, shading a real fog band around the crisp Q\* line without ever moving it. A
+   genuinely interesting real finding surfaced by building this: at the page's default γ=0.12, ±10%
+   input uncertainty widens the crossover from a single 1,165-unit point to a 219–6,205-unit band — the
+   small elasticity exponent (1/γ≈8.3) amplifies input uncertainty far more than intuition suggests
+   (sabotage-tested: a halved perturbation on one bound correctly failed the check).
+5. **Break-Even Playground Depth Layers** — the Q\* chart now draws a real fading "ghost" of the curve's
+   previous position after a drag, plus a real visible break-even delta readout, via a new
+   session-scoped `previousQStarState` memory pattern (same shape as the Waterfall's `changedLabels`).
+6. **Compass Rose Scenario Blend** — every scenario saved to the existing, real, opt-in Spatial
+   Bookmarks mechanism gets its own needle on ONE shared compass alongside the single-scenario
+   Navigator, using a new standalone `npvFor()` — proven identical to `calcBuildBuy()`'s own live NPV
+   formula (not a drifted second implementation) by a direct-comparison check reproducing the exact
+   golden $365,855 NPV, and a real bookmark-tab filter confirmed to exclude scenarios saved from other
+   tabs (both sabotage-tested: removing either the tab filter or the shared formula correctly failed
+   the check).
+
+Two real bugs found and fixed during the build, not after. First: the Compass Blend's needle labels
+used `font-size="9"`, tripping the same illegible-SVG-text regression guard Batch A hit — bumped to the
+established real floor (10). Second, in the Concept 2 test itself: comparing the Nesting Doll's total
+across renders using a hand-typed `121.31` literal against `calcShouldCost()`'s own real, unrounded
+total (`121.30603833333332` — the literal is a rounded DISPLAY value, not the actual float) produced a
+false "changed" reading on every recalculation, even with no real input change — the pulse mechanism
+itself was correct, but a test built on the rounded literal instead of two consecutive real
+recalculations would have shipped a false positive. Fixed by comparing two genuine back-to-back
+`calcShouldCost()` calls instead. No accepted limitations this round — the 3 empty/edge-case states
+actually exercised (zero Q\* uncertainty, zero saved bookmarks, a bookmark saved on a different tab) are
+all handled explicitly and checked, not left as silent gaps. Checks: 1059 → 1117 (+58). Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.
