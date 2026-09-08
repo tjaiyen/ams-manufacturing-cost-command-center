@@ -446,7 +446,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1032/1032 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1036/1036 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -2609,18 +2609,49 @@
   // matching behavior) always scores as well as or better than a scattered match of the same
   // characters, so every query this palette already matched still matches; this only adds real
   // typo/scatter tolerance on top (pre-verified against all 43 real labels before wiring this in).
+  //
+  // /stress-test finding (2026-09-07): the first version scored purely by compactness, greedily
+  // matching from the leftmost possible position -- a real, reproduced quality bug: querying "ri"
+  // (meaning "risk") ranked "Variance Waterfall" (a tight but coincidental mid-word match inside
+  // "Va-ri-ance") above "Predictive & Risk Models" (the real word the query means), because the
+  // greedy scan locks onto "ri" inside "predictive" itself and never considers the later, real
+  // "Risk" word. Fixed by also trying every position where the query's first character starts a
+  // real word (index 0, or right after a space/&/-/,// separator) and giving that alignment a fixed
+  // bonus large enough to reliably outrank an equally- or even somewhat-more-compact mid-word match
+  // -- not a full alignment search (that would be real added complexity for a nav enhancement this
+  // scoped-down already declined once), just the two candidates that matter: leftmost-greedy, and
+  // leftmost-at-a-real-word-boundary.
   function fuzzyScore(query, label){
+    function scoreFrom(startIdx){
+      var qi = 0, firstMatch = -1, lastMatch = -1;
+      for (var li = startIdx; li < label.length && qi < query.length; li++){
+        if (label[li] === query[qi]){
+          if (firstMatch === -1) firstMatch = li;
+          lastMatch = li;
+          qi++;
+        }
+      }
+      if (qi < query.length) return null;
+      // /stress-test finding (2026-09-07, independent reviewer): (lastMatch - firstMatch) +
+      // firstMatch is not a compactness score at all -- the firstMatch terms cancel algebraically,
+      // so this always equaled lastMatch alone. Confirmed via a real 10k-sample check and a live
+      // regression: query "ov" ranked "Data Governance (MDQS)" above "Executive Overview" because
+      // Governance's match happened to END earlier in the string, regardless of how spread out it
+      // was. Fixed to the real span width.
+      return lastMatch - firstMatch;
+    }
     if (!query) return 0;
-    var qi = 0, firstMatch = -1, lastMatch = -1;
-    for (var li = 0; li < label.length && qi < query.length; li++){
-      if (label[li] === query[qi]){
-        if (firstMatch === -1) firstMatch = li;
-        lastMatch = li;
-        qi++;
+    var best = scoreFrom(0);
+    if (best === null) return null;
+    var WORD_BOUNDARY_BONUS = 50;
+    for (var li = 0; li < label.length; li++){
+      var atWordBoundary = li === 0 || /[\s&\-,/]/.test(label[li - 1]);
+      if (atWordBoundary && label[li] === query[0]){
+        var alt = scoreFrom(li);
+        if (alt !== null && (alt - WORD_BOUNDARY_BONUS) < best) best = alt - WORD_BOUNDARY_BONUS;
       }
     }
-    if (qi < query.length) return null;
-    return (lastMatch - firstMatch) + firstMatch;
+    return best;
   }
   window.fuzzyScore = fuzzyScore;
   function renderPaletteList(query){
@@ -5451,7 +5482,7 @@
     { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973 },
     { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974 },
     { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (7 concepts, plan-exec + stress-test on a 30-idea catalog)', before: 974, after: 1001 },
-    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 concepts built: 6 real extensions of existing infra, 3 new; 21 of 30 catalog ideas declined as redundant/infeasible/scope drift)', before: 1001, after: 1032 },
+    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause)', before: 1001, after: 1036 },
   ];
   window.HISTORY = HISTORY;
 
@@ -5478,7 +5509,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 36, lines: 5762 };
+  var SELF_METRICS = { commits: 37, lines: 5798 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 
@@ -5687,16 +5718,21 @@
     var activeBtn = navTabs.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
     if (!activeBtn) return '';
     var tabId = activeBtn.getAttribute('data-tab');
-    var indexInAll = navTabs.findIndex(function(b){ return b.getAttribute('data-tab') === tabId; });
+    // /stress-test finding (2026-09-07): this used to compute neighbors from the FULL, unfiltered
+    // navTabs order -- under a narrowed role view, that could report a real but currently-HIDDEN tab
+    // as "nearby" (e.g. under the exec role, Variance's real full-list neighbor is Build-vs-Buy, which
+    // that role hides entirely). Fixed to compute adjacency the same way updateFocusDeclutter() above
+    // already does: within the real, currently-visible list only.
     var visibleTabs = navTabs.filter(function(b){ return !b.hidden; });
-    var posInVisible = visibleTabs.findIndex(function(b){ return b.getAttribute('data-tab') === tabId; }) + 1;
+    var indexInVisible = visibleTabs.findIndex(function(b){ return b.getAttribute('data-tab') === tabId; });
+    var posInVisible = indexInVisible + 1;
     var label = tabLabelFor(tabId);
     var state = calcSelfAudit();
     var row = state.perTab.filter(function(t){ return t.id === tabId; })[0];
     var interactive = row ? row.interactive : 0;
     var neighbors = [];
-    if (navTabs[indexInAll - 1]) neighbors.push(tabLabelFor(navTabs[indexInAll - 1].getAttribute('data-tab')));
-    if (navTabs[indexInAll + 1]) neighbors.push(tabLabelFor(navTabs[indexInAll + 1].getAttribute('data-tab')));
+    if (visibleTabs[indexInVisible - 1]) neighbors.push(tabLabelFor(visibleTabs[indexInVisible - 1].getAttribute('data-tab')));
+    if (visibleTabs[indexInVisible + 1]) neighbors.push(tabLabelFor(visibleTabs[indexInVisible + 1].getAttribute('data-tab')));
     var text = 'You are on ' + label + ' (section ' + posInVisible + ' of ' + visibleTabs.length + '). ' +
       'This section has ' + interactive + ' interactive control' + (interactive === 1 ? '' : 's') + '.';
     if (neighbors.length) text += ' Nearby: ' + neighbors.join(', ') + '.';

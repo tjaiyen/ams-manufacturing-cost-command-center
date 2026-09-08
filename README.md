@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1032 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1036 checks, all passing as of this writing.
 
 ## Status
 
@@ -1388,11 +1388,68 @@ sidenav — declined mid-build: type-ahead filtering would compete for the same 
 existing chord-navigation system (`g` then a mnemonic letter) already owns, and resolving that conflict
 cleanly wasn't worth it given the chord system already serves the same real need.
 
-2 real bugs found and fixed via live-browser testing, not caught by intent alone: a naive index
+1 real bug found and fixed via live-browser testing, not caught by intent alone: a naive index
 comparison would have animated an ArrowUp wrap (first tab → last tab) as sliding "down" — numerically
 correct, directionally backwards from what the user just pressed; fixed by letting the roving-tabindex
 handler pass its own real key-press intent through to the panel-transition logic instead of re-deriving
 direction from index order alone. Both new critical checks (HISTORY chain integrity from the prior round,
 and this round's stale-chip-invalidation logic) were sabotage-tested: broke the code, confirmed RED,
-restored, confirmed GREEN. Checks: 1001 → 1032 (+31). Committed locally — pending push with explicit
-confirmation, same discipline as every prior round.
+restored, confirmed GREEN. *(Correction, next round: this originally, incorrectly said "2 real bugs" —
+only one was ever described; caught by an independent `/stress-test` reviewer.)* Checks: 1001 → 1032
+(+31). Committed locally — pending push with explicit confirmation, same discipline as every prior
+round.
+
+**2026-09-07, thirty-sixth round (`/stress-test` of the /nav-innovation batch, self-review + an
+independent reviewer):** After pushing round 35, TJ asked for a stress-test of the same batch. Self-review
+plus a spawned independent reviewer found 6 real findings, all real correctness/accuracy gaps, no
+crashes:
+
+1. **HIGH, found independently by both reviewers, fixed:** `renderWayfindingDigest()` computed its
+   "Nearby" neighbors from the FULL 13-tab order, not the role-narrowed visible list `updateFocusDeclutter()`
+   (built the same round) already correctly uses. Reproduced: under the exec role view, standing on
+   Variance and asking "where am I" reported "Nearby: ...Build-vs-Buy / CapEx" — a tab that role hides
+   entirely, unreachable from the nav the digest exists to describe. Fixed to use the real visible-tab
+   list; a new check (sabotage-tested) guards it.
+2. **MED, found by the independent reviewer, fixed:** the fuzzy-palette "compactness" formula,
+   `(lastMatch - firstMatch) + firstMatch`, is bad algebra — the `firstMatch` terms cancel exactly, so
+   it always equaled `lastMatch` alone and never measured compactness at all. Concrete regression:
+   query "ov" ranked "Data Governance (MDQS)" above "Executive Overview" purely because Governance's
+   match happened to *end* earlier in the string, regardless of span width. My own attempted fix
+   earlier this same round (a word-boundary bonus, prompted by a similar "ri" → "Variance Waterfall"
+   finding I caught myself) patched the visible symptom without catching the underlying formula bug —
+   the independent reviewer's direct algebraic check is what actually found it. Fixed to the real span
+   width (`lastMatch - firstMatch`); a direct unit-level check (not just an outcome check, which a
+   sabotage test showed doesn't reliably catch this specific regression on its own) now guards the
+   formula itself.
+3. **MED, found independently by both reviewers, flagged not fixed:** `syncNavStatusFromTriage()`
+   deliberately doesn't cover capacity/governance (they keep their own older, separate logic, per round
+   35's own stated rationale) — but that older logic can genuinely disagree with what `calcTriage()`
+   says about those same two tabs. Confirmed reproducible at real default page load: Capacity's ambient
+   dot shows green (no SPC out-of-control point) while the Attention & Triage tab lists a real tier-1
+   "2 of 6 weeks in the red utilization band" item for the same tab — a user sees "all clear" in the
+   sidenav and "urgent" one click away, for the same tab, at the same time. A second, related gap: the
+   Governance dot's own logic checks all 3 guardrail gates (BOM/PO/Confirmation), but `calcTriage()`
+   only checks the PO gate — confirmed reproducible by isolating a BOM-only block (PO passing): the dot
+   correctly goes red, Triage reports nothing. **Not fixed this round** — both gaps predate the
+   /nav-innovation batch (they're a latent inconsistency between `calcTriage()` and two independently-
+   built earlier features, not something this round introduced), and coding-discipline.md is explicit
+   that a spotted, unrelated bug gets mentioned/filed, not silently folded into an unrelated change.
+   Filed as a standalone follow-up rather than fixed here.
+4. **LOW:** a direct consequence of #3 — this round's own new critical-check additions don't cross-check
+   `calcTriage()`'s classification of capacity/governance against those tabs' independent dot state,
+   despite round 35's own text calling out that non-wiring as a deliberate tradeoff. Rolled into the
+   same follow-up as #3.
+5. **LOW, fixed:** the live `HISTORY` array's own round-35 entry (rendered in the Self-Audit's Heartbeat/
+   Cairn Trail widgets) said "21 of 30 catalog ideas declined" — conflating "not built" (21 = 30 - 9)
+   with "declined for cause" (the real number, matching this file's own itemized list two rounds up, is
+   15; the other 6 already existed under different names, a materially different, non-pejorative
+   category). Corrected the live title to say both numbers accurately.
+6. **LOW, fixed:** round 35's own text above claimed "2 real bugs found and fixed" but only narrated
+   one — corrected in place (see the *(Correction...)* note above) rather than silently reworded, so the
+   record shows what was actually wrong, not just the fixed version.
+
+Accepted limitation, stated explicitly: findings #3/#4 (capacity/governance ambient-dot vs. Triage
+disagreement) are real and reproduced but intentionally left open — see the follow-up task filed for
+them. Checks: 1032 → 1036 (+4: the digest neighbor guard, the fuzzyScore compactness unit check, the
+"ov" outcome check, and the sabotage-tested confirmation of each). Committed locally — pending push with
+explicit confirmation, same discipline as every prior round.

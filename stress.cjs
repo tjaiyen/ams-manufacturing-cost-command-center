@@ -949,6 +949,22 @@ const allMatch = sandbox.renderPaletteList("");
 check(allMatch.length === 43, "empty-query search returns all 43 items", allMatch.length);
 const learningMatch = sandbox.renderPaletteList("learning");
 check(learningMatch.length === 1 && learningMatch[0].label === "Learning Curve Forecaster", "searching \"learning\" narrows to exactly the one matching item", JSON.stringify(learningMatch.map((c) => c.label)));
+// /stress-test finding (2026-09-07): the first fuzzyScore version ranked "Variance Waterfall" (a
+// tight but coincidental mid-word match inside "Va-ri-ance") above "Predictive & Risk Models" (the
+// real word the query means) for query "ri" -- reproduced, then fixed via a word-boundary bonus.
+// This guards the fix, not just the presence of a match.
+const riMatch = sandbox.renderPaletteList("ri");
+check(riMatch[0] && /Risk/.test(riMatch[0].label), "searching \"ri\" ranks a real \"Risk\"-word match first, not a coincidental mid-word match inside an unrelated label (e.g. \"Va-ri-ance\")", riMatch[0] && riMatch[0].label);
+// /stress-test finding (2026-09-07, independent reviewer): the compactness formula
+// "(lastMatch - firstMatch) + firstMatch" algebraically always equals lastMatch alone -- firstMatch
+// cancels out, so it never measured compactness at all. A direct unit check of the real function
+// (not just an outcome that a bonus could mask): two matches of the SAME real span width (2) must
+// score identically regardless of where they start in the string -- the old formula would have
+// scored these 5 and 7 (unequal) instead of both 2.
+check(sandbox.fuzzyScore("ab", "xxabxx") === sandbox.fuzzyScore("ab", "xxxxxab"), "fuzzyScore's compactness term is real span width (lastMatch - firstMatch), not lastMatch alone -- two equally-tight matches starting at different positions score identically", `${sandbox.fuzzyScore("ab", "xxabxx")} vs ${sandbox.fuzzyScore("ab", "xxxxxab")}`);
+const ovMatch = sandbox.renderPaletteList("ov");
+check(ovMatch[0] && ovMatch[0].label === "Executive Overview", "searching \"ov\" ranks the real word-start match (Executive Overview) first, not \"Data Governance (MDQS)\" (whose match happens to end earlier in the string but is equally compact)", ovMatch[0] && ovMatch[0].label);
+sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
 const riskTabMatch = sandbox.COMMAND_INDEX.filter((c) => c.tab === "risk");
 check(riskTabMatch.length === 6, "exactly 6 command index entries point at the Predictive & Risk Models tab (+1: Aurora Layer Correlation Map)", riskTabMatch.length);
 sandbox.renderPaletteList(""); // restore all-items state before any later checks read paletteList's innerHTML
@@ -2154,7 +2170,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("36") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("37") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");
@@ -2221,6 +2237,16 @@ elements.digestBtn.click();
 check(elements.wayfindingDigest.hidden === false && elements.wayfindingDigest.textContent === digestText, "clicking the real digest button announces the same real text into the live aria-live region");
 sandbox.activateTab("exec", { focus: false });
 check(elements.wayfindingDigest.hidden === true, "any navigation hides the digest again rather than leaving it describing a tab the user has since left");
+// /stress-test finding (2026-09-07): this used to compute neighbors from the full, unfiltered
+// 13-tab order -- under the exec role (5 real visible tabs, DOM order exec/shouldcost/variance/
+// triage/methodology), Variance's real neighbor is Attention & Triage, but the buggy version
+// reported Build-vs-Buy / CapEx, a tab that role hides entirely (unreachable, yet claimed "nearby").
+sandbox.applyRoleView("exec");
+sandbox.activateTab("variance", { focus: false });
+const digestUnderRole = sandbox.renderWayfindingDigest();
+check(digestUnderRole === "You are on Variance Waterfall (section 3 of 5). This section has 28 interactive controls. Nearby: Should-Cost & MHR, Attention & Triage.", "under a narrowed role view, the digest's neighbors are real, currently-VISIBLE tabs only -- never a tab that role hides", digestUnderRole);
+sandbox.applyRoleView("all");
+sandbox.activateTab("exec", { focus: false });
 
 console.log("--- \"Dyslexia-Optimized Label Mode\" (UX_ROADMAP idea #21, revisited: system fonts + spacing only) ---");
 check(typeof sandbox.setDyslexiaMode === "function", "setDyslexiaMode is exposed as a function");
