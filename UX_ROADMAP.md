@@ -205,6 +205,33 @@ variants, reflow/budget-allocator/progressive-disclosure simulators) overlapped 
 (the Advanced-inputs toggle, the existing print/role-view features) closely enough that building them
 would have shipped a near-duplicate rather than new signal.
 
+## Phase 6 — /nav-innovation (2026-09-07), "build all that doesn't exist" applied to a 30-concept catalog
+
+A `/nav-innovation` pass produced 30 advanced navigation-UX concepts, generic-enterprise-platform-style
+(no live audit of this page's actual current state at generation time). TJ then asked to build every one
+that doesn't already exist. Auditing the REAL current implementation first (not the mental model the
+catalog was written from) found this page already substantially covers 6 of the 30 under different names
+— see the README's thirty-fifth round for the full list (MRU Tab Stepper, Ambient Data-State Nav Coloring,
+Cognitive-Load Focus Mode, Spatial Bookmarks, Magnetic Hover Physics, skip-links). This is the same
+"verify, don't assume" discipline as Phase 5's plan-stress-test, applied one level earlier — to whether a
+proposed feature is real *new* scope at all, not just whether it's *feasible or fabrication-free*.
+
+**Built (9 of 30):** 6 real extensions of the already-existing mechanisms above (broader Ambient Nav
+Coloring coverage, Focus Mode section-list declutter, fuzzy palette matching) plus 3 genuinely new,
+small, real-data-only additions (Bi-Directional Jump-Link Threading, Boundary Reach Feedback + a
+scaled-down Directional Transition, and a Wayfinding Digest built on top of Phase 5's `calcSelfAudit()`).
+Dyslexia-Optimized Label Mode (idea #21 from Phase 1, flagged there as "pending a deliberate
+zero-dependency tradeoff revisit") was finally revisited: system fonts + spacing only, no font file.
+
+**Declined (15 of 30):** see the README's thirty-fifth round for the itemized list and reasons —
+drag-and-drop architecture changes, redundancy with the Attention & Triage tab or the MRU
+stepper/Bookmarks, a known reordering anti-pattern, disproportionate state-machine complexity for a demo
+dashboard, and one real audience-fit risk (voice commands, given this page's one-serious-look hiring-panel
+audience and inconsistent browser mic support). Two of the 15 (an ambient recent-tabs ghost trail, a
+sidenav quick-filter) were declined **mid-build**, not before it, once building the other 8 made the
+redundancy/conflict concrete — the ghost trail would have been a third concurrent "recent tab" surface,
+and the quick-filter would have fought the existing chord-navigation system for the same keystrokes.
+
 ## Technical architecture & component breakdown
 
 This is a **zero-dependency, single-file, no-build-step** application by deliberate design (see

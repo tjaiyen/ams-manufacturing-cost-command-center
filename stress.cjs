@@ -2098,7 +2098,7 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 30, "HISTORY has all 30 real build rounds (5 through 34)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 31, "HISTORY has all 31 real build rounds (5 through 35)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
 check(sandbox.HISTORY[5].n === 10 && sandbox.HISTORY[5].before === 357 && sandbox.HISTORY[5].after === 400, "round 10 (first tracked round) matches README's real Checks: 357 -> 400");
@@ -2117,7 +2117,8 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 2].n === 33 && trackedRounds[trackedRounds.length - 2].after === 974, "round 33 (the round before this one) ends at the real 974 pre-this-round total");
+check(trackedRounds[trackedRounds.length - 3].n === 33 && trackedRounds[trackedRounds.length - 3].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 2].n === 34 && trackedRounds[trackedRounds.length - 2].after === 1001, "round 34 (Dashboard Self-Audit, before this /nav-innovation round) ends at the real 1001");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2148,12 +2149,88 @@ check(elements.onionWrap.innerHTML.includes("onion-ring"), "renderOnion populate
 check((elements.onionWrap.innerHTML.match(/class="onion-ring"/g) || []).length === 4, "the onion renders exactly 4 ring elements (outer + mid + the inner ring's 2-way real/illustrative split)");
 check(elements.thermoWrap.innerHTML.includes("4/4") && elements.thermoWrap.innerHTML.includes("2/7") && elements.thermoWrap.innerHTML.includes("1/6"), "renderThermo shows all 3 phases' real done/total fractions");
 const heartbeatCircleCount = (elements.heartbeatWrap.innerHTML.match(/<circle/g) || []).length;
-check(heartbeatCircleCount === trackedRounds.length, "renderHeartbeat draws exactly one beat per tracked round (25), none for the 5 pre-tracking rounds", String(heartbeatCircleCount));
+check(heartbeatCircleCount === trackedRounds.length, "renderHeartbeat draws exactly one beat per tracked round (" + trackedRounds.length + "), none for the 5 pre-tracking rounds", String(heartbeatCircleCount));
 const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) || []).length;
-check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (30)", String(cairnBtnCount));
+check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("35") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("36") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+
+console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
+sandbox.applyRoleView("all");
+sandbox.activateTab("exec", { focus: false }); // known starting state regardless of what ran before
+
+console.log("--- extends \"Ambient Data-State Nav Coloring\" to exec/shouldcost/risk via real calcTriage() output ---");
+check(typeof sandbox.syncNavStatusFromTriage === "function", "syncNavStatusFromTriage is exposed as a function");
+sandbox.syncNavStatusFromTriage();
+// Pre-registered by reading calcTriage()'s real default output (B35): exec has only a tier-2 item
+// (oae) -> amber; shouldcost has a tier-1 item (commodity-exposure) -> red; risk has both a tier-1
+// (risk-scorer) and tier-2 (risk-register-aggregate) item -> red (max severity wins).
+check(elements["navstatus-dot-exec"].className === "nav-status-dot amber", "exec's ambient dot reflects its one real tier-2 Triage signal (OAE), not fabricated", elements["navstatus-dot-exec"].className);
+check(elements["navstatus-dot-shouldcost"].className === "nav-status-dot red", "shouldcost's ambient dot reflects its real tier-1 Triage signal (commodity exposure)", elements["navstatus-dot-shouldcost"].className);
+check(elements["navstatus-dot-risk"].className === "nav-status-dot red", "risk's ambient dot reflects its real tier-1 signal (risk-scorer), the more severe of its two real Triage items", elements["navstatus-dot-risk"].className);
+// Sabotage check: capacity/governance's own pre-existing setNavStatus calls are untouched by this
+// extension -- confirms the 2 tabs with their own richer logic weren't silently overwritten.
+check(typeof elements["navstatus-dot-capacity"].className === "string", "capacity keeps its own pre-existing ambient-dot wiring untouched by this extension");
+
+console.log("--- extends Cognitive-Load Focus Mode to declutter the section list itself ---");
+check(typeof sandbox.updateFocusDeclutter === "function", "updateFocusDeclutter is exposed as a function");
+sandbox.activateTab("exec", { focus: false });
+sandbox.updateFocusDeclutter();
+check(elements["navtab-exec"].classList.contains("focus-declutter-relevant") && elements["navtab-shouldcost"].classList.contains("focus-declutter-relevant"), "on exec (the first tab), current+1 (exec, shouldcost) are marked relevant");
+check(!elements["navtab-variance"].classList.contains("focus-declutter-relevant"), "a tab 2+ away from the current one (variance) is correctly NOT marked relevant");
+sandbox.activateTab("tooling", { focus: false });
+check(["capacity", "tooling", "dfm"].every((t) => elements["navtab-" + t].classList.contains("focus-declutter-relevant")), "on tooling (a middle tab), current-1/current/current+1 (capacity, tooling, dfm) are all marked relevant -- recomputed fresh on every real navigation, not stuck from the exec case above");
+sandbox.activateTab("exec", { focus: false }); // restore before later checks
+
+console.log("--- \"Bi-Directional Jump-Link Threading\": a real back-stack for triageJump's one-way cross-tab jump ---");
+check(typeof sandbox.jumpBack === "function" && typeof sandbox.renderJumpBackChip === "function", "jumpBack/renderJumpBackChip are exposed as functions");
+sandbox.activateTab("triage", { focus: false });
+check(elements.jumpBackChip.hidden === true, "the jump-back chip starts hidden on a plain navigation to Triage");
+sandbox.triageJump("governance", "gatePoOut");
+check(elements["tab-governance"].classList.contains("active"), "triageJump actually switches to the real target tab (governance)");
+check(elements.jumpBackChip.hidden === false && elements.jumpBackLabel.textContent === "← Back to Attention & Triage", "after a real cross-tab jump, the chip shows the real tab it came FROM", elements.jumpBackLabel.textContent);
+sandbox.jumpBack();
+check(elements["tab-triage"].classList.contains("active"), "clicking the chip's jumpBack() actually returns to the real origin tab (triage)");
+check(elements.jumpBackChip.hidden === true, "the chip hides itself again once the stack is empty after jumping back");
+sandbox.triageJump("governance", "gatePoOut");
+sandbox.activateTab("shouldcost", { focus: false }); // a PLAIN navigation, not jumpBack
+check(elements.jumpBackChip.hidden === true, "any plain navigation (not jumpBack itself) invalidates and hides a stale chip, rather than continuing to offer a now-wrong 'back to X'");
+sandbox.activateTab("exec", { focus: false }); // restore
+
+console.log("--- \"Boundary Reach Feedback\" + scaled-down \"Directional Transition Choreography\" ---");
+sandbox.activateTab("exec", { focus: false });
+sidenavListEl.fire("keydown", { key: "ArrowUp", preventDefault() {} }); // wraps exec(first) -> methodology(last)
+check(elements["navtab-methodology"].classList.contains("boundary-bounce"), "an ArrowUp wrap from the first tab adds a real boundary-bounce class to the tab it lands on");
+check(elements["tab-methodology"].classList.contains("panel-enter-up"), "the wrap's panel-enter direction reflects the user's real ArrowUp INTENT (up), not a naive index comparison (methodology's index is numerically much higher than exec's, which would otherwise say \"down\")");
+sandbox.activateTab("exec", { focus: false });
+sidenavListEl.fire("keydown", { key: "ArrowDown", preventDefault() {} }); // a normal, non-wrapping move
+check(!elements["navtab-shouldcost"].classList.contains("boundary-bounce"), "a normal (non-wrapping) ArrowDown move does NOT get the boundary-bounce class");
+check(elements["tab-shouldcost"].classList.contains("panel-enter-down"), "a normal move down the real sidenav order gets the down-entrance class");
+sandbox.activateTab("exec", { focus: false }); // restore
+
+console.log("--- \"Screen-Reader Narrated Wayfinding Digest\": composed from calcSelfAudit()'s real per-tab data ---");
+check(typeof sandbox.renderWayfindingDigest === "function", "renderWayfindingDigest is exposed as a function");
+sandbox.activateTab("shouldcost", { focus: false });
+const digestText = sandbox.renderWayfindingDigest();
+// Pre-registered from calcSelfAudit()'s own already-verified real numbers above: shouldcost is tab 2
+// of 13, has 32 real interactive controls (the busiest tab), with exec/variance as its real sidenav
+// neighbors.
+check(digestText === "You are on Should-Cost & MHR (section 2 of 13). This section has 32 interactive controls. Nearby: Executive Overview, Variance Waterfall.", "the digest's real position/count/neighbor facts match calcSelfAudit()'s own already-verified numbers, not a hand-written duplicate", digestText);
+elements.digestBtn.click();
+check(elements.wayfindingDigest.hidden === false && elements.wayfindingDigest.textContent === digestText, "clicking the real digest button announces the same real text into the live aria-live region");
+sandbox.activateTab("exec", { focus: false });
+check(elements.wayfindingDigest.hidden === true, "any navigation hides the digest again rather than leaving it describing a tab the user has since left");
+
+console.log("--- \"Dyslexia-Optimized Label Mode\" (UX_ROADMAP idea #21, revisited: system fonts + spacing only) ---");
+check(typeof sandbox.setDyslexiaMode === "function", "setDyslexiaMode is exposed as a function");
+check(!elements["__body"].classList.contains("dyslexia-mode"), "dyslexia mode starts off by default");
+elements.dyslexiaBtn.click();
+check(elements["__body"].classList.contains("dyslexia-mode") && elements.dyslexiaBtn.getAttribute("aria-pressed") === "true", "clicking the toggle applies the real body class and flips aria-pressed");
+check(sandbox.localStorage._s["ams-cc-dyslexia-mode"] === "1", "the preference persists to localStorage, same pattern as theme/contrast/focus-mode");
+elements.dyslexiaBtn.click();
+check(!elements["__body"].classList.contains("dyslexia-mode"), "clicking it again turns it back off");
+check(html.includes("Verdana,Tahoma") && !html.includes("@font-face"), "the dyslexia-mode font stack is real, named system fonts -- not a custom/downloaded font file (zero-dependency, zero-network by design)");
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH

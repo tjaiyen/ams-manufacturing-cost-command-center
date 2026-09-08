@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1001 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1032 checks, all passing as of this writing.
 
 ## Status
 
@@ -1340,3 +1340,59 @@ The HISTORY chain-integrity check was itself sabotage-tested (temporarily broke 
 confirmed RED, restored, confirmed GREEN) the same way as prior rounds' critical new coverage. Checks:
 974 → 1001 (+27). Committed locally — pending push with explicit confirmation, same discipline as every
 prior round.
+
+**2026-09-07, thirty-fifth round (`/nav-innovation`: 30-concept catalog triaged to 9, "build all that
+doesn't exist"):** TJ asked for 30 advanced navigation-UX concepts, then to build every one that didn't
+already exist. Before writing any code, an audit of the actual current implementation (not the mental
+model the catalog was written from) found this dashboard already substantially covers 6 of the 30 under
+different names — a Recency-Based MRU Tab Stepper (`⌘/Ctrl+Shift+[`/`]`), Ambient Data-State Nav Coloring
+(2 tabs), Cognitive-Load Focus Mode, Spatial Bookmarks (full scenario saves), Magnetic Hover Physics
+(spring-overshoot icon scale on hover/focus — literally the catalog's own "Magnetic Focus Snap"), and
+skip-links (a basic Landmark Teleporter). Building parallel versions of any of these would have shipped
+real duplication, not new value — closing exactly the kind of gap `reconcile.md`'s "enumerate before you
+reconcile" discipline exists to catch, applied to feature planning rather than branches.
+
+**Built (9 of 30, several as real extensions of the existing infra above rather than new mechanisms):**
+(1) extended Ambient Data-State Nav Coloring from 2 tabs to 5 by reusing `calcTriage()`'s own real tier
+classification for exec/shouldcost/risk, instead of re-deriving thresholds a third time; (2) extended
+Cognitive-Load Focus Mode to also declutter the section list itself (current ± 1 real sidenav neighbor,
+dimmed not hidden — same treatment as the existing footer-icon dimming); (3) Bi-Directional Jump-Link
+Threading — a real back-stack + "← Back to X" chip closing `triageJump`'s one-way-door gap, invalidated
+on any plain navigation; (4) fuzzy command-palette matching (real subsequence scoring, the same technique
+behind fzf/VSCode — scoped down from the catalog's "intent routing," which would have overclaimed);
+(5) Boundary Reach Feedback (a real overshoot animation confirming an ArrowUp/Down wrap actually
+happened); (6) a scaled-down Directional Transition Choreography (the newly active panel slides in from
+the real direction it came from in the sidenav order — entrance-only, no two-panel-visible overlap to
+choreograph); (7) a Screen-Reader Narrated Wayfinding Digest, composed from `calcSelfAudit()`'s own real
+per-tab interactive-element counts (built last round) so it can't drift from the actual page the way a
+hand-written script could; (8) Dyslexia-Optimized Label Mode (UX_ROADMAP idea #21, revisited) — system
+fonts + spacing only, no embedded/downloaded font file, keeping the zero-dependency/zero-network design
+intact; numeric/code elements keep their real monospace font so fixed-width alignment is never disturbed.
+
+**Declined mid-triage (15 of 30), each for a stated reason, not silently dropped:** Persistent Split-Pane
+Rail and Live Cursor-Trailing Compass — would need real drag-and-drop restructuring of this page's
+single-active-tabpanel architecture, disproportionate to the value. Multi-Axis Peripheral Rail — redundant
+with the existing Attention & Triage tab. Workflow-State Adaptive Nav Density — reordering nav items is a
+known anti-pattern (unpredictable location), not built. Progressive Disclosure Drawer — no real secondary
+actions exist yet to disclose without inventing some. Role-Aware Contextual Toolbar and Data-Density
+Toggle — marginal value over the existing role selector/collapse toggle. Predictive Hover Preview — real
+effort (tabs render lazily; a hover-preview would need forcing every tab's calculators to run ahead of
+visiting them). Chord-Sequence Macro Recorder and Session Replay Scrubber — disproportionate state-machine
+complexity for a demo dashboard; the scrubber is also redundant with the MRU stepper + Ambient Trail.
+Elastic Overscroll Cue — marginal for a 13-item list. Non-Linear History Trail — redundant with the MRU
+stepper. Voice-Command Section Jump — genuine reliability/audience-fit risk for a one-serious-look hiring
+demo (inconsistent browser support, mic-permission friction). Ambient recent-tabs ghost trail — declined
+mid-build once Bi-Directional Jump-Link Threading was built: a THIRD concurrent "recent tab" surface next
+to the MRU stepper and the new back-stack chip would be clutter, not clarity. Keyboard quick-filter on the
+sidenav — declined mid-build: type-ahead filtering would compete for the same single-letter keystrokes the
+existing chord-navigation system (`g` then a mnemonic letter) already owns, and resolving that conflict
+cleanly wasn't worth it given the chord system already serves the same real need.
+
+2 real bugs found and fixed via live-browser testing, not caught by intent alone: a naive index
+comparison would have animated an ArrowUp wrap (first tab → last tab) as sliding "down" — numerically
+correct, directionally backwards from what the user just pressed; fixed by letting the roving-tabindex
+handler pass its own real key-press intent through to the panel-transition logic instead of re-deriving
+direction from index order alone. Both new critical checks (HISTORY chain integrity from the prior round,
+and this round's stale-chip-invalidation logic) were sabotage-tested: broke the code, confirmed RED,
+restored, confirmed GREEN. Checks: 1001 → 1032 (+31). Committed locally — pending push with explicit
+confirmation, same discipline as every prior round.

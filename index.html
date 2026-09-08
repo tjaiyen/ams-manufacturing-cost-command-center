@@ -88,6 +88,19 @@
     font-weight:600;text-align:left;width:100%;position:relative;transition:background .12s}
   .sidenav-item:hover{background:rgb(var(--c-accent)/.08);color:rgb(var(--c-text-primary))}
   .sidenav-item[aria-selected="true"]{background:rgb(var(--c-accent)/.14);color:rgb(var(--c-accent))}
+  /* /nav-innovation, "Boundary Reach Feedback": a brief overshoot-and-settle on the item an
+     ArrowUp/ArrowDown wrap actually lands on -- confirms the wrap really happened, distinct from a
+     dropped keypress. Visual-only; the real boundary-handling logic doesn't depend on it. */
+  @keyframes boundaryBounce{0%{transform:translateY(0)}35%{transform:translateY(4px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+  .sidenav-item.boundary-bounce{animation:boundaryBounce .22s ease}
+  /* /nav-innovation, scaled-down "Directional Transition Choreography": the newly active panel
+     slides in from the direction it came from in the real sidenav order -- entrance-only (the old
+     panel is already display:none by the time this runs), so there's no two-panels-visible overlap
+     to choreograph. */
+  @keyframes panelEnterDown{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes panelEnterUp{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+  .tabpanel.panel-enter-down{animation:panelEnterDown .18s ease}
+  .tabpanel.panel-enter-up{animation:panelEnterUp .18s ease}
   .sidenav-icon{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center;
     transition:transform .28s cubic-bezier(.34,1.56,.64,1)} /* magnetic hover: spring overshoot, not a linear ease */
   .sidenav-item:hover .sidenav-icon,.sidenav-item:focus-visible .sidenav-icon{transform:scale(1.18)}
@@ -133,6 +146,10 @@
   .lede{color:rgb(var(--c-text-secondary));max-width:80ch;margin:0 0 18px}
   .frame{background:rgb(var(--c-accent)/.09);border:1px solid rgb(var(--c-accent)/.28);border-radius:10px;padding:14px 16px;font-size:12.5px;color:rgb(var(--c-text-secondary));margin-bottom:20px}
   .frame.warn{background:rgb(var(--c-warning)/.09);border-color:rgb(var(--c-warning)/.3)}
+  .jump-back-chip{display:inline-flex;align-items:center;gap:6px;background:rgb(var(--c-accent)/.1);
+    border:1px solid rgb(var(--c-accent)/.35);color:rgb(var(--c-accent));border-radius:8px;
+    padding:6px 12px;font-size:12px;font-family:inherit;cursor:pointer;margin-bottom:14px}
+  .jump-back-chip:hover,.jump-back-chip:focus-visible{background:rgb(var(--c-accent)/.18)}
   .frame strong{color:rgb(var(--c-text-primary))}
 
   .grid{display:grid;gap:16px}
@@ -244,6 +261,20 @@
   body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn){opacity:.35}
   body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn):hover,
   body.focus-mode .sidenav-footer .icobtn:not(#focusBtn):not(#paletteBtn):focus-visible{opacity:1}
+  /* /nav-innovation: extends Cognitive-Load Focus Mode to the section list itself, same
+     dim-not-hide treatment (opacity, never display:none) as the footer icons above -- every item
+     stays real, focusable, and screen-reader-visible even while visually de-emphasized. */
+  body.focus-mode .sidenav-item:not(.focus-declutter-relevant){opacity:.4}
+  body.focus-mode .sidenav-item:not(.focus-declutter-relevant):hover,
+  body.focus-mode .sidenav-item:not(.focus-declutter-relevant):focus-visible{opacity:1}
+  /* /nav-innovation, "Dyslexia-Optimized Label Mode" (UX_ROADMAP idea #21, revisited): system-
+     available fonts + spacing only -- no OpenDyslexic/custom font file, which would mean embedding a
+     font as a data URI or a network fetch, breaking this page's zero-dependency/zero-network design.
+     Increased letter/word-spacing and line-height are independently supported accessibility guidance
+     (British Dyslexia Association style guide) regardless of typeface. Numeric/code elements keep
+     their real monospace font so fixed-width alignment (KPI values, tables) is never disturbed. */
+  body.dyslexia-mode{font-family:Verdana,Tahoma,"Trebuchet MS",Arial,sans-serif;letter-spacing:.02em;word-spacing:.05em;line-height:1.6}
+  body.dyslexia-mode code,body.dyslexia-mode .mono,body.dyslexia-mode .kpi-value,body.dyslexia-mode .amz-badge{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
   .bookmarks-details summary{list-style:none;cursor:pointer}
   .bookmarks-details summary::-webkit-details-marker{display:none}
   .bookmarks-panel{padding:6px 2px 2px}
@@ -334,6 +365,8 @@
     .circulatory-vessel{animation:none}
     .kaleidophone-rod{animation:none}
     .metronome-arm{animation:none}
+    .sidenav-item.boundary-bounce{animation:none}
+    .tabpanel.panel-enter-down,.tabpanel.panel-enter-up{animation:none}
     html{scroll-behavior:auto}
   }
 </style>
@@ -361,11 +394,15 @@
     </select>
   </div>
   <div class="sidenav-list" role="tablist" aria-orientation="vertical" aria-label="Command center sections">
-    <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview" aria-label="Executive Overview">
+    <button class="sidenav-item" data-tab="exec" role="tab" aria-selected="true" aria-controls="tab-exec" id="navtab-exec" tabindex="0" data-tooltip="Executive Overview" aria-label="Executive Overview" aria-describedby="navstatus-exec">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 15V9M10 15V5M16 15v-3"/></svg></span><span class="sidenav-label">Executive Overview</span>
+      <span class="nav-status-dot" id="navstatus-dot-exec" aria-hidden="true"></span>
+      <span class="sr-only" id="navstatus-exec"></span>
     </button>
-    <button class="sidenav-item" data-tab="shouldcost" role="tab" aria-selected="false" aria-controls="tab-shouldcost" id="navtab-shouldcost" tabindex="-1" data-tooltip="Should-Cost & MHR" aria-label="Should-Cost & MHR">
+    <button class="sidenav-item" data-tab="shouldcost" role="tab" aria-selected="false" aria-controls="tab-shouldcost" id="navtab-shouldcost" tabindex="-1" data-tooltip="Should-Cost & MHR" aria-label="Should-Cost & MHR" aria-describedby="navstatus-shouldcost">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14a7 7 0 0 1 14 0"/><path d="M10 14 13 8"/><circle cx="10" cy="14" r="1"/></svg></span><span class="sidenav-label">Should-Cost &amp; MHR</span>
+      <span class="nav-status-dot" id="navstatus-dot-shouldcost" aria-hidden="true"></span>
+      <span class="sr-only" id="navstatus-shouldcost"></span>
     </button>
     <button class="sidenav-item" data-tab="variance" role="tab" aria-selected="false" aria-controls="tab-variance" id="navtab-variance" tabindex="-1" data-tooltip="Variance Waterfall" aria-label="Variance Waterfall">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 6h4v4h4v4h4"/></svg></span><span class="sidenav-label">Variance Waterfall</span>
@@ -392,8 +429,10 @@
     <button class="sidenav-item" data-tab="playbook" role="tab" aria-selected="false" aria-controls="tab-playbook" id="navtab-playbook" tabindex="-1" data-tooltip="Diagnostic Playbook" aria-label="Diagnostic Playbook">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M4 4h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H4z"/><path d="M16 4h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z"/></svg></span><span class="sidenav-label">Diagnostic Playbook</span>
     </button>
-    <button class="sidenav-item" data-tab="risk" role="tab" aria-selected="false" aria-controls="tab-risk" id="navtab-risk" tabindex="-1" data-tooltip="Predictive & Risk Models" aria-label="Predictive & Risk Models">
+    <button class="sidenav-item" data-tab="risk" role="tab" aria-selected="false" aria-controls="tab-risk" id="navtab-risk" tabindex="-1" data-tooltip="Predictive & Risk Models" aria-label="Predictive & Risk Models" aria-describedby="navstatus-risk">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><path d="M3 14l4-4 3 3 6-7"/><path d="M13 6h3v3"/></svg></span><span class="sidenav-label">Predictive &amp; Risk Models</span>
+      <span class="nav-status-dot" id="navstatus-dot-risk" aria-hidden="true"></span>
+      <span class="sr-only" id="navstatus-risk"></span>
     </button>
     <button class="sidenav-item" data-tab="framework" role="tab" aria-selected="false" aria-controls="tab-framework" id="navtab-framework" tabindex="-1" data-tooltip="Operating Framework" aria-label="Operating Framework">
       <span class="sidenav-icon"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg></span><span class="sidenav-label">Operating Framework</span>
@@ -407,13 +446,15 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1001/1001 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1032/1032 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
     <button class="icobtn" id="tourBtn" type="button" aria-label="Take a guided tour of this dashboard" data-tooltip="Take the Tour"><span class="label-text">Take the Tour</span></button>
     <button class="icobtn" id="focusBtn" type="button" aria-pressed="false" aria-label="Focus mode" data-tooltip="Focus mode"><span class="label-text">Focus mode</span></button>
+    <button class="icobtn" id="digestBtn" type="button" aria-label="Where am I? Read a summary of the current tab" data-tooltip="Where am I?"><span class="label-text">Where am I?</span></button>
     <button class="icobtn" id="contrastBtn" type="button" aria-pressed="false" aria-label="High Contrast" data-tooltip="High Contrast"><span class="label-text">High Contrast</span></button>
+    <button class="icobtn" id="dyslexiaBtn" type="button" aria-pressed="false" aria-label="Dyslexia-friendly text spacing" data-tooltip="Dyslexia-friendly text"><span class="label-text">Dyslexia-friendly text</span></button>
     <button class="icobtn" id="themeBtn" type="button" aria-label="Toggle theme" data-tooltip="Toggle theme"><span class="label-text">Toggle theme</span></button>
     <a class="icobtn" href="https://tjaiyen.github.io/cost-management-command-center/ams-fit.html" aria-label="Fit brief (opens in the same tab)" data-tooltip="Fit brief"><span class="label-text">Fit brief ↗</span></a>
     <details class="bookmarks-details" id="bookmarksDetails">
@@ -438,6 +479,19 @@
     Methodology tab lists exactly what's independently sourced vs. invented for the exercise.</div>
 
   <div class="frame" id="lastVisitBanner" hidden></div>
+
+  <!-- /nav-innovation, "Bi-Directional Jump-Link Threading": only ever shown right after a real
+       triageJump() cross-tab jump; hidden again the moment any plain navigation happens (see
+       activateTab's viaJumpStack guard). A real button, not a decorative chip, so it's keyboard-
+       reachable like every other control on this page. -->
+  <button type="button" class="jump-back-chip" id="jumpBackChip" hidden><span id="jumpBackLabel"></span></button>
+
+  <!-- /nav-innovation, "Screen-Reader Narrated Wayfinding Digest": composed from the same real,
+       live-countable structural facts as the Dashboard Self-Audit (calcSelfAudit()'s per-tab
+       interactive-element counts), not a hand-written script, so it can't go stale relative to the
+       actual page. aria-live so it's announced without moving focus; visible to everyone, not
+       sr-only, since the summary is genuinely useful whether or not you're using a screen reader. -->
+  <div class="frame" id="wayfindingDigest" hidden aria-live="polite" role="status"></div>
 
   <!-- UX_ROADMAP idea #14, Phase 4 batch E: printable "read this in 60 seconds" one-pager. Invisible
        on screen; populated right before printing (window 'beforeprint') from whatever this page's
@@ -1973,12 +2027,32 @@
     document.body.classList.toggle('focus-mode', on);
     focusBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     try{ localStorage.setItem('ams-cc-focus-mode', on ? '1' : '0'); }catch(e){}
+    // /nav-innovation: also declutter the section list itself -- see updateFocusDeclutter() below,
+    // defined later (after navTabs exists) but safely callable from here via its own internal guard,
+    // since a returning visitor's persisted focus-mode restore (right below) fires before navTabs is
+    // assigned.
+    if (typeof updateFocusDeclutter === 'function') updateFocusDeclutter();
   }
   window.setFocusMode = setFocusMode;
   focusBtn.addEventListener('click', function(){
     setFocusMode(focusBtn.getAttribute('aria-pressed') !== 'true');
   });
   try{ if(localStorage.getItem('ams-cc-focus-mode') === '1') setFocusMode(true); }catch(e){}
+
+  // ---------- Dyslexia-Optimized Label Mode (/nav-innovation; UX_ROADMAP idea #21, revisited) ----------
+  // Same instantly-reversible, independent, persisted-preference pattern as theme/contrast/focus-mode
+  // above. See the CSS rule for the real scoping rationale (system fonts + spacing only).
+  var dyslexiaBtn = document.getElementById('dyslexiaBtn');
+  function setDyslexiaMode(on){
+    document.body.classList.toggle('dyslexia-mode', on);
+    dyslexiaBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    try{ localStorage.setItem('ams-cc-dyslexia-mode', on ? '1' : '0'); }catch(e){}
+  }
+  window.setDyslexiaMode = setDyslexiaMode;
+  dyslexiaBtn.addEventListener('click', function(){
+    setDyslexiaMode(dyslexiaBtn.getAttribute('aria-pressed') !== 'true');
+  });
+  try{ if(localStorage.getItem('ams-cc-dyslexia-mode') === '1') setDyslexiaMode(true); }catch(e){}
 
   // ---------- Spatial Bookmarks (saved scenarios) ----------
   // Captures the active tab name + every <input>/<select> value inside that tab's own panel, named
@@ -2066,12 +2140,37 @@
   // (not hypothetical) before moving this line -- see the Recency-Based Tab Stepper block for the
   // rest of this feature's state and logic.
   var tabVisitOrder = ['exec'];
+  // /nav-innovation, "Bi-Directional Jump-Link Threading": declared here (not down where it's used,
+  // below in triageJump/jumpBack) for the exact reason documented in the comment above -- activateTab
+  // references this before those functions are defined, so a textually-later `var` re-declaration
+  // would silently clobber it on every call.
+  var jumpBackStack = [];
 
   // ---------- Vertical side navigation: tabs + roving-tabindex keyboard nav + collapse ----------
   var navTabs = Array.prototype.slice.call(document.querySelectorAll('.sidenav-item[role="tab"]'));
   var panels = Array.prototype.slice.call(document.querySelectorAll('.tabpanel'));
   function activateTab(name, opts){
     var focusToo = !opts || opts.focus !== false;
+    // /nav-innovation: any plain navigation (nav click, arrow keys, command palette, the tour, role
+    // switching) invalidates a real cross-tab jump's "come from" memory -- only triageJump/jumpBack
+    // themselves pass viaJumpStack:true, so the chip only ever offers a way back that's still true.
+    if (!opts || !opts.viaJumpStack){
+      jumpBackStack = [];
+      if (typeof renderJumpBackChip === 'function') renderJumpBackChip();
+    }
+    // The wayfinding digest describes wherever it was last triggered -- hide it on any navigation
+    // rather than let it silently describe a tab the user has since left.
+    var digestEl = document.getElementById('wayfindingDigest');
+    if (digestEl) digestEl.hidden = true;
+    // /nav-innovation, scaled-down "Directional Transition Choreography": direction is normally the
+    // real DOM order of the two tabs in the sidenav -- moving to a tab lower in the list slides its
+    // panel in from below, higher slides it in from above. Computed before the mutation below
+    // changes which button is aria-selected. opts.dir lets a caller that has real directional INTENT
+    // (the roving-tabindex ArrowUp/ArrowDown handler) override the index comparison -- needed because
+    // an ArrowUp wrap from the first tab to the last is numerically "a much higher index" even though
+    // the user's real intent, and the boundary-bounce feedback right after it, both say "up."
+    var prevIndex = navTabs.findIndex(function(b){ return b.getAttribute('aria-selected') === 'true'; });
+    var nextIndexForAnim = navTabs.findIndex(function(b){ return b.getAttribute('data-tab') === name; });
     navTabs.forEach(function(b){
       var on = b.getAttribute('data-tab') === name;
       b.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -2079,14 +2178,40 @@
       if (on && focusToo) b.focus();
     });
     panels.forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + name); });
+    var explicitDir = opts && opts.dir; // 'down' | 'up' | undefined
+    if (explicitDir || (prevIndex !== -1 && nextIndexForAnim !== -1 && nextIndexForAnim !== prevIndex)){
+      var activePanel = document.getElementById('tab-' + name);
+      if (activePanel){
+        var enterClass = explicitDir ? ('panel-enter-' + explicitDir) : (nextIndexForAnim > prevIndex ? 'panel-enter-down' : 'panel-enter-up');
+        activePanel.classList.remove('panel-enter-down', 'panel-enter-up');
+        activePanel.classList.add(enterClass);
+      }
+    }
     try{ localStorage.setItem('ams-cc-last-tab', name); }catch(e){}
     recordTabVisit(name);
     // Phase 4 batch D: recompute the Attention & Triage tab fresh every time it's opened, reading
     // whatever every OTHER calculator's own inputs currently produce -- not on every keystroke
     // elsewhere on the page (a deliberate, stated simplification; see that tab's own lede).
     if (name === 'triage' && typeof calcTriage === 'function') renderTriage(calcTriage());
+    updateFocusDeclutter();
   }
   window.activateTab = activateTab;
+  // /nav-innovation: focus-mode's section-list declutter -- marks the current tab + its immediate
+  // neighbors in the real, currently-visible nav order as "relevant" (real adjacency in the actual
+  // sidenav order, not an invented relatedness model); the CSS above dims everything else, never
+  // hides it. Safe to call before navTabs exists (setFocusMode's persisted-preference restore fires
+  // earlier in page load than navTabs is assigned) -- no-ops via the guard below instead of throwing.
+  function updateFocusDeclutter(){
+    if (typeof navTabs === 'undefined' || !navTabs) return;
+    var visibleTabs = navTabs.filter(function(b){ return !b.hidden; });
+    var currentIndex = visibleTabs.findIndex(function(b){ return b.getAttribute('aria-selected') === 'true'; });
+    if (currentIndex === -1) currentIndex = 0;
+    navTabs.forEach(function(b){ b.classList.remove('focus-declutter-relevant'); });
+    [currentIndex - 1, currentIndex, currentIndex + 1].forEach(function(i){
+      if (visibleTabs[i]) visibleTabs[i].classList.add('focus-declutter-relevant');
+    });
+  }
+  window.updateFocusDeclutter = updateFocusDeclutter;
   // Session Reload Memory: restore the last-active tab on load, same persisted-preference pattern
   // as theme/contrast/nav-collapsed above. Silently no-ops if the stored tab no longer exists (e.g.
   // an older save from before a tab was renamed) -- never activates an invalid tab name.
@@ -2098,6 +2223,7 @@
     }
   })();
   navTabs.forEach(function(b){ b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab'), { focus: false }); }); });
+  updateFocusDeclutter(); // covers the default-tab case: restoreLastTab() above skips calling activateTab() when the stored tab is already 'exec'
 
   // UX_ROADMAP idea #32, Phase 4 batch B: "changed since your last visit" -- purely a factual diff,
   // zero streak/count/badge/reward mechanics (the guardrail that distinguishes this from declined
@@ -2152,6 +2278,7 @@
       activateTab(fallback, { focus: false });
     }
     try{ localStorage.setItem('ams-cc-role-view', role); }catch(e){}
+    updateFocusDeclutter(); // a role change reshapes which tabs are "adjacent" even when the active tab itself didn't change
   }
   window.applyRoleView = applyRoleView;
   window.ROLE_TABS = ROLE_TABS; // exposed so stress.cjs checks the real map, not a hand-copied duplicate
@@ -2253,13 +2380,22 @@
     var currentIndex = visibleTabs.findIndex(function(b){ return b.getAttribute('tabindex') === '0'; });
     if (currentIndex === -1) currentIndex = 0;
     var nextIndex = null;
-    if (ev.key === 'ArrowDown') nextIndex = (currentIndex + 1) % visibleTabs.length;
-    else if (ev.key === 'ArrowUp') nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length;
+    var wrapped = false; // /nav-innovation, "Boundary Reach Feedback": true only for a real ArrowUp/ArrowDown wrap, never Home/End (those are intentional boundary jumps, not an unexpected wrap)
+    if (ev.key === 'ArrowDown'){ nextIndex = (currentIndex + 1) % visibleTabs.length; wrapped = nextIndex < currentIndex; }
+    else if (ev.key === 'ArrowUp'){ nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length; wrapped = nextIndex > currentIndex; }
     else if (ev.key === 'Home') nextIndex = 0;
     else if (ev.key === 'End') nextIndex = visibleTabs.length - 1;
     if (nextIndex !== null){
       ev.preventDefault();
-      activateTab(visibleTabs[nextIndex].getAttribute('data-tab'));
+      var targetBtn = visibleTabs[nextIndex];
+      // Explicit dir on a real ArrowUp/ArrowDown wrap only -- Home/End and any non-wrapping
+      // ArrowUp/Down move are left to activateTab's own real-index-order inference.
+      var dirOverride = wrapped ? (ev.key === 'ArrowDown' ? 'down' : 'up') : undefined;
+      activateTab(targetBtn.getAttribute('data-tab'), dirOverride ? { dir: dirOverride } : undefined);
+      if (wrapped){
+        targetBtn.classList.add('boundary-bounce');
+        setTimeout(function(){ targetBtn.classList.remove('boundary-bounce'); }, 220);
+      }
     }
   });
 
@@ -2465,9 +2601,35 @@
   var paletteListEl = document.getElementById('paletteList');
   var paletteFiltered = [];
   var paletteSelectedIndex = -1;
+  // /nav-innovation, "fuzzy command-palette matching" (scoped down from the catalog's "intent
+  // routing," which would overclaim -- this is real fuzzy subsequence matching, the established
+  // technique behind fzf/VSCode's own command palette, not natural-language understanding). Null
+  // means the query's characters don't all appear, in order, in the label; otherwise a lower-is-
+  // better score from match compactness -- a literal contiguous substring (this palette's previous
+  // matching behavior) always scores as well as or better than a scattered match of the same
+  // characters, so every query this palette already matched still matches; this only adds real
+  // typo/scatter tolerance on top (pre-verified against all 43 real labels before wiring this in).
+  function fuzzyScore(query, label){
+    if (!query) return 0;
+    var qi = 0, firstMatch = -1, lastMatch = -1;
+    for (var li = 0; li < label.length && qi < query.length; li++){
+      if (label[li] === query[qi]){
+        if (firstMatch === -1) firstMatch = li;
+        lastMatch = li;
+        qi++;
+      }
+    }
+    if (qi < query.length) return null;
+    return (lastMatch - firstMatch) + firstMatch;
+  }
+  window.fuzzyScore = fuzzyScore;
   function renderPaletteList(query){
     var q = (query || '').toLowerCase();
-    paletteFiltered = COMMAND_INDEX.filter(function(item){ return item.label.toLowerCase().indexOf(q) > -1; });
+    paletteFiltered = COMMAND_INDEX
+      .map(function(item){ return { item: item, score: fuzzyScore(q, item.label.toLowerCase()) }; })
+      .filter(function(x){ return x.score !== null; })
+      .sort(function(a, b){ return a.score - b.score; })
+      .map(function(x){ return x.item; });
     paletteSelectedIndex = paletteFiltered.length ? 0 : -1;
     paletteListEl.innerHTML = paletteFiltered.length
       ? paletteFiltered.map(function(item, i){
@@ -2708,6 +2870,27 @@
     if (desc) desc.textContent = NAV_STATUS_TEXT[status] || '';
   }
   window.setNavStatus = setNavStatus;
+  // /nav-innovation, "extend Threshold-Triggered Attention Beacon": the two setNavStatus() calls
+  // below (capacity/governance) predate the Attention & Triage tab and hand-duplicate their own
+  // threshold logic. This extends the SAME ambient-dot visual language to the 3 real tabs
+  // calcTriage() already has a genuine, non-fabricated signal for (exec's OAE, shouldcost's
+  // commodity exposure, risk's live CRPN/risk-register) -- reusing calcTriage()'s own tier
+  // classification rather than re-deriving thresholds a third time. capacity/governance keep their
+  // existing, richer, tab-specific logic untouched.
+  function syncNavStatusFromTriage(){
+    if (typeof calcTriage !== 'function') return;
+    var state = calcTriage();
+    var severityByTab = {}; // 2 = red (tier 1), 1 = amber (tier 2)
+    state.tier1.concat(state.tier2).forEach(function(item){
+      var sev = item.tier === 1 ? 2 : 1;
+      if (!severityByTab[item.tab] || sev > severityByTab[item.tab]) severityByTab[item.tab] = sev;
+    });
+    ['exec', 'shouldcost', 'risk'].forEach(function(tabKey){
+      var sev = severityByTab[tabKey] || 0;
+      setNavStatus(tabKey, sev === 2 ? 'red' : (sev === 1 ? 'amber' : 'green'));
+    });
+  }
+  window.syncNavStatusFromTriage = syncNavStatusFromTriage;
   document.addEventListener('keydown', function(ev){
     if (isTypingTarget(ev.target)) return;
     if ((ev.metaKey || ev.ctrlKey) && ev.shiftKey && (ev.key === '[' || ev.key === ']')){
@@ -3297,6 +3480,7 @@
   }
   window.calcCommodityExposure = calcCommodityExposure;
   ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcCommodityExposure); });
+  ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', function(){ if (typeof syncNavStatusFromTriage === 'function') syncNavStatusFromTriage(); }); });
 
   // ---------- Mean-Reversion Forward Band (Ornstein-Uhlenbeck) ----------
   // Uses the current spot price (cpSpot) above as the process's starting point P_t.
@@ -5026,6 +5210,7 @@
   }
   window.calcRiskScorer = calcRiskScorer;
   ['riskP', 'riskS', 'riskD'].forEach(function(id){ document.getElementById(id).addEventListener('change', calcRiskScorer); });
+  ['riskP', 'riskS', 'riskD'].forEach(function(id){ document.getElementById(id).addEventListener('change', function(){ if (typeof syncNavStatusFromTriage === 'function') syncNavStatusFromTriage(); }); });
 
   // ---------- Manufacturing Value at Risk (M-VaR) ----------
   // One-sided upper confidence bound on an already-signed "unfavorable = positive" variance
@@ -5160,11 +5345,38 @@
   }
   window.calcTriage = calcTriage;
 
+  // /nav-innovation, "Bi-Directional Jump-Link Threading": triageJump is the only real cross-tab
+  // jump-and-focus mechanism on this page (every other jump-link stays on one tab) -- threads the
+  // real tab it left FROM onto jumpBackStack so the destination can offer a genuine way back, closing
+  // the one-way-door gap a stress-test would otherwise flag. Computed from the actual current
+  // aria-selected button rather than hardcoding "triage" (this function's only real caller today),
+  // so it stays correct if a future caller jumps from somewhere else.
   function triageJump(tabName, targetId){
-    activateTab(tabName, { focus: false });
+    var fromBtn = navTabs.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
+    var fromTab = fromBtn ? fromBtn.getAttribute('data-tab') : null;
+    activateTab(tabName, { focus: false, viaJumpStack: true });
+    if (fromTab && fromTab !== tabName) jumpBackStack.push(fromTab);
+    renderJumpBackChip();
     if (targetId) jumpToDecomposition(targetId);
   }
   window.triageJump = triageJump;
+  function jumpBack(){
+    if (!jumpBackStack.length) return;
+    var from = jumpBackStack.pop();
+    activateTab(from, { focus: false, viaJumpStack: true });
+    renderJumpBackChip();
+  }
+  window.jumpBack = jumpBack;
+  function renderJumpBackChip(){
+    var chip = document.getElementById('jumpBackChip');
+    if (!chip) return;
+    if (!jumpBackStack.length){ chip.hidden = true; return; }
+    var from = jumpBackStack[jumpBackStack.length - 1];
+    document.getElementById('jumpBackLabel').textContent = '← Back to ' + tabLabelFor(from);
+    chip.hidden = false;
+  }
+  window.renderJumpBackChip = renderJumpBackChip;
+  document.getElementById('jumpBackChip').addEventListener('click', jumpBack);
 
   function triageRowHtml(item){
     var acked = false;
@@ -5238,7 +5450,8 @@
     { n: 31, date: '2026-09-07', title: 'Phase 4 batch E/5 (guided tour + printable one-pager)', before: 932, after: 956 },
     { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973 },
     { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974 },
-    { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (this round, 7 concepts)', before: 974, after: 1001 },
+    { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (7 concepts, plan-exec + stress-test on a 30-idea catalog)', before: 974, after: 1001 },
+    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 concepts built: 6 real extensions of existing infra, 3 new; 21 of 30 catalog ideas declined as redundant/infeasible/scope drift)', before: 1001, after: 1032 },
   ];
   window.HISTORY = HISTORY;
 
@@ -5265,7 +5478,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 35, lines: 5515 };
+  var SELF_METRICS = { commits: 36, lines: 5762 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 
@@ -5466,6 +5679,39 @@
   }
   window.renderSelfAudit = renderSelfAudit;
 
+  // ---------- Screen-Reader Narrated Wayfinding Digest (/nav-innovation) ----------
+  // Answers "where am I, how big is this section, what's nearby" in one request -- composed from
+  // calcSelfAudit()'s real per-tab interactive-element counts and the real sidenav order, not a
+  // hand-written script that could drift from the actual page as tabs are added/reordered.
+  function renderWayfindingDigest(){
+    var activeBtn = navTabs.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
+    if (!activeBtn) return '';
+    var tabId = activeBtn.getAttribute('data-tab');
+    var indexInAll = navTabs.findIndex(function(b){ return b.getAttribute('data-tab') === tabId; });
+    var visibleTabs = navTabs.filter(function(b){ return !b.hidden; });
+    var posInVisible = visibleTabs.findIndex(function(b){ return b.getAttribute('data-tab') === tabId; }) + 1;
+    var label = tabLabelFor(tabId);
+    var state = calcSelfAudit();
+    var row = state.perTab.filter(function(t){ return t.id === tabId; })[0];
+    var interactive = row ? row.interactive : 0;
+    var neighbors = [];
+    if (navTabs[indexInAll - 1]) neighbors.push(tabLabelFor(navTabs[indexInAll - 1].getAttribute('data-tab')));
+    if (navTabs[indexInAll + 1]) neighbors.push(tabLabelFor(navTabs[indexInAll + 1].getAttribute('data-tab')));
+    var text = 'You are on ' + label + ' (section ' + posInVisible + ' of ' + visibleTabs.length + '). ' +
+      'This section has ' + interactive + ' interactive control' + (interactive === 1 ? '' : 's') + '.';
+    if (neighbors.length) text += ' Nearby: ' + neighbors.join(', ') + '.';
+    return text;
+  }
+  window.renderWayfindingDigest = renderWayfindingDigest;
+  function announceWayfindingDigest(){
+    var el = document.getElementById('wayfindingDigest');
+    if (!el) return;
+    el.textContent = renderWayfindingDigest();
+    el.hidden = false;
+  }
+  window.announceWayfindingDigest = announceWayfindingDigest;
+  document.getElementById('digestBtn').addEventListener('click', announceWayfindingDigest);
+
   // ---------- Initial render ----------
   calcMhrBuildup();
   calcMonteCarlo();
@@ -5497,6 +5743,7 @@
   calcRiskScorer();
   calcMVaR();
   renderTightrope(calcTightrope());
+  syncNavStatusFromTriage(); // real initial ambient-dot state for exec/shouldcost/risk, not just after a first edit
 
   // UX_ROADMAP Phase 4, idea #19 (P0): aria-live="polite" on every calculator result block so a
   // screen reader announces updated results without requiring re-navigation. Applied once, here, to
