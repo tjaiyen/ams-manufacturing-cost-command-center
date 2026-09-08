@@ -240,6 +240,9 @@
   .decomp-link{display:block;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:2px 0 0;font-family:inherit;text-align:right}
   .decomp-link:hover{text-decoration:underline}
   .triage-acked{opacity:.45}
+  .tab-chip{background:none;border:1px solid var(--c-line);color:rgb(var(--c-text-secondary));font-size:11px;padding:4px 10px;border-radius:14px;cursor:pointer;font-family:inherit}
+  .tab-chip[aria-selected="true"]{background:rgb(var(--c-accent)/.14);border-color:rgb(var(--c-accent));color:rgb(var(--c-accent))}
+  .tab-chip:hover{border-color:rgb(var(--c-accent))}
   .source-link{display:inline;background:none;border:none;color:rgb(var(--c-accent));font-size:10.5px;cursor:pointer;padding:0;font-family:inherit}
   .source-link:hover{text-decoration:underline}
   .print-only{display:none}
@@ -459,7 +462,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1117/1117 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1196/1196 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -1062,6 +1065,16 @@
         them, even if it reads "red" on the policy band, is normal variation. With only 6 points the
         limits are wide (a known small-sample artifact — more history would tighten them).</p>
       <div id="capSpcWrap"></div>
+      <p id="rcaTriggerOut" style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px;font-style:italic"></p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Capacity SPC Break Cascade <button class="explain-btn" data-explain="cascade" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ILLUSTRATIVE PROPAGATION MODEL — NOT A CAUSAL CLAIM</span></div>
+      <p class="lede" style="margin-bottom:12px"><b>Illustrative only:</b> this page has no real
+        historical data on how an out-of-control week at this shop actually propagates to neighboring
+        weeks. This applies a stated, adjustable decay heuristic to the same real out-of-control flags
+        above, teaching the shape of cascading risk — not a fitted or sourced number.</p>
+      <div id="capCascadeWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -1309,7 +1322,10 @@
       <p class="lede" style="margin-bottom:10px">The three scrap/quality-adjacent scenarios below
         (Q5, Q10, Q14), ranked by their own already-computed dollar exposure — a Pareto chart is the
         established ASQ/Juran root-cause-prioritization tool for exactly this question. Built from
-        real figures already on this page; nothing new invented for this view.</p>
+        real figures already on this page; nothing new invented for this view. Save the domain/search
+        filter below as a Spatial Bookmark and its own real dollar-exposure total overlays here as a
+        reference line — a real way to see how far this fixed 3-KPI view sits from a broader or
+        narrower slice you've explored, without inventing a cross-session trend this page doesn't keep.</p>
       <div id="qualityParetoWrap"></div>
     </div>
 
@@ -1391,6 +1407,7 @@
             <div class="field"><label for="lcBatchSize">Batch size (N)</label><input type="number" id="lcBatchSize" value="40" step="1"></div>
           </div>
           <div class="field"><label for="lcLaborRate">Loaded labor rate ($/hr)</label><input type="number" id="lcLaborRate" value="45.00" step="0.5"></div>
+          <div class="field"><label for="lcUncertainty">Assumed input uncertainty <b id="lcUncertaintyLabel">±10%</b></label><input type="range" id="lcUncertainty" min="0" max="30" step="1" value="10"></div>
         </div>
         <div class="outline">
           <div class="line"><span>Learning index (b)</span><span class="mono" id="lcB">0.000</span></div>
@@ -1400,6 +1417,7 @@
           <div class="line" style="margin-top:8px"><span>If Unit-1 time were kept as a static standard</span><span class="mono" id="lcDistortion">$0</span></div>
         </div>
       </div>
+      <div id="lcRibbonWrap" style="margin-top:14px"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -1414,6 +1432,12 @@
           <tbody id="riskRegisterBody"></tbody>
         </table>
       </div>
+      <div class="card-head" style="margin-top:18px"><h3 style="font-size:13px;margin:0">P/S/D Cube <button class="explain-btn" data-explain="riskcube" type="button" aria-label="Explain this formula">?</button></h3></div>
+      <p class="lede" style="margin-bottom:8px;margin-top:6px">The Aurora scatter above compares two
+        dimensions at a time. This positions all 10 real risks by all 3 at once — Probability and
+        Detection on an isometric floor, Severity as real height — so a risk that's high on every
+        axis visibly sits apart from one that's only high on one.</p>
+      <div id="riskCubeWrap"></div>
       <div class="card-head" style="margin-top:18px"><h3 style="font-size:13px;margin:0">Score Your Own Risk</h3></div>
       <div class="field-row" style="margin-top:10px">
         <div class="field"><label for="riskP">Probability</label>
@@ -1463,6 +1487,15 @@
         <div class="line"><span>corr(Probability, Detection)</span><span class="mono" id="auroraCorrPD">0.000</span></div>
         <div class="line total"><span>corr(Severity, Detection)</span><span class="mono" id="auroraCorrSD">0.000</span></div>
       </div>
+      <p class="lede" style="margin-top:14px;margin-bottom:8px">A correlation coefficient is one
+        number for 10 real data points — click any pair below to see the actual scatter it was
+        computed from, and which specific risks are driving (or resisting) that pattern.</p>
+      <div class="field-row" role="tablist" aria-label="Aurora correlation depth pair">
+        <button type="button" class="tab-chip" data-aurora-pair="PS" aria-selected="true">Probability × Severity</button>
+        <button type="button" class="tab-chip" data-aurora-pair="PD" aria-selected="false">Probability × Detection</button>
+        <button type="button" class="tab-chip" data-aurora-pair="SD" aria-selected="false">Severity × Detection</button>
+      </div>
+      <div id="auroraDepthWrap" style="margin-top:10px"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -2175,10 +2208,16 @@
         escapeHtml(bm.name) + ' <span style="opacity:.6">(' + bm.tab + ')</span></button>' +
         '<button type="button" class="bookmarks-delete" data-idx="' + i + '" aria-label="Delete ' + escapeHtml(bm.name) + '">×</button></li>';
     }).join('') : '<li class="bookmarks-empty">No saved scenarios yet.</li>';
-    // /viz-innovation Batch B, concept 12: the Compass Rose Scenario Blend reads the SAME bookmarks
-    // list, so it refreshes at every point this list itself changes (init/save/delete) -- one shared
-    // hook, not three separate wiring calls that could fall out of sync.
+    // /viz-innovation Batch B/C, concepts 12 and 23: the Compass Rose Scenario Blend and the Quality
+    // Pareto Velocity Overlay both read the SAME bookmarks list, so both refresh at every point this
+    // list itself changes (init/save/delete) -- one shared hook, not separate wiring calls that could
+    // fall out of sync. Guarded on PLAYBOOK being defined: renderBookmarksList()'s own init call (just
+    // below) runs earlier in this script's top-to-bottom execution than `var PLAYBOOK = [...]` further
+    // down, so the very first call here would otherwise read PLAYBOOK as still-undefined -- harmless
+    // to skip once, since renderQualityParetoChart() already has its own correctly-ordered init call
+    // later in this script, after PLAYBOOK is real.
     renderCompassBlend(calcCompassBlend());
+    if (typeof PLAYBOOK !== 'undefined') renderQualityParetoChart();
   }
   window.loadBookmarks = loadBookmarks;
   window.captureCurrentScenario = captureCurrentScenario;
@@ -2542,8 +2581,9 @@
     tow: { title: 'Variance Tug-of-War (Net Force Balance)', formula: 'magnitude = |material| + |labor| + |overhead|,  ratio = net / magnitude  (bounded in [−1, +1] by the triangle inequality)', body: 'Groups the same six variances above into material (MPV+MQV), labor (DLRV+DLEV), and overhead (VOSV+FOVV), then asks a question the waterfall\'s running total doesn\'t answer at a glance: is the net result a landslide (ratio near ±1 — every group pulled the same direction) or a knife\'s-edge tie between offsetting drivers (ratio near 0)? Not a named industry technique — an original visualization built from this dashboard\'s own already-computed, already-verified variance numbers, not a new claim about AMS.' },
     mdqs: { title: 'Master Data Quality Scorecard (MDQS)', formula: 'MDQS = 100% − (30%·routing_err_rate + 30%·confirm_var_rate + 25%·unlinked_scrap_rate + 15%·stale_standard_rate)', body: 'A single weighted score across four independent data-quality signals, banded green ≥98% / amber 93–98% / red <93% — the same formula the Governance tab computes live, sourced from a downloaded document’s own real, well-defined SAP data-governance model.' },
     mhrBuildup: { title: 'Machine-Hour Rate (MHR) Build-Up', formula: 'MHR = (Depreciation + Floor Allocation + Service Contract) / (Scheduled Hrs × OEE) + (Power × Utility Rate + Consumables)', body: 'The fixed OH allocation is a capital/facility question, spread over how many hours the machine is actually expected to run. The variable operating rate is a pure consumption question. Blending both into one flat shop rate is exactly the uniform-overhead distortion this whole dashboard exists to avoid — see the MHR Build-Up Calculator on the Should-Cost tab. (CIMA/Indian cost-accounting calls this exact split "standing vs. running charges" — same concept, US-managerial-accounting vocabulary used here instead.)' },
-    learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2)', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range.' },
+    learningcurve: { title: 'Empirical Learning Curve (Wright’s Cumulative-Average / Crawford’s Unit models)', formula: 'Y_x = a · x^b,  where b = ln(φ) / ln(2); ribbon = Y_x evaluated at all 4 sign combinations of (a, φ) perturbed by the assumed uncertainty', body: 'Y_x is the single-unit touch time at cumulative unit x; a is the first-article time; φ is the learning-rate percentage (e.g. 0.80 for an 80% curve). Independently confirmed real, standard industrial-engineering models (Wright 1936, Crawford 1947) — distinguished by whether Y is a cumulative average (Wright) or a single unit (Crawford, the form used here). Cumulative batch cost integrates this power law over the unit range. The shaded forecast ribbon is the SAME formula evaluated at your own stated ± uncertainty slider, brute-forced across all 4 sign combinations of (a, φ) rather than assuming one direction is always widest — not a statistical confidence interval, just an honest range of where the curve could sit if your inputs are off by that much.' },
     crpn: { title: 'Cost Risk Priority Number (CRPN)', formula: 'CRPN = Probability × Severity($) × Detection Latency  (each scored 1–5)', body: 'The classic FMEA Risk Priority Number formula (Severity × Occurrence × Detection), re-labeled here with dollar-banded severity. "Cost-FMEA"/"CRPN" aren’t established named frameworks — that naming is the source document’s own adaptation, not a citable standard. The underlying practice (cost-banded FMEA scoring) is real and has precedent under other names (Cost-Based FMEA, ERPN).' },
+    riskcube: { title: 'Risk Register P/S/D Cube', formula: 'isometric projection: x = (P−D)·cos30°, y = −(P+D)·sin30° − S; dot radius ∝ √CRPN (area-proportional)', body: 'A standard isometric projection (the same technique used in isometric CAD/game-tile rendering, not an invented one) positions each of the 10 real risks by all 3 real P/S/D scores at once — Probability and Detection on the floor plane, Severity as real height — instead of the Aurora scatter\'s one-pair-at-a-time comparison above. Dual-encoded by both radius (area proportional to CRPN, real not decorative) and color band, never color alone; nearer dots are drawn over farther ones by real screen depth (painter\'s algorithm), not a fixed draw order.' },
     mvar: { title: 'Manufacturing Value at Risk (M-VaR)', formula: 'M-VaRα = μΔ + Zα × σΔ', body: 'This ADDS the Z-score, unlike textbook portfolio VaR which subtracts it. That’s not an error here: portfolio VaR works on a RETURNS distribution where a loss is negative, so recovering a positive loss magnitude requires a sign flip. Δ (cost variance) is already signed the other way — positive means unfavorable — so adding Zα·σΔ to the mean directly gives the upper bound unfavorable variance won’t exceed at the stated confidence. It’s a one-sided normal confidence bound on an already-signed metric, not classical returns-VaR.' },
     tightrope: { title: 'Tightrope Confidence Walk (Coefficient of Variation)', formula: 'CoV = σ / μ  (undefined when μ=0)', body: 'The M-VaR card above answers "how big is the dollar buffer" (z·σ); this asks a related but distinct question — how large is that uncertainty RELATIVE to the expected value itself? A $10,000 buffer means something very different on an $8,500 mean (CoV≈120%, a genuinely shaky forecast) than on an $85,000 mean (CoV≈12%, comfortably stable). Coefficient of variation is a standard, named statistics concept (unitless, so it\'s comparable across metrics with different scales), not this dashboard\'s own invention — used here to reframe the same already-computed M-VaR inputs, not new data.' },
     ou: { title: 'Mean-Reverting Commodity Price (Ornstein-Uhlenbeck Process)', formula: 'E[P_(t+Δt)] = P̄ + (P_t − P̄)·e^(−θΔt)   Var = (σ²/2θ)·(1 − e^(−2θΔt))', body: 'Independently confirmed as the standard, textbook-correct mean-reversion process used for commodity and interest-rate modeling (the same SDE underlies the Vasicek rate model). The expected price drifts from today’s spot back toward the long-run equilibrium at rate θ; the variance grows with the horizon but is capped by σ²/(2θ) as Δt → ∞. The 95% band here uses the two-sided z = 1.96, distinct from the one-sided M-VaR convention above. Commodity-finance literature typically cites this specific application by name — Schwartz (1997), "The Stochastic Behavior of Commodity Prices," *Journal of Finance* — rather than bare "Ornstein-Uhlenbeck," since the latter is a generic process name used across many unrelated domains.' },
@@ -2561,8 +2601,9 @@
     compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' },
     compassblend: { title: 'Compass Rose Scenario Blend', formula: 'same NPV/magnitude formula as the Navigator above, re-evaluated at each saved bookmark\'s own recorded input values instead of the live DOM', body: 'Every scenario you\'ve saved to Spatial Bookmarks (the real, opt-in save-a-snapshot panel — see the Navigation tab) gets its own needle on ONE shared compass, using the exact same NPV/magnitude math as the single-scenario Navigator above, just replayed against each bookmark\'s own recorded numbers instead of whatever\'s currently typed in. With zero saved scenarios this correctly shows an empty prompt, not a fabricated example — this page never invents cross-session history it doesn\'t actually keep.' },
     domino: { title: 'Domino Effect Probability Cascade', formula: 'P(neither)=(1−p1)(1−p2), P(exactly one)=p1(1−p2)+(1−p1)p2, P(both)=p1×p2', body: 'The 2 real, literature-confirmed cross-KPI tradeoffs from the map above have no attached likelihood in the source research — this applies illustrative EXAMPLE probabilities (adjustable) to the exact, standard compound-probability formula for 2 independent events, teaching how real tradeoffs compound even without a claimed real-world frequency for either one. The 3 outcome bars always sum to exactly 100%.' },
-    aurora: { title: 'Aurora Layer Correlation Map', formula: 'Pearson r between each pair of {Probability, Severity, Detection} across the 10 real risk-register entries', body: 'Probability, Severity, and Detection are assigned independently for each of the 10 risks above — nothing here derives one from another — so a real Pearson correlation between any pair is a genuine finding, not a trivial identity. As of this writing: P and S correlate at ≈−0.71 (higher-probability risks in this register tend to carry lower dollar severity, a real and intuitive pattern), while P-D and S-D show little linear relationship.' },
+    aurora: { title: 'Aurora Layer Correlation Map', formula: 'Pearson r between each pair of {Probability, Severity, Detection} across the 10 real risk-register entries; the depth scatter plots the exact (x,y) pairs that r was computed from', body: 'Probability, Severity, and Detection are assigned independently for each of the 10 risks above — nothing here derives one from another — so a real Pearson correlation between any pair is a genuine finding, not a trivial identity. As of this writing: P and S correlate at ≈−0.71 (higher-probability risks in this register tend to carry lower dollar severity, a real and intuitive pattern), while P-D and S-D show little linear relationship. The click-to-drill scatter below reuses the same real per-risk scores calcAurora() already computed — never a second correlation calculation — so you can see WHICH specific risks are driving (or resisting) each pattern, not just the aggregate number.' },
     sonar: { title: 'Sonar Ping Anomaly Sweep', formula: 'distance ratio = (util − mean) / (UCL − mean)  — exactly 1.0 at the control limit, by I-MR construction', body: 'The same 6-week SPC control-chart data above (center line and control limits derived from this shop\'s own history), re-plotted as distance from the mean instead of a time-ordered trend line — a ping that reaches the outer ring is genuinely out of statistical control, not just a fixed-band "red" reading. Angle around the sonar screen is purely for visual separation between the 6 weeks and carries no data meaning; only radial distance does.' },
+    cascade: { title: 'Capacity SPC Break Cascade', formula: 'illustrative propagatedRisk[i] = max over triggered weeks j of decay^|i−j|, decay = 0.5 (stated, adjustable, not fitted)', body: 'Explicitly illustrative — this page has no real historical record of how an out-of-control week at this shop actually propagates to its neighbors, so a stated decay heuristic is applied honestly to the SAME real out-of-control flags the SPC chart above computes, rather than inventing a specific sourced-looking number. With no real breach this check, every week correctly shows 0% — there is nothing to propagate from. Same "illustrative heuristic, not a claim about AMS’s own numbers" stance already used by the DFM/DFC tab and the Domino Effect cascade elsewhere on this page.' },
     metronome: { title: 'Metronome Cadence Drift Tracker', formula: 'tick count = floor(illustrative days elapsed / cadence interval)', body: 'The same 4 named cadences from the Operating Cadence card above, using each cadence NAME\'s own standard real-world interval (daily=1 day, weekly=7, monthly=30, a semi-annual OP1/OP2 split≈182) — a generic definition of what those words mean, not a claim about AMS\'s actual calendar dates. Swing PERIOD (not amplitude) is the real signal: the daily arm visibly swings fastest, OP1/OP2 slowest, directly encoding how often each cadence actually fires.' },
     comettail: { title: 'Comet Tail Velocity Tracker', formula: 'velocity[i] = util[i]−util[i−1];  acceleration[k] = velocity[k+1]−velocity[k]', body: 'The same 6-week utilization series as the table/SPC/Honeycomb views above, extended one derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH single transition saw the sharpest swing in rate of change, not just which week had the biggest raw delta. The flared tail segment is whichever one carries the largest |acceleration| this period.' },
     capsankey: { title: 'Capacity Absorption Sankey', formula: 'absorbed_hrs = min(avail, booked);  unabsorbed_hrs = max(0, avail − booked);  unabsorbed_$ = unabsorbed_hrs × overhead_rate', body: 'The exact same per-week split and overhead-rate formula the 6-week table above already computes, re-read directly (not recalculated in parallel) and traced as two flows per week instead of two table columns — where each week’s real hours actually end up, and the running real dollar total unabsorbed hours are already costing at the same overhead rate used everywhere else on this tab.' },
@@ -4566,9 +4607,99 @@
     document.getElementById('capSpcWrap').innerHTML = svg;
     setNavStatus('capacity', outOfControl.some(Boolean) ? 'red' : 'green');
     renderSonar(calcSonar(util, mean, mrBar, ucl, outOfControl));
+    renderRcaTriggerPulse(calcRcaTriggerPulse(outOfControl), util, xAt, yAt);
+    renderCapacityCascade(calcCapacityCascade(outOfControl));
     return { util: util, mean: mean, mrBar: mrBar, ucl: ucl, lcl: lcl, outOfControl: outOfControl };
   }
   window.renderCapacitySPC = renderCapacitySPC;
+
+  // /viz-innovation Batch C, concept 21 "Capacity SPC Break Cascade": explicitly-labeled illustrative
+  // model, not a fitted/sourced one -- this page has no real historical data on how an out-of-control
+  // week actually propagates to neighboring weeks, so a stated decay constant is applied honestly, the
+  // same "illustrative heuristic, not a claim about AMS's actual numbers" stance the DFM/DFC tab and
+  // Domino Effect probabilities already use elsewhere on this page. Reads the SAME real outOfControl
+  // flags from renderCapacitySPC above -- never a second breach-detection formula.
+  var CASCADE_DECAY = 0.5; // illustrative only, adjustable -- not derived from any real AMS history
+  function calcCapacityCascade(outOfControl){
+    var risk = outOfControl.map(function(_, i){
+      var maxRisk = outOfControl[i] ? 1 : 0;
+      outOfControl.forEach(function(isOut, j){
+        if (isOut && j !== i){
+          var propagated = Math.pow(CASCADE_DECAY, Math.abs(i - j));
+          if (propagated > maxRisk) maxRisk = propagated;
+        }
+      });
+      return maxRisk;
+    });
+    return { risk: risk, anyTriggered: outOfControl.some(Boolean) };
+  }
+  window.calcCapacityCascade = calcCapacityCascade;
+
+  function renderCapacityCascade(state){
+    var wrap = document.getElementById('capCascadeWrap');
+    if (!wrap) return;
+    var W = 400, H = 70, marginLeft = 10, marginRight = 10, marginTop = 8, barH = 30;
+    var n = state.risk.length;
+    var barW = (W - marginLeft - marginRight) / n;
+    var barsSvg = '', labelsSvg = '';
+    state.risk.forEach(function(r, i){
+      var x = marginLeft + i * barW;
+      var opacity = (0.15 + r * 0.7).toFixed(2);
+      barsSvg += '<rect x="' + (x + 2).toFixed(1) + '" y="' + marginTop + '" width="' + (barW - 4).toFixed(1) + '" height="' + barH + '" fill="rgb(var(--c-danger)/' + opacity + ')" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+      labelsSvg += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + barH + 14) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">W' + (i + 1) + '</text>' +
+        '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + barH / 2 + 4) + '" font-size="10" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + (r * 100).toFixed(0) + '%</text>';
+    });
+    var ariaLabel = 'Illustrative capacity SPC break cascade, not a real causal claim. ' + (state.anyTriggered ? state.risk.map(function(r, i){ return 'Week ' + (i + 1) + ': ' + (r * 100).toFixed(0) + '% illustrative propagated risk'; }).join(', ') : 'No real breach this check, so all 6 weeks show 0% illustrative propagated risk.') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + (marginTop + barH + 22) + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="' + ariaLabel + '">' + barsSvg + labelsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderCapacityCascade = renderCapacityCascade;
+
+  // /viz-innovation Batch C, concept 19 "RCA Trigger-Duration Pulse" (redesigned: real, session-only
+  // in-memory onset tracking, never persisted -- consistent with this page's own explicit "calculator
+  // inputs reset on reload" rule, see UX_ROADMAP.md). Module-level, session-only counter of how many
+  // CONSECUTIVE real recalculations each week has stayed out-of-control on the SAME SPC data above --
+  // a fresh trigger (duration 1) pulses to draw the eye; a chronic one (duration > 1) gets a steady
+  // ring instead, teaching "just tripped" apart from "been out of control the whole session."
+  var rcaTriggerDurations = {};
+  function calcRcaTriggerPulse(outOfControl){
+    var durations = outOfControl.map(function(isOut, i){
+      rcaTriggerDurations[i] = isOut ? (rcaTriggerDurations[i] || 0) + 1 : 0;
+      return rcaTriggerDurations[i];
+    });
+    return { durations: durations };
+  }
+  window.calcRcaTriggerPulse = calcRcaTriggerPulse;
+
+  function renderRcaTriggerPulse(state, util, xAt, yAt){
+    var wrap = document.getElementById('capSpcWrap');
+    var out = document.getElementById('rcaTriggerOut');
+    if (!wrap) return;
+    var svgHtml = wrap.innerHTML;
+    var closeTagIdx = svgHtml.lastIndexOf('</svg>');
+    if (closeTagIdx === -1) return;
+    var ringsSvg = '';
+    var chronicWeeks = [];
+    state.durations.forEach(function(dur, i){
+      if (dur <= 0) return;
+      var cx = xAt(i).toFixed(1), cy = yAt(util[i]).toFixed(1);
+      if (dur === 1){
+        ringsSvg += '<circle class="waterfall-bar-pulse" cx="' + cx + '" cy="' + cy + '" r="9" fill="none" stroke="rgb(var(--c-danger))" stroke-width="2"/>';
+      } else {
+        ringsSvg += '<circle cx="' + cx + '" cy="' + cy + '" r="9" fill="none" stroke="rgb(var(--c-danger))" stroke-width="1.5"/>';
+        chronicWeeks.push('W' + (i + 1) + ' (' + dur + ' consecutive checks)');
+      }
+    });
+    if (ringsSvg){
+      wrap.innerHTML = svgHtml.slice(0, closeTagIdx) + ringsSvg + svgHtml.slice(closeTagIdx);
+    }
+    if (out){
+      out.textContent = chronicWeeks.length
+        ? 'Chronic this session: ' + chronicWeeks.join(', ') + ' -- still out of control after repeated edits, not a one-off blip.'
+        : (state.durations.some(function(d){ return d > 0; }) ? 'A control-limit trigger just fired this check -- watch whether it repeats.' : '');
+    }
+  }
+  window.renderRcaTriggerPulse = renderRcaTriggerPulse;
 
   // ---------- Sonar Ping Anomaly Sweep: the same SPC control-chart data above (util/mean/UCL), a
   // second lens on the SAME I-MR statistics, not a new time series. distanceRatio bounded at exactly
@@ -5394,16 +5525,51 @@
         '<text x="' + x.toFixed(1) + '" y="' + (y - 8).toFixed(1) + '" font-size="11" fill="rgb(var(--c-warning))" text-anchor="middle">' + cp.pct.toFixed(0) + '%</text>';
     }).join('');
 
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="Pareto chart of the three quality and scrap cost scenarios ranked by dollar exposure, with a cumulative percentage line">' +
+    // /viz-innovation Batch C, concept 23 "Quality Pareto Velocity Overlay" (redesigned: reuses the
+    // existing, real, opt-in Spatial Bookmarks mechanism instead of inventing ambient history this
+    // page doesn't keep -- PLAYBOOK is a fixed 30-scenario array with no editable per-item dollar
+    // inputs, so a literal "trend over time" isn't real here; a real domain/search filter IS). Each
+    // saved Playbook-tab bookmark's own {pbDomain, pbSearch} filter is replayed against the SAME
+    // real PLAYBOOK data and the SAME "+\$..." result-parsing regex the 3-bar Pareto above already
+    // uses -- never a second dollar-extraction formula.
+    var velocitySnapshots = loadBookmarks().filter(function(bm){ return bm.tab === 'playbook'; }).map(function(bm){
+      var domain = bm.values.pbDomain || 'all';
+      var search = (bm.values.pbSearch || '').toLowerCase();
+      var filtered = PLAYBOOK.filter(function(item){
+        var matchesDomain = domain === 'all' || item.domain === domain;
+        var haystack = (item.code + ' ' + item.kpi + ' ' + item.q).toLowerCase();
+        var matchesSearch = search === '' || haystack.indexOf(search) > -1;
+        return matchesDomain && matchesSearch;
+      });
+      var snapTotal = filtered.reduce(function(s, item){
+        var m = item.result.match(/\+\$([\d,.]+)/);
+        return s + (m ? parseFloat(m[1].replace(/,/g, '')) : 0);
+      }, 0);
+      return { name: bm.name, domain: domain, total: snapTotal, count: filtered.length };
+    });
+    var overlaySvg = '', overlayLabels = [];
+    velocitySnapshots.forEach(function(snap, i){
+      // A snapshot total can exceed maxVal (a broader filter naturally exposes more dollars than the
+      // fixed 3-KPI view) -- clamp the drawn line to the plot's own top edge rather than let it draw
+      // outside the chart, while the real (unclamped) number still appears in the label and aria-label.
+      var y = barY(Math.min(snap.total, maxVal));
+      overlaySvg += '<line x1="' + marginLeft + '" y1="' + y.toFixed(1) + '" x2="' + (W - marginRight) + '" y2="' + y.toFixed(1) + '" stroke="rgb(var(--c-success))" stroke-width="1.5" stroke-dasharray="6,3"/>' +
+        '<text x="' + (W - marginRight) + '" y="' + (y - 4).toFixed(1) + '" font-size="10" fill="rgb(var(--c-success))" text-anchor="end">' + escapeHtml(snap.name) + ': $' + Math.round(snap.total).toLocaleString() + '</text>';
+      overlayLabels.push(snap.name + ' (' + snap.domain + ' filter, ' + snap.count + ' scenarios): $' + Math.round(snap.total).toLocaleString());
+    });
+
+    var ariaLabel = 'Pareto chart of the three quality and scrap cost scenarios ranked by dollar exposure, with a cumulative percentage line.' + (overlayLabels.length ? ' Saved exploration snapshots overlaid: ' + overlayLabels.join(', ') + '.' : '');
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:600px" role="img" aria-label="' + ariaLabel + '">' +
       '<line x1="' + marginLeft + '" y1="' + (marginTop + plotH) + '" x2="' + (W - marginRight) + '" y2="' + (marginTop + plotH) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (marginTop + plotH) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
       bars +
+      overlaySvg +
       '<path d="' + linePoints + '" fill="none" stroke="rgb(var(--c-warning))" stroke-width="1.5" stroke-dasharray="4,3"/>' +
       dots +
       '<text x="' + marginLeft + '" y="14" font-size="11" fill="rgb(var(--c-text-secondary))">Dollar exposure (bars) · cumulative % (dashed line)</text>' +
       '</svg>';
     document.getElementById('qualityParetoWrap').innerHTML = svg;
-    return { items: items, total: total, cumPoints: cumPoints };
+    return { items: items, total: total, cumPoints: cumPoints, velocitySnapshots: velocitySnapshots };
   }
   window.renderQualityParetoChart = renderQualityParetoChart;
 
@@ -5602,6 +5768,23 @@
   window.renderRelayRace = renderRelayRace;
 
   // ---------- Learning Curve Forecaster (Wright's/Crawford's power law) ----------
+  // /viz-innovation Batch C, concept 11 "Learning Curve Forecast Ribbon" (redesigned, same real-slider
+  // pattern as concept 9's Q* Crossover Fog): pulled the closed-form Wright/Crawford integral itself
+  // one level further out of calcLearningCurve (below), so the ribbon's low/high evaluations at
+  // perturbed a/phi (see calcLearningRibbon) call the exact SAME solver instead of a 2nd copy of it.
+  function learningHoursFor(a, phi, M, N){
+    var b = phi > 0 ? Math.log(phi) / Math.log(2) : 0;
+    var exp = b + 1;
+    // At exactly a 50% learning rate, b=-1 and exp=0 -- the antiderivative x^exp/exp this formula
+    // otherwise uses is undefined there (0/0), but the TRUE closed-form integral of a*x^b at b=-1 is
+    // logarithmic (a*ln(x), not a*x^0/0), giving a real, continuous, non-NaN answer instead of the
+    // (a/exp)*(...) formula's division-by-zero. A stress-test found this was reachable with the
+    // page's own real default inputs just by typing "50" into Learning Rate, and confirmed the
+    // logarithmic form agrees with the numerical limit from both sides (49.9999%/50.0001%).
+    var totalHours = exp !== 0 ? (a / exp) * (Math.pow(M + N, exp) - Math.pow(M, exp)) : a * Math.log((M + N) / M);
+    return { b: b, totalHours: totalHours };
+  }
+  window.learningHoursFor = learningHoursFor;
   function calcLearningCurve(){
     var a = parseFloat(document.getElementById('lcFirstArticle').value) || 0;
     var phiPct = parseFloat(document.getElementById('lcLearningRate').value) || 0;
@@ -5615,15 +5798,8 @@
     var rate = parseFloat(document.getElementById('lcLaborRate').value) || 0;
     var phi = phiPct / 100;
 
-    var b = phi > 0 ? Math.log(phi) / Math.log(2) : 0;
-    var exp = b + 1;
-    // At exactly a 50% learning rate, b=-1 and exp=0 -- the antiderivative x^exp/exp this formula
-    // otherwise uses is undefined there (0/0), but the TRUE closed-form integral of a*x^b at b=-1 is
-    // logarithmic (a*ln(x), not a*x^0/0), giving a real, continuous, non-NaN answer instead of the
-    // (a/exp)*(...) formula's division-by-zero. A stress-test found this was reachable with the
-    // page's own real default inputs just by typing "50" into Learning Rate, and confirmed the
-    // logarithmic form agrees with the numerical limit from both sides (49.9999%/50.0001%).
-    var totalHours = exp !== 0 ? (a / exp) * (Math.pow(M + N, exp) - Math.pow(M, exp)) : a * Math.log((M + N) / M);
+    var hoursResult = learningHoursFor(a, phi, M, N);
+    var b = hoursResult.b, totalHours = hoursResult.totalHours;
     var avgUnitTime = N > 0 ? totalHours / N : 0;
     var totalCost = totalHours * rate;
     var distortion = (avgUnitTime - a) * rate * N; // negative = a fake "favorable" variance if a
@@ -5634,12 +5810,70 @@
     document.getElementById('lcAvgUnitTime').textContent = avgUnitTime.toFixed(2) + ' hrs';
     document.getElementById('lcTotalCost').textContent = '$' + totalCost.toFixed(2);
     document.getElementById('lcDistortion').textContent = fmtMoney(distortion) + (distortion < 0 ? ' (fake favorable)' : '');
+    renderLearningRibbon(calcLearningRibbon(a, phi, b, M, N));
     return { b: b, totalHours: totalHours, avgUnitTime: avgUnitTime, totalCost: totalCost, distortion: distortion };
   }
   window.calcLearningCurve = calcLearningCurve;
+
+  // Ribbon: samples the real per-unit-time curve t(x) = a * x^b across the batch range, banded by the
+  // SAME closed-form b (from learningHoursFor) evaluated at all 4 sign combinations of the user's own
+  // "assumed input uncertainty" perturbation on a/phi -- brute-force over the 4 real corners (not an
+  // assumed monotonic direction) so the band is correct regardless of which corner turns out widest.
+  function calcLearningRibbon(a, phi, bNominal, M, N){
+    var uncertaintyPct = parseFloat(document.getElementById('lcUncertainty').value) || 0;
+    document.getElementById('lcUncertaintyLabel').textContent = '±' + uncertaintyPct + '%';
+    var u = uncertaintyPct / 100;
+    var corners = u > 0 ? [
+      { a: a * (1 + u), phi: phi * (1 + u) }, { a: a * (1 + u), phi: phi * (1 - u) },
+      { a: a * (1 - u), phi: phi * (1 + u) }, { a: a * (1 - u), phi: phi * (1 - u) },
+    ].map(function(c){ return { a: c.a, b: learningHoursFor(c.a, c.phi, M, N).b }; }) : [];
+    var STEPS = 30;
+    var xStart = 1, xEnd = M + N;
+    var points = [];
+    for (var i = 0; i <= STEPS; i++){
+      var x = xStart + (xEnd - xStart) * (i / STEPS);
+      var center = a * Math.pow(x, bNominal);
+      var low = center, high = center;
+      corners.forEach(function(c){
+        var t = c.a * Math.pow(x, c.b);
+        if (t < low) low = t;
+        if (t > high) high = t;
+      });
+      points.push({ x: x, center: center, low: low, high: high });
+    }
+    return { points: points, uncertaintyPct: uncertaintyPct, xStart: xStart, xEnd: xEnd };
+  }
+  window.calcLearningRibbon = calcLearningRibbon;
+
+  function renderLearningRibbon(state){
+    var wrap = document.getElementById('lcRibbonWrap');
+    if (!wrap) return;
+    var W = 400, H = 160, marginLeft = 44, marginRight = 12, marginTop = 14, marginBottom = 22;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    var maxY = Math.max.apply(null, state.points.map(function(p){ return p.high; })) * 1.08 || 1;
+    function xScale(x){ return marginLeft + (x - state.xStart) / (state.xEnd - state.xStart || 1) * plotW; }
+    function yScale(y){ return marginTop + (1 - y / maxY) * plotH; }
+    var bandPath = 'M' + state.points.map(function(p){ return xScale(p.x).toFixed(1) + ',' + yScale(p.high).toFixed(1); }).join(' L') +
+      ' L' + state.points.slice().reverse().map(function(p){ return xScale(p.x).toFixed(1) + ',' + yScale(p.low).toFixed(1); }).join(' L') + ' Z';
+    var centerPath = 'M' + state.points.map(function(p, i){ return (i === 0 ? '' : 'L') + xScale(p.x).toFixed(1) + ',' + yScale(p.center).toFixed(1); }).join(' ');
+    var bandSvg = state.uncertaintyPct > 0 ? '<path d="' + bandPath + '" fill="rgb(var(--c-accent)/.15)"/>' : '';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:400px" role="img" aria-label="Learning curve forecast ribbon, unit time from unit ' + Math.round(state.xStart) + ' to ' + Math.round(state.xEnd) + '.' + (state.uncertaintyPct > 0 ? ' At ±' + state.uncertaintyPct + '% assumed input uncertainty, the forecast band ranges from ' + state.points[state.points.length - 1].low.toFixed(2) + ' to ' + state.points[state.points.length - 1].high.toFixed(2) + ' hours at the final unit.' : '') + '">' +
+      '<line x1="' + marginLeft + '" y1="' + (H - marginBottom) + '" x2="' + (W - marginRight) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      bandSvg +
+      '<path d="' + centerPath + '" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2"/>' +
+      '<text x="' + marginLeft + '" y="12" font-size="10" fill="rgb(var(--c-text-secondary))">Unit time forecast, unit ' + Math.round(state.xStart) + '–' + Math.round(state.xEnd) + '</text>' +
+      '<text x="' + marginLeft + '" y="' + (H - 6) + '" font-size="10" fill="rgb(var(--c-text-secondary))">unit ' + Math.round(state.xStart) + '</text>' +
+      '<text x="' + (W - marginRight) + '" y="' + (H - 6) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="end">unit ' + Math.round(state.xEnd) + '</text>' +
+      '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderLearningRibbon = renderLearningRibbon;
+
   ['lcFirstArticle', 'lcLearningRate', 'lcBatchStart', 'lcBatchSize', 'lcLaborRate'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcLearningCurve);
   });
+  document.getElementById('lcUncertainty').addEventListener('input', calcLearningCurve);
 
   // ---------- Cost Risk Register (CRPN = Probability x Severity x Detection) ----------
   var RISK_REGISTER = [
@@ -5686,10 +5920,66 @@
         '<td class="mono">' + crpn + '</td><td><span class="status-pill ' + band + '">' + statusSymbol(band) + ' ' + (band === 'red' ? 'ESCALATE' : 'MONITOR') + '</span></td></tr>';
     }).join('');
     document.getElementById('riskRegisterBody').innerHTML = rows;
+    renderRiskCube(calcRiskCube());
   }
   window.RISK_REGISTER = RISK_REGISTER;
   window.renderRiskRegister = renderRiskRegister;
   window.crpnBand = crpnBand; // exposed for the Attention & Triage tab (Phase 4 batch D) to reuse the real threshold function, not a hand-duplicated one
+
+  // /viz-innovation Batch C, concept 14 "Risk Register P/S/D Cube": the SAME 10 real risks' P/S/D
+  // scores and the SAME crpnBand() threshold function above, positioned by all 3 dimensions
+  // simultaneously via a standard isometric projection (P and D on the floor plane, S as real
+  // height) -- distinct from concept 15's Aurora depth scatter, which compares only 2 dimensions at
+  // a time. Reads RISK_REGISTER + crpnBand() directly; no parallel scoring logic.
+  function calcRiskCube(){
+    var points = RISK_REGISTER.map(function(r){
+      var crpn = r.p * r.s * r.d;
+      return { id: r.id, p: r.p, s: r.s, d: r.d, crpn: crpn, band: crpnBand(crpn) };
+    });
+    return { points: points };
+  }
+  window.calcRiskCube = calcRiskCube;
+
+  function renderRiskCube(state){
+    var wrap = document.getElementById('riskCubeWrap');
+    if (!wrap) return;
+    var W = 320, H = 260, cx = W / 2, cy = 190, scale = 22;
+    // Standard isometric projection: floor axes (P, D) at ±30 deg from horizontal, height (S)
+    // straight up -- a real, standard technique (used in isometric CAD/game-tile rendering), not an
+    // invented one. Reused as-is with no fabricated 4th dimension.
+    var cos30 = Math.cos(Math.PI / 6), sin30 = Math.sin(Math.PI / 6);
+    function project(p, s, d){
+      var x = cx + (p - d) * cos30 * scale;
+      var y = cy - (p + d) * sin30 * scale - s * scale;
+      return { x: x, y: y };
+    }
+    var origin = project(0, 0, 0);
+    var pAxisEnd = project(5, 0, 0), dAxisEnd = project(0, 0, 5), sAxisEnd = project(0, 5, 0);
+    var axesSvg = '<line x1="' + origin.x.toFixed(1) + '" y1="' + origin.y.toFixed(1) + '" x2="' + pAxisEnd.x.toFixed(1) + '" y2="' + pAxisEnd.y.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + origin.x.toFixed(1) + '" y1="' + origin.y.toFixed(1) + '" x2="' + dAxisEnd.x.toFixed(1) + '" y2="' + dAxisEnd.y.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + origin.x.toFixed(1) + '" y1="' + origin.y.toFixed(1) + '" x2="' + sAxisEnd.x.toFixed(1) + '" y2="' + sAxisEnd.y.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<text x="' + pAxisEnd.x.toFixed(1) + '" y="' + (pAxisEnd.y + 12).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">P</text>' +
+      '<text x="' + dAxisEnd.x.toFixed(1) + '" y="' + (dAxisEnd.y + 12).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">D</text>' +
+      '<text x="' + sAxisEnd.x.toFixed(1) + '" y="' + (sAxisEnd.y - 6).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">S</text>';
+    var dotsSvg = '', labelsSvg = '';
+    // Painter's algorithm: draw back-to-front by real screen depth (p+d-s, larger = further back in
+    // this projection) so nearer dots correctly occlude farther ones instead of a fixed draw order.
+    var ordered = state.points.slice().sort(function(a, b){ return (b.p + b.d - b.s) - (a.p + a.d - a.s); });
+    ordered.forEach(function(pt){
+      var pos = project(pt.p, pt.s, pt.d);
+      // Dual-encoded by BOTH radius (area proportional to CRPN, real not decorative) and color band
+      // -- never color alone.
+      var r = 3 + Math.sqrt(pt.crpn) * 0.55;
+      var fill = pt.band === 'red' ? 'rgb(var(--c-danger)/.55)' : 'rgb(var(--c-success)/.45)';
+      var stroke = pt.band === 'red' ? 'rgb(var(--c-danger))' : 'rgb(var(--c-success))';
+      dotsSvg += '<circle cx="' + pos.x.toFixed(1) + '" cy="' + pos.y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
+      labelsSvg += '<text x="' + pos.x.toFixed(1) + '" y="' + (pos.y - r - 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + pt.id.replace('RSK-', '') + '</text>';
+    });
+    var ariaLabel = 'Risk register P/S/D cube, isometric view of all 10 risks positioned by Probability, Severity, and Detection simultaneously, sized and colored by CRPN escalation band. ' + state.points.map(function(pt){ return pt.id + ': P' + pt.p + ' S' + pt.s + ' D' + pt.d + ', CRPN ' + pt.crpn + ' (' + (pt.band === 'red' ? 'escalate' : 'monitor') + ')'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:320px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' + axesSvg + dotsSvg + labelsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderRiskCube = renderRiskCube;
 
   // ---------- Aurora Layer Correlation Map: the SAME 10 risks' P/S/D scores above, correlated
   // across the register -- 3 independently-assigned dimensions, not derived from each other, so a
@@ -5738,8 +6028,68 @@
     document.getElementById('auroraCorrPS').textContent = state.corrPS.toFixed(3);
     document.getElementById('auroraCorrPD').textContent = state.corrPD.toFixed(3);
     document.getElementById('auroraCorrSD').textContent = state.corrSD.toFixed(3);
+    renderAuroraDepth(calcAuroraDepth(auroraSelectedPair));
   }
   window.renderAurora = renderAurora;
+
+  // /viz-innovation Batch C, concept 15 "Aurora Correlation Depth Explorer": drills into ONE of the
+  // 3 real correlation pairs above -- the actual (x,y) scatter of the 10 risks that pearsonCorr()
+  // above was computed from, not a second correlation calculation. Session-only UI state (which pair
+  // is selected), same module-level pattern as previousQStarState/previousNestingDollTotal.
+  var AURORA_PAIR_LABELS = { PS: ['Probability', 'Severity'], PD: ['Probability', 'Detection'], SD: ['Severity', 'Detection'] };
+  var auroraSelectedPair = 'PS';
+  function calcAuroraDepth(pairKey){
+    var state = calcAurora(); // reuse the SAME real P/S/D arrays and correlations -- never re-derive
+    var keyMap = { PS: ['P', 'S'], PD: ['P', 'D'], SD: ['S', 'D'] };
+    var keys = keyMap[pairKey];
+    var xs = state[keys[0]], ys = state[keys[1]];
+    var corr = pairKey === 'PS' ? state.corrPS : (pairKey === 'PD' ? state.corrPD : state.corrSD);
+    var points = RISK_REGISTER.map(function(r, i){ return { id: r.id, x: xs[i], y: ys[i] }; });
+    return { pairKey: pairKey, xLabel: AURORA_PAIR_LABELS[pairKey][0], yLabel: AURORA_PAIR_LABELS[pairKey][1], points: points, corr: corr };
+  }
+  window.calcAuroraDepth = calcAuroraDepth;
+
+  function renderAuroraDepth(state){
+    var wrap = document.getElementById('auroraDepthWrap');
+    if (!wrap) return;
+    var W = 280, H = 230, marginLeft = 26, marginRight = 14, marginTop = 14, marginBottom = 28;
+    var plotW = W - marginLeft - marginRight, plotH = H - marginTop - marginBottom;
+    function xAt(v){ return marginLeft + (v - 1) / 4 * plotW; } // score domain is always 1-5
+    function yAt(v){ return marginTop + (1 - (v - 1) / 4) * plotH; }
+    // Two real risks can share the exact same (x,y) score pair -- a deterministic per-duplicate
+    // offset (indexed by how many prior points already sit at this exact coordinate, NOT random)
+    // keeps every point visible without fabricating jitter that would misrepresent the real score.
+    var seen = {};
+    var dotsSvg = '', labelsSvg = '';
+    state.points.forEach(function(p){
+      var key = p.x + ',' + p.y;
+      var dupIdx = seen[key] || 0;
+      seen[key] = dupIdx + 1;
+      var offset = dupIdx * 5;
+      var cx = xAt(p.x) + offset, cy = yAt(p.y) - offset;
+      dotsSvg += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="5" fill="rgb(var(--c-accent)/.5)" stroke="rgb(var(--c-accent))" stroke-width="1.5"/>';
+      labelsSvg += '<text x="' + cx.toFixed(1) + '" y="' + (cy - 8).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + p.id.replace('RSK-', '') + '</text>';
+    });
+    var ariaLabel = 'Aurora depth scatter, ' + state.xLabel + ' versus ' + state.yLabel + ' for all 10 risks. Correlation ' + state.corr.toFixed(3) + '. Points: ' + state.points.map(function(p){ return p.id + ' (' + p.x + ', ' + p.y + ')'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:280px" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="' + marginLeft + '" y1="' + (H - marginBottom) + '" x2="' + (W - marginRight) + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      '<line x1="' + marginLeft + '" y1="' + marginTop + '" x2="' + marginLeft + '" y2="' + (H - marginBottom) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+      dotsSvg + labelsSvg +
+      '<text x="' + ((marginLeft + W - marginRight) / 2) + '" y="' + (H - 6) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + state.xLabel + ' (1–5)</text>' +
+      '<text x="10" y="' + ((marginTop + H - marginBottom) / 2) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle" transform="rotate(-90 10 ' + ((marginTop + H - marginBottom) / 2) + ')">' + state.yLabel + ' (1–5)</text>' +
+      '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderAuroraDepth = renderAuroraDepth;
+  Array.prototype.slice.call(document.querySelectorAll('[data-aurora-pair]')).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      auroraSelectedPair = btn.getAttribute('data-aurora-pair');
+      Array.prototype.slice.call(document.querySelectorAll('[data-aurora-pair]')).forEach(function(b){
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      renderAuroraDepth(calcAuroraDepth(auroraSelectedPair));
+    });
+  });
 
   function calcRiskScorer(){
     var p = parseFloat(document.getElementById('riskP').value) || 0;
@@ -6014,6 +6364,7 @@
     { n: 37, date: '2026-09-08', title: '/brainstorm batch-plan upgrades + /stress-test the top cluster (planning round, no code executed)', before: 1039, after: 1041, family: 'planning', sabotageTested: false },
     { n: 38, date: '2026-09-08', title: '/viz-innovation Batch A (6 concepts: Living Variance Waterfall, Commodity Exposure Tide, Capacity Absorption Sankey, Governance Gate Nested Rings, MDQS Deduction Flow, Threshold Disagreement Bridge)', before: 1041, after: 1059, family: 'viz-innovation', sabotageTested: true },
     { n: 39, date: '2026-09-08', title: '/viz-innovation Batch B (6 concepts: Should-Cost Peel Recompute Trail, Monte Carlo Should-Cost Cloud, DFM Penalty Lever Board, Q* Crossover Fog, Break-Even Playground Depth Layers, Compass Rose Scenario Blend)', before: 1059, after: 1117, family: 'viz-innovation', sabotageTested: true },
+    { n: 40, date: '2026-09-08', title: '/viz-innovation Batch C (6 concepts: Learning Curve Forecast Ribbon, Risk Register P/S/D Cube, Aurora Correlation Depth Explorer, RCA Trigger-Duration Pulse, Capacity SPC Break Cascade, Quality Pareto Velocity Overlay)', before: 1117, after: 1196, family: 'viz-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -6040,7 +6391,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 41, lines: 6330 };
+  var SELF_METRICS = { commits: 42, lines: 6681 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 

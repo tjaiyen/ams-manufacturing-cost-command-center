@@ -263,13 +263,16 @@ transcript until now).
   verified live + 5 critical claims sabotage-tested; see README for the 2 real bugs found (an
   illegible-font-size regression, and a rounded-literal-vs-real-float false positive in the Concept 2
   test itself) and the zero accepted limitations this round.
-- **Batch C** (Risk/Playbook/Triage; new real instrumentation): 11\* Learning Curve Forecast Ribbon
+- **Batch C ✅ built (2026-09-08, README's fortieth round):** 11\* Learning Curve Forecast Ribbon
   (same real-slider redesign as #9), 14 Risk Register P/S/D Cube, 15 Aurora Correlation Depth Explorer,
   19\* RCA Trigger-Duration Pulse (redesigned: real, session-only in-memory onset tracking, never
   persisted — consistent with this page's explicit "calculator inputs reset on reload" rule below), 21
   Capacity SPC Break Cascade (ships with an explicit "illustrative propagation model" disclaimer), 23\*
   Quality Pareto Velocity Overlay (redesigned to reuse the existing, already-real, already-opt-in
-  Spatial Bookmarks mechanism instead of inventing ambient history).
+  Spatial Bookmarks mechanism instead of inventing ambient history). All 6 verified live + every
+  critical formula sabotage-tested; see README for the 3 real bugs found (a DOM method the stub
+  harness doesn't implement, a straight-apostrophe JS syntax error, and a var-hoisting init-order
+  crash) and the zero accepted limitations this round.
 - **Batch D** (Self-Audit extensions + meta): 13 Ten-Domain Zoomable Matrix, 18 Cost Pillar Radar Lens,
   20 Build Velocity Heartbeat Anomaly-Annotated, 22 Milestone Cairn Distance Rings, 24\* Threshold-Break
   Cadence Ring, 26 Sibling Dashboard Benchmark Radar.

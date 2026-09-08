@@ -11,7 +11,7 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (43 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+modals (45 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
 directly to any of the 44 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1117 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1196 checks, all passing as of this writing.
 
 ## Status
 
@@ -1622,3 +1622,47 @@ recalculations would have shipped a false positive. Fixed by comparing two genui
 actually exercised (zero Q\* uncertainty, zero saved bookmarks, a bookmark saved on a different tab) are
 all handled explicitly and checked, not left as silent gaps. Checks: 1059 → 1117 (+58). Committed
 locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-08, fortieth round (`/viz-innovation` Batch C: 6 concepts, Risk/Playbook/Triage domain):**
+All 6 built serially, same discipline as Batches A/B — pre-registered (B35) via a standalone `node -e`
+before writing any `stress.cjs` assertion, verified live in-browser, then checked; every critical
+formula sabotage-tested.
+
+1. **Learning Curve Forecast Ribbon\*** (redesigned, same real-slider pattern as Q\* Crossover Fog) — a
+   real "assumed input uncertainty ±%" slider bands the Wright/Crawford unit-time curve, brute-forced
+   across all 4 real sign combinations of (first-article time, learning rate) rather than assuming one
+   direction is always widest.
+2. **Risk Register P/S/D Cube** — a standard isometric projection positions all 10 real risks by
+   Probability, Severity, and Detection simultaneously, distinct from the pairwise Aurora scatter below;
+   dual-encoded by radius (area ∝ CRPN) and color, drawn back-to-front by real screen depth (sabotage-
+   tested: removing the depth sort correctly failed the check).
+3. **Aurora Correlation Depth Explorer** — click-to-drill into any of the 3 correlation pairs reveals
+   the actual 10-point scatter Pearson's r was computed from, reusing `calcAurora()`'s own real P/S/D
+   arrays (sabotage-tested: a hardcoded fake correlation correctly failed).
+4. **RCA Trigger-Duration Pulse\*** (redesigned) — a real, session-only counter tracks how many
+   consecutive recalculations each week has stayed out of statistical control; a first-time trigger
+   pulses, a chronic one gets a steady ring — "just tripped" vs. "been out all session," never persisted
+   (sabotage-tested: a counter that never accumulates correctly failed).
+5. **Capacity SPC Break Cascade** — explicitly labeled illustrative, not a causal claim: this page has
+   no real historical record of how a breach at one week propagates to its neighbors, so a stated
+   decay=0.5 heuristic is applied honestly to the same real out-of-control flags above (sabotage-tested:
+   a halved decay exponent correctly failed).
+6. **Quality Pareto Velocity Overlay\*** (redesigned to reuse Spatial Bookmarks) — the Pareto's own 3
+   dollar values are fixed (no editable per-scenario inputs exist to track a literal trend), so each
+   saved Playbook-tab bookmark's real domain/search filter is replayed against the same 30-scenario
+   PLAYBOOK data and overlaid as a real dollar-exposure reference line (sabotage-tested: ignoring the
+   domain filter correctly failed).
+
+Three real bugs found and fixed during the build, not after. First: the RCA pulse ring's initial
+implementation called `wrap.querySelector('svg')`, a DOM method this repo's own stub harness doesn't
+implement (documented limitation) — switched to a pure string-splice before the closing `</svg>` tag,
+matching every other chart's established `innerHTML =` pattern. Second: the new Cascade EXPLAIN entry
+used a straight apostrophe inside its single-quoted JS string literal, breaking the page's own inline
+script with a syntax error — fixed to the curly apostrophe every other entry already uses. Third: wiring
+the Pareto Velocity Overlay's refresh into `renderBookmarksList()` (the same shared hook Batch B's
+Compass Blend already uses) crashed on page load, because `renderBookmarksList()`'s own init call runs
+earlier in this script's top-to-bottom execution than `var PLAYBOOK = [...]` — guarded on
+`typeof PLAYBOOK !== 'undefined'`, harmless since `renderQualityParetoChart()` already has its own
+correctly-ordered init call later in the script. No accepted limitations this round. Checks:
+1117 → 1196 (+79). Committed locally — pending push with explicit confirmation, same discipline as
+every prior round.

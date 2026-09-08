@@ -246,7 +246,7 @@ const DEFAULTS = {
   // to replay the real "page just loaded" state; the cross-check loop below skips them harmlessly
   // since neither has a matching value="..." attribute in the HTML to compare against.
   pbDomain: "all", pbSearch: "",
-  lcFirstArticle: "6.0", lcLearningRate: "80", lcBatchStart: "20", lcBatchSize: "40", lcLaborRate: "45.00",
+  lcFirstArticle: "6.0", lcLearningRate: "80", lcBatchStart: "20", lcBatchSize: "40", lcLaborRate: "45.00", lcUncertainty: "10",
   ouEquilibrium: "27.00", ouTheta: "0.15", ouSigma: "3.50", ouHorizon: "1",
   mvarMu: "8500", mvarSigma: "6200",
   // riskP/riskS/riskD and mvarConfidence are <select>s whose default is their "selected" <option>
@@ -1140,6 +1140,56 @@ sandbox.calcCapacity(); // re-trigger via the real calculator (not a parallel pa
 check(elements.capSpcWrap.innerHTML.includes("<svg"), "calcCapacity() itself re-renders the SPC chart on every recalculation, not just at page load");
 check(html.includes('cadence-badge operational') && html.includes('cadence-badge financial'), "both cadence badges (operational on Capacity, financial on Variance) exist, making the two-tier real-time-vs-period-close distinction visible, not just an internal design note");
 
+console.log("--- concept 19: RCA Trigger-Duration Pulse (redesigned -- real session-only in-memory onset tracking, never persisted) ---");
+check(typeof sandbox.calcRcaTriggerPulse === "function", "window.calcRcaTriggerPulse is exposed as a function");
+check(typeof sandbox.renderRcaTriggerPulse === "function", "window.renderRcaTriggerPulse is exposed as a function");
+// At real defaults nothing is out-of-control (confirmed above) -- durations must all be 0.
+const rcaDefaultPulse = sandbox.calcRcaTriggerPulse([false, false, false, false, false, false]);
+check(JSON.stringify(rcaDefaultPulse.durations) === JSON.stringify([0, 0, 0, 0, 0, 0]), "at real defaults (no real breach), all 6 durations are 0", JSON.stringify(rcaDefaultPulse.durations));
+check(elements.rcaTriggerOut.textContent === "", "the trigger-duration readout is empty at real defaults, not a fabricated status", elements.rcaTriggerOut.textContent);
+// Real edge case: pushing capBooked0 to 400 (avail0=160) genuinely breaks the SELF-SHIFTING control
+// limits (the moving range widens with the spike itself, so a smaller nudge wouldn't trigger --
+// solved algebraically before picking this value, not guessed) -- confirmed live in-browser first.
+elements.capBooked0.value = "400";
+sandbox.calcCapacity(); // exactly ONE real recalculation -- calling renderCapacitySPC() again separately
+// here would double-increment the session-only duration counter and falsely skip straight to "chronic".
+check((elements.capSpcWrap.innerHTML.match(/fill="rgb\(var\(--c-danger\)\)"/g) || []).length === 1, "capBooked0=400 genuinely breaks exactly Week 1's real, self-recomputed control limit (one danger-colored dot), no other week affected", (elements.capSpcWrap.innerHTML.match(/fill="rgb\(var\(--c-danger\)\)"/g) || []).length);
+check(elements.rcaTriggerOut.textContent === "A control-limit trigger just fired this check -- watch whether it repeats.", "a FIRST-time trigger (duration 1) shows the real 'just fired' message", elements.rcaTriggerOut.textContent);
+check(elements.capSpcWrap.innerHTML.includes('class="waterfall-bar-pulse"'), "a first-time trigger renders the real pulse ring (reusing the existing waterfall-bar-pulse class)", elements.capSpcWrap.innerHTML.includes('class="waterfall-bar-pulse"'));
+// A SECOND consecutive real recalculation still out-of-control must read as CHRONIC, not re-pulse.
+elements.capBooked0.value = "401";
+sandbox.calcCapacity();
+check(elements.rcaTriggerOut.textContent === "Chronic this session: W1 (2 consecutive checks) -- still out of control after repeated edits, not a one-off blip.", "a SECOND consecutive real trigger correctly reads as chronic with the exact real consecutive-check count", elements.rcaTriggerOut.textContent);
+check(!elements.capSpcWrap.innerHTML.includes('class="waterfall-bar-pulse"'), "a chronic (2nd+) trigger renders a steady ring, NOT the pulse class -- 'just tripped' and 'been out all session' are visually distinct", elements.capSpcWrap.innerHTML.includes('class="waterfall-bar-pulse"'));
+// Recovery: restoring a real in-control value must reset the duration counter to 0, not linger.
+elements.capBooked0.value = "150";
+sandbox.calcCapacity();
+check(elements.rcaTriggerOut.textContent === "", "restoring a real in-control value resets the trigger-duration readout to empty, confirming no residual session state leaked", elements.rcaTriggerOut.textContent);
+const rcaAfterRecovery = sandbox.calcRcaTriggerPulse([false, false, false, false, false, false]);
+check(JSON.stringify(rcaAfterRecovery.durations) === JSON.stringify([0, 0, 0, 0, 0, 0]), "the real session-only duration counter itself resets to 0 on recovery, not a stale carried-over count", JSON.stringify(rcaAfterRecovery.durations));
+
+console.log("--- concept 21: Capacity SPC Break Cascade (explicitly illustrative propagation model, decay=0.5) ---");
+check(typeof sandbox.calcCapacityCascade === "function", "window.calcCapacityCascade is exposed as a function");
+check(typeof sandbox.renderCapacityCascade === "function", "window.renderCapacityCascade is exposed as a function");
+const cascadeNone = sandbox.calcCapacityCascade([false, false, false, false, false, false]);
+check(JSON.stringify(cascadeNone.risk) === JSON.stringify([0, 0, 0, 0, 0, 0]), "with no real breach, all 6 weeks show 0% illustrative risk -- nothing to propagate from", JSON.stringify(cascadeNone.risk));
+check(cascadeNone.anyTriggered === false, "anyTriggered correctly reads false at real defaults", cascadeNone.anyTriggered);
+// Golden decay values (decay=0.5) for a real week-1 breach, pre-registered via node -e and confirmed
+// live in-browser: [1, 0.5, 0.25, 0.125, 0.0625, 0.03125].
+const cascadeW1 = sandbox.calcCapacityCascade([true, false, false, false, false, false]);
+const expectedCascade = [1, 0.5, 0.25, 0.125, 0.0625, 0.03125];
+cascadeW1.risk.forEach(function(r, i){ check(Math.abs(r - expectedCascade[i]) < 1e-9, `week ${i + 1}'s illustrative propagated risk matches the golden decay^distance value`, r); });
+check(cascadeW1.anyTriggered === true, "anyTriggered correctly reads true when any real week is out of control", cascadeW1.anyTriggered);
+sandbox.renderCapacityCascade(cascadeW1);
+check(elements.capCascadeWrap.innerHTML.includes("<svg") && elements.capCascadeWrap.innerHTML.includes('role="img"'), "renderCapacityCascade() renders an actual accessible <svg>, not just numbers");
+check((elements.capCascadeWrap.innerHTML.match(/<rect/g) || []).length === 6, "renders exactly 6 real bars, one per week", (elements.capCascadeWrap.innerHTML.match(/<rect/g) || []).length);
+check(elements.capCascadeWrap.innerHTML.includes("100%") && elements.capCascadeWrap.innerHTML.includes("50%") && elements.capCascadeWrap.innerHTML.includes("25%") && elements.capCascadeWrap.innerHTML.includes("13%") && elements.capCascadeWrap.innerHTML.includes("6%") && elements.capCascadeWrap.innerHTML.includes("3%"), "all 6 real percentage labels match the golden decay sequence", elements.capCascadeWrap.innerHTML);
+check(elements.capCascadeWrap.innerHTML.includes("not a real causal claim"), "the aria-label states explicitly this is illustrative, never presenting it as a fitted or sourced number");
+check(!elements.capCascadeWrap.innerHTML.includes('font-size="9"') && !elements.capCascadeWrap.innerHTML.includes('font-size="9.5"'), "no illegible 9px/9.5px SVG text in the cascade chart (matches the page-wide minimum-legible-size convention)");
+// Restore real defaults so nothing downstream in this file runs against this edge-case breach state.
+sandbox.renderCapacityCascade(cascadeNone);
+check(elements.capCascadeWrap.innerHTML.includes("No real breach this check"), "defaults restored cleanly after the cascade edge-case test, confirming no residual state leaked", elements.capCascadeWrap.innerHTML);
+
 console.log("--- viz-innovation batch 3: Sonar Ping Anomaly Sweep golden values (same SPC data above, as distance-to-control-limit) ---");
 // halfWidth = ucl-mean = 131.84583333333333-78.64583333333333 = 53.2. distanceRatio[i] = (util[i]-mean)/53.2
 // for util=[93.75,87.5,62.5,56.25,96.875,75] -- pre-registered via node -e.
@@ -1503,6 +1553,33 @@ check(Math.abs(paretoData.cumPoints[1].pct - 78.80844450200752) < 0.0001, "secon
 check(Math.abs(paretoData.cumPoints[2].pct - 100) < 0.0001, "final cumulative-% point reaches exactly 100%", paretoData.cumPoints[2].pct);
 check(elements.qualityParetoWrap.innerHTML.includes("<svg"), "the Pareto chart actually rendered an <svg> element into the page, not just returned numbers");
 check(elements.qualityParetoWrap.innerHTML.includes("$7,862") && elements.qualityParetoWrap.innerHTML.includes("$7,350") && elements.qualityParetoWrap.innerHTML.includes("$4,091"), "the rendered SVG labels all 3 bars with their real dollar values", elements.qualityParetoWrap.innerHTML.match(/\$[\d,]+/g));
+check(paretoData.velocitySnapshots.length === 0, "with zero saved Playbook-tab bookmarks, velocitySnapshots is correctly empty -- no fabricated overlay", paretoData.velocitySnapshots.length);
+check(!elements.qualityParetoWrap.innerHTML.includes("Saved exploration snapshots"), "the aria-label carries no snapshot sentence at all when nothing is saved", elements.qualityParetoWrap.innerHTML);
+
+console.log("--- concept 23: Quality Pareto Velocity Overlay (redesigned -- reuses real Bookmarks to overlay a real domain-filtered dollar total, not a fabricated trend) ---");
+// Real domain totals from the full 30-scenario PLAYBOOK (pre-registered via node -e, summing every
+// item's own "+\$..." result-parsed value per domain): material=5 items/$79,056, overhead=5 items/$105,736.
+setBookmarks([
+  { name: "Material Focus", tab: "playbook", ts: 1, values: { pbDomain: "material", pbSearch: "" } },
+  { name: "Overhead Focus", tab: "playbook", ts: 2, values: { pbDomain: "overhead", pbSearch: "" } },
+]);
+const paretoWithSnapshots = sandbox.renderQualityParetoChart();
+check(paretoWithSnapshots.velocitySnapshots.length === 2, "calcCompassBlend's sibling mechanism correctly picks up both real Playbook-tab bookmarks", paretoWithSnapshots.velocitySnapshots.length);
+check(paretoWithSnapshots.velocitySnapshots[0].count === 5 && Math.abs(paretoWithSnapshots.velocitySnapshots[0].total - 79056) < 0.01, "the Material Focus snapshot's real domain-filtered total matches the golden value (5 real scenarios, $79,056)", JSON.stringify(paretoWithSnapshots.velocitySnapshots[0]));
+check(paretoWithSnapshots.velocitySnapshots[1].count === 5 && Math.abs(paretoWithSnapshots.velocitySnapshots[1].total - 105736) < 0.01, "the Overhead Focus snapshot's real domain-filtered total matches the golden value (5 real scenarios, $105,736)", JSON.stringify(paretoWithSnapshots.velocitySnapshots[1]));
+check(elements.qualityParetoWrap.innerHTML.includes("Material Focus (material filter, 5 scenarios): $79,056") && elements.qualityParetoWrap.innerHTML.includes("Overhead Focus (overhead filter, 5 scenarios): $105,736"), "the aria-label states both real snapshot totals exactly, matching the live-verified round", elements.qualityParetoWrap.innerHTML);
+check((elements.qualityParetoWrap.innerHTML.match(/stroke-dasharray="6,3"/g) || []).length === 2, "renders exactly 2 real overlay lines, one per saved snapshot", (elements.qualityParetoWrap.innerHTML.match(/stroke-dasharray="6,3"/g) || []).length);
+// A bookmark on a DIFFERENT tab must never leak into this overlay (same discipline as concept 12).
+setBookmarks([
+  { name: "Material Focus", tab: "playbook", ts: 1, values: { pbDomain: "material", pbSearch: "" } },
+  { name: "A Build-vs-Buy scenario", tab: "buildbuy", ts: 3, values: { bbInternal: "95.78" } },
+]);
+const paretoMixedTab = sandbox.renderQualityParetoChart();
+check(paretoMixedTab.velocitySnapshots.length === 1 && paretoMixedTab.velocitySnapshots[0].name === "Material Focus", "a bookmark saved on a different tab (e.g. buildbuy) is correctly excluded from the Pareto velocity overlay", paretoMixedTab.velocitySnapshots);
+// Restore real defaults so nothing downstream in this file runs against this edge-case bookmark state.
+setBookmarks([]);
+const paretoRestored = sandbox.renderQualityParetoChart();
+check(paretoRestored.velocitySnapshots.length === 0, "defaults restored cleanly after the velocity-overlay edge-case tests, confirming no residual bookmark state leaked", paretoRestored.velocitySnapshots.length);
 
 console.log("--- Pathway C (2026-09-05): KPI Interaction Map -- confirmed cross-KPI tradeoffs, each side clickable to a real Playbook scenario ---");
 check(Array.isArray(sandbox.KPI_TRADEOFFS), "window.KPI_TRADEOFFS is exposed as an array");
@@ -1640,6 +1717,36 @@ elements.lcBatchStart.value = "20"; // restore default
 sandbox.calcLearningCurve();
 check(elements.lcTotalHours.textContent === "74.64 hrs", "restoring Batch Start to its default (20) reproduces the original golden value exactly, confirming the fix didn't disturb normal operation", elements.lcTotalHours.textContent);
 
+console.log("--- concept 11: Learning Curve Forecast Ribbon (redesigned -- real user-set uncertainty slider, brute-forced over 4 real corners) ---");
+check(typeof sandbox.learningHoursFor === "function", "window.learningHoursFor is exposed as a function (the single shared closed-form solver, not a 2nd duplicate)");
+check(typeof sandbox.calcLearningRibbon === "function", "window.calcLearningRibbon is exposed as a function");
+check(typeof sandbox.renderLearningRibbon === "function", "window.renderLearningRibbon is exposed as a function");
+check(elements.lcUncertaintyLabel.textContent === "±10%", "the uncertainty slider's own live label matches its default 10% value", elements.lcUncertaintyLabel.textContent);
+// At golden defaults (a=6.0, phi=80%, M=20, N=40, b=-0.3219) with the default ±10% uncertainty: at the
+// final unit (x=60), center=1.6059, low=0.7757 ("0.78"), high=3.1018 ("3.10") -- pre-registered via node -e.
+const ribbonState = sandbox.calcLearningRibbon(6.0, 0.80, -0.3219280948873623, 20, 40);
+check(ribbonState.points.length === 31, "the ribbon samples 31 real points (30 steps + endpoint) across the batch range", ribbonState.points.length);
+const lastPoint = ribbonState.points[ribbonState.points.length - 1];
+check(Math.abs(lastPoint.x - 60) < 1e-9, "the final sampled point lands exactly on unit 60 (M+N)", lastPoint.x);
+check(Math.abs(lastPoint.low - 0.7757) < 0.001, "the final point's real low bound matches the pre-registered golden value", lastPoint.low);
+check(Math.abs(lastPoint.high - 3.1018) < 0.001, "the final point's real high bound matches the pre-registered golden value", lastPoint.high);
+check(lastPoint.low <= lastPoint.center && lastPoint.center <= lastPoint.high, "the center forecast line always falls within its own real low-high band (internal consistency)", `low=${lastPoint.low} center=${lastPoint.center} high=${lastPoint.high}`);
+sandbox.renderLearningRibbon(ribbonState);
+check(elements.lcRibbonWrap.innerHTML.includes("<svg") && elements.lcRibbonWrap.innerHTML.includes('role="img"'), "renderLearningRibbon() renders an actual accessible <svg>, not just numbers");
+check((elements.lcRibbonWrap.innerHTML.match(/<path/g) || []).length === 2, "renders exactly 2 real paths (the shaded band + the center forecast line) at nonzero uncertainty", (elements.lcRibbonWrap.innerHTML.match(/<path/g) || []).length);
+check(elements.lcRibbonWrap.innerHTML.includes("0.78 to 3.10 hours"), "the aria-label states the exact real band range for screen-reader users", elements.lcRibbonWrap.innerHTML);
+// Edge case: 0% uncertainty must render only the center line, no band at all.
+sandbox.document.getElementById("lcUncertainty").value = "0";
+const ribbonZeroReal = sandbox.calcLearningRibbon(6.0, 0.80, -0.3219280948873623, 20, 40);
+sandbox.renderLearningRibbon(ribbonZeroReal);
+check((elements.lcRibbonWrap.innerHTML.match(/<path/g) || []).length === 1, "at 0% uncertainty only the center forecast line is rendered, no shaded band", (elements.lcRibbonWrap.innerHTML.match(/<path/g) || []).length);
+check(!elements.lcRibbonWrap.innerHTML.includes("assumed input uncertainty"), "at 0% uncertainty the aria-label carries no band sentence at all", elements.lcRibbonWrap.innerHTML);
+// Restore real defaults so nothing downstream in this file runs against this edge-case uncertainty value.
+sandbox.document.getElementById("lcUncertainty").value = "10";
+sandbox.calcLearningCurve();
+check(elements.lcRibbonWrap.innerHTML.includes("0.78 to 3.10 hours"), "defaults restored cleanly after the ribbon edge-case test, confirming no residual state leaked", elements.lcRibbonWrap.innerHTML);
+check(elements.lcTotalHours.textContent === "74.64 hrs", "the outline's own total-hours output is untouched by the ribbon uncertainty slider -- confirms the ribbon is a pure re-framing, not a second calculator", elements.lcTotalHours.textContent);
+
 console.log("--- Cost Risk Register (CRPN): structural + arithmetic checks ---");
 check(Array.isArray(sandbox.RISK_REGISTER), "window.RISK_REGISTER is exposed as an array");
 check(sandbox.RISK_REGISTER.length === 10, "exactly 10 risk scenarios", sandbox.RISK_REGISTER.length);
@@ -1653,6 +1760,27 @@ const renderedRows = elements.riskRegisterBody.innerHTML.split("<tr>").length - 
 check(renderedRows === 10, "rendered exactly 10 risk register rows", renderedRows);
 const escalateCount = (elements.riskRegisterBody.innerHTML.match(/ESCALATE/g) || []).length;
 check(escalateCount === 6, "exactly 6 of 10 risks are correctly banded ESCALATE (CRPN >= 25, the document's own governance threshold)", escalateCount);
+
+console.log("--- concept 14: Risk Register P/S/D Cube (isometric, all 3 real dimensions at once, distinct from Aurora's pairwise scatter) ---");
+check(typeof sandbox.calcRiskCube === "function", "window.calcRiskCube is exposed as a function");
+check(typeof sandbox.renderRiskCube === "function", "window.renderRiskCube is exposed as a function");
+const cubeState = sandbox.calcRiskCube();
+check(cubeState.points.length === 10, "the cube has exactly 10 real points, one per risk", cubeState.points.length);
+check(cubeState.points[0].id === "RSK-01" && cubeState.points[0].crpn === 32 && cubeState.points[0].band === "red", "RSK-01's cube point reads the SAME real CRPN/band as the register table (32, escalate/red)", JSON.stringify(cubeState.points[0]));
+check(cubeState.points.filter((p) => p.band === "red").length === 6, "the cube's own real band count matches the register's 6 ESCALATE / 4 MONITOR split exactly (no drifted second threshold)", cubeState.points.filter((p) => p.band === "red").length);
+sandbox.renderRiskCube(cubeState);
+check(elements.riskCubeWrap.innerHTML.includes("<svg") && elements.riskCubeWrap.innerHTML.includes('role="img"'), "renderRiskCube() renders an actual accessible <svg>, not just numbers");
+check((elements.riskCubeWrap.innerHTML.match(/<circle/g) || []).length === 10, "renders exactly 10 real circles, one per risk", (elements.riskCubeWrap.innerHTML.match(/<circle/g) || []).length);
+// Golden isometric projection (pre-registered via node -e): RSK-06 (P5,S2,D3) projects to
+// (198.1, 58.0) with radius 6.0 (3 + sqrt(30)*0.55), and is drawn FIRST -- painter's-algorithm depth
+// (p+d-s=6, the largest in the register) puts it furthest back, drawn before anything nearer.
+check(elements.riskCubeWrap.innerHTML.includes('cx="198.1" cy="58.0" r="6.0"'), "RSK-06's real isometric projection (P5,S2,D3) matches the pre-registered golden pixel position and radius", elements.riskCubeWrap.innerHTML);
+const firstCircleIdx = elements.riskCubeWrap.innerHTML.indexOf("<circle");
+const secondCircleIdx = elements.riskCubeWrap.innerHTML.indexOf("<circle", firstCircleIdx + 1);
+check(elements.riskCubeWrap.innerHTML.slice(firstCircleIdx, firstCircleIdx + 40).includes("198.1") && elements.riskCubeWrap.innerHTML.slice(secondCircleIdx, secondCircleIdx + 40).includes('cx="160.0" cy="36.0" r="6.8"'), "the real painter's-algorithm depth order draws RSK-06 (deepest, p+d-s=6) first and RSK-04 (p+d-s=5) second, not a fixed/alphabetical draw order", elements.riskCubeWrap.innerHTML.slice(firstCircleIdx, secondCircleIdx + 60));
+check(!elements.riskCubeWrap.innerHTML.includes('font-size="9"') && !elements.riskCubeWrap.innerHTML.includes('font-size="9.5"'), "no illegible 9px/9.5px SVG text in the cube (matches the page-wide minimum-legible-size convention)");
+sandbox.renderRiskRegister();
+check(elements.riskCubeWrap.innerHTML.includes('cx="198.1" cy="58.0" r="6.0"'), "renderRiskRegister() itself re-renders the cube on every recalculation, not just at page load", elements.riskCubeWrap.innerHTML);
 
 console.log("--- viz-innovation batch 3: Aurora Layer Correlation Map golden values (real Pearson correlation across the 10 risks' independently-assigned P/S/D scores) ---");
 // P=[4,3,3,4,4,5,2,4,2,4], S=[4,5,4,3,2,2,4,3,4,3], D=[2,3,1,4,2,3,4,2,3,3] -- pre-registered via a
@@ -1671,6 +1799,29 @@ check((elements.auroraWrap.innerHTML.match(/<path/g) || []).length === 3, "exact
 check(elements.auroraCorrPS.textContent === "-0.710", "rendered corr(P,S) text matches golden value", elements.auroraCorrPS.textContent);
 check(elements.auroraCorrPD.textContent === "-0.181", "rendered corr(P,D) text matches golden value", elements.auroraCorrPD.textContent);
 check(elements.auroraCorrSD.textContent === "0.024", "rendered corr(S,D) text matches golden value", elements.auroraCorrSD.textContent);
+
+console.log("--- concept 15: Aurora Correlation Depth Explorer (click-to-drill real scatter behind each correlation) ---");
+check(typeof sandbox.calcAuroraDepth === "function", "window.calcAuroraDepth is exposed as a function");
+check(typeof sandbox.renderAuroraDepth === "function", "window.renderAuroraDepth is exposed as a function");
+// Real P/S/D scores from RISK_REGISTER (pre-registered via node -e): PS scatter has 3 risks sharing
+// (4,3) -- RSK-04, RSK-08, RSK-10 -- and 2 sharing (2,4) -- RSK-07, RSK-09.
+const psDepth = sandbox.calcAuroraDepth("PS");
+check(psDepth.points.length === 10, "the PS depth scatter has exactly 10 real points, one per risk", psDepth.points.length);
+check(Math.abs(psDepth.corr - (-0.7100716024967264)) < 1e-9, "the depth scatter's own correlation reads the SAME real calcAurora() value, not a second computation", psDepth.corr);
+check(psDepth.points[0].id === "RSK-01" && psDepth.points[0].x === 4 && psDepth.points[0].y === 4, "RSK-01's real (P,S) score matches the golden register value", JSON.stringify(psDepth.points[0]));
+check(psDepth.points[3].x === 4 && psDepth.points[3].y === 3 && psDepth.points[7].x === 4 && psDepth.points[7].y === 3 && psDepth.points[9].x === 4 && psDepth.points[9].y === 3, "RSK-04/08/10 all genuinely share the exact same real (4,3) score pair (a true duplicate, not a fabricated one)", JSON.stringify([psDepth.points[3], psDepth.points[7], psDepth.points[9]]));
+sandbox.renderAuroraDepth(psDepth);
+check(elements.auroraDepthWrap.innerHTML.includes("<svg") && elements.auroraDepthWrap.innerHTML.includes('role="img"'), "renderAuroraDepth() renders an actual accessible <svg>, not just numbers");
+check((elements.auroraDepthWrap.innerHTML.match(/<circle/g) || []).length === 10, "renders exactly 10 real circles, one per risk, even with genuine score duplicates (deterministic offset keeps every point visible)", (elements.auroraDepthWrap.innerHTML.match(/<circle/g) || []).length);
+check(elements.auroraDepthWrap.innerHTML.includes("Correlation -0.710"), "the aria-label states the exact same golden correlation as the outline above", elements.auroraDepthWrap.innerHTML);
+check(!elements.auroraDepthWrap.innerHTML.includes('font-size="9"') && !elements.auroraDepthWrap.innerHTML.includes('font-size="9.5"'), "no illegible 9px/9.5px SVG text in the depth scatter (matches the page-wide minimum-legible-size convention)");
+// Switching pairs must read the OTHER real correlation, not stay stuck on PS.
+const sdDepth = sandbox.calcAuroraDepth("SD");
+check(Math.abs(sdDepth.corr - 0.024246432248443615) < 1e-9, "switching to the SD pair reads the correct, different real correlation value", sdDepth.corr);
+check(sdDepth.points[0].x === 4 && sdDepth.points[0].y === 2, "RSK-01's real (S,D) score differs correctly from its (P,S) score above", JSON.stringify(sdDepth.points[0]));
+// Restore the default pair state so nothing downstream in this file runs against SD.
+sandbox.renderAuroraDepth(sandbox.calcAuroraDepth("PS"));
+check(elements.auroraDepthWrap.innerHTML.includes("Correlation -0.710"), "defaults restored cleanly after the pair-switch test, confirming no residual state leaked", elements.auroraDepthWrap.innerHTML);
 
 console.log("--- Risk Scorer: golden values (default P=3, S=3, D=3) ---");
 check(elements.riskScoreOut.textContent === "27", "default risk score matches golden value (3x3x3)", elements.riskScoreOut.textContent);
@@ -1778,7 +1929,7 @@ console.log("--- Stress-test finding (2026-09-06): every <label> now carries a f
 // re-rendered control, not a lapse in the static-markup convention this check actually guards.
 const totalLabels = (staticMarkup.match(/<label\b/g) || []).length;
 const labelsWithFor = staticMarkup.match(/<label for="([a-zA-Z0-9_]+)"/g) || [];
-check(totalLabels === 92, "exactly 92 <label> elements exist in the static markup (91 + 1 from viz-innovation Batch B's Q* Crossover Fog uncertainty slider)", totalLabels);
+check(totalLabels === 93, "exactly 93 <label> elements exist in the static markup (92 + 1 from viz-innovation Batch C's Learning Curve Ribbon uncertainty slider)", totalLabels);
 check(labelsWithFor.length === totalLabels, "every single static-markup <label> carries a for= attribute, not just some of them", `${labelsWithFor.length}/${totalLabels}`);
 const forTargets = [...html.matchAll(/<label for="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]);
 const allIds = new Set([...html.matchAll(/\bid="([a-zA-Z0-9_]+)"/g)].map((m) => m[1]));
@@ -1798,7 +1949,7 @@ check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.E
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 43, "exactly 43 explain buttons are wired in the HTML (41 from before + viz-innovation Batch B's dfmlevers/compassblend)", explainButtonCount);
+check(explainButtonCount === 45, "exactly 45 explain buttons are wired in the HTML (43 from before + viz-innovation Batch C's riskcube/cascade)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");
@@ -2249,16 +2400,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 35, "HISTORY has all 35 real build rounds (5 through 39)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 36, "HISTORY has all 36 real build rounds (5 through 40)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 8, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 35 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 9, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 36 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
-check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39]), "HISTORY's real sabotageTested tags match exactly the 7 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39, 40]), "HISTORY's real sabotageTested tags match exactly the 8 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
@@ -2278,12 +2429,13 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 7].n === 33 && trackedRounds[trackedRounds.length - 7].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 6].n === 34 && trackedRounds[trackedRounds.length - 6].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
-check(trackedRounds[trackedRounds.length - 5].n === 35 && trackedRounds[trackedRounds.length - 5].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
-check(trackedRounds[trackedRounds.length - 4].n === 36 && trackedRounds[trackedRounds.length - 4].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
-check(trackedRounds[trackedRounds.length - 3].n === 37 && trackedRounds[trackedRounds.length - 3].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
-check(trackedRounds[trackedRounds.length - 2].n === 38 && trackedRounds[trackedRounds.length - 2].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
+check(trackedRounds[trackedRounds.length - 8].n === 33 && trackedRounds[trackedRounds.length - 8].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 7].n === 34 && trackedRounds[trackedRounds.length - 7].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 6].n === 35 && trackedRounds[trackedRounds.length - 6].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 5].n === 36 && trackedRounds[trackedRounds.length - 5].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 4].n === 37 && trackedRounds[trackedRounds.length - 4].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
+check(trackedRounds[trackedRounds.length - 3].n === 38 && trackedRounds[trackedRounds.length - 3].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
+check(trackedRounds[trackedRounds.length - 2].n === 39 && trackedRounds[trackedRounds.length - 2].after === 1117, "round 39 (viz-innovation Batch B) ends at the real 1117");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2319,7 +2471,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("41") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("42") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");
