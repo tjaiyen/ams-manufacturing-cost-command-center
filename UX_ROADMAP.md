@@ -247,10 +247,13 @@ transcript until now).
 
 **Batches (5 of 6, by real data dependency — order is sequencing, not priority; none declined):**
 
-- **Batch A** (100% already-real data): 1 Living Variance Waterfall, 3 MDQS Deduction Flow, 4 Threshold
-  Disagreement Bridge (AMS's real MDQS 93% red-band vs. this document's real 99% MDQ Index — a genuine
-  cross-source disagreement, not a bug), 5 Commodity Exposure Tide, 6 Capacity Absorption Sankey, 16
-  Governance Gate Nested Rings.
+- **Batch A ✅ built (2026-09-08, README's thirty-eighth round):** 1 Living Variance Waterfall, 3 MDQS
+  Deduction Flow, 4 Threshold Disagreement Bridge (AMS's real MDQS 93% red-band vs. this document's real
+  99% MDQ Index — a genuine cross-source disagreement, not a bug), 5 Commodity Exposure Tide, 6 Capacity
+  Absorption Sankey, 16 Governance Gate Nested Rings. All 6 verified live + sabotage-tested; see README
+  for the one real bug found (an illegible-font-size regression) and the one accepted limitation (a
+  transient `getBoundingClientRect()` zero-read confirmed as the known "Browser pane hidden" artifact,
+  not a layout bug).
 - **Batch B** (Should-Cost/DFM/Build-vs-Buy; 2 redesigns): 2\* Should-Cost Peel Recompute Trail
   (redesigned as a live within-session ghost-trail, not fabricated cross-session history), 7 Monte
   Carlo Should-Cost Cloud, 8 DFM Penalty Lever Board, 9\* Q\* Crossover Fog (redesigned: a real,

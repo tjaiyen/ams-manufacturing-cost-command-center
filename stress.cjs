@@ -1663,7 +1663,7 @@ check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.E
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 38, "exactly 38 explain buttons are wired in the HTML (33 from before + viz-innovation batch 4's 5)", explainButtonCount);
+check(explainButtonCount === 41, "exactly 41 explain buttons are wired in the HTML (38 from before + viz-innovation Batch A's capsankey/mdqsflow/thresholdbridge)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");
@@ -2114,16 +2114,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 33, "HISTORY has all 33 real build rounds (5 through 37)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 34, "HISTORY has all 34 real build rounds (5 through 38)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 6, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 33 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 7, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 34 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
-check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35]), "HISTORY's real sabotageTested tags match exactly the 5 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38]), "HISTORY's real sabotageTested tags match exactly the 6 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
@@ -2143,10 +2143,11 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 5].n === 33 && trackedRounds[trackedRounds.length - 5].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 4].n === 34 && trackedRounds[trackedRounds.length - 4].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
-check(trackedRounds[trackedRounds.length - 3].n === 35 && trackedRounds[trackedRounds.length - 3].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
-check(trackedRounds[trackedRounds.length - 2].n === 36 && trackedRounds[trackedRounds.length - 2].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 6].n === 33 && trackedRounds[trackedRounds.length - 6].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 5].n === 34 && trackedRounds[trackedRounds.length - 5].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 4].n === 35 && trackedRounds[trackedRounds.length - 4].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 3].n === 36 && trackedRounds[trackedRounds.length - 3].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 2].n === 37 && trackedRounds[trackedRounds.length - 2].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2182,7 +2183,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("39") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("40") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");
@@ -2269,6 +2270,62 @@ check(sandbox.localStorage._s["ams-cc-dyslexia-mode"] === "1", "the preference p
 elements.dyslexiaBtn.click();
 check(!elements["__body"].classList.contains("dyslexia-mode"), "clicking it again turns it back off");
 check(html.includes("Verdana,Tahoma") && !html.includes("@font-face"), "the dyslexia-mode font stack is real, named system fonts -- not a custom/downloaded font file (zero-dependency, zero-network by design)");
+
+console.log("--- /viz-innovation Batch A (2026-09-08): 6 concepts, all real re-framings of already-computed AMS data ---");
+console.log("--- concept 1: Living Variance Waterfall (a real pulse on whichever bar actually changed) ---");
+sandbox.activateTab("variance", { focus: false });
+const wfBefore = sandbox.calcVariance();
+const pulseCountBefore = (elements.waterfallChart.innerHTML.match(/waterfall-bar-pulse/g) || []).length;
+check(pulseCountBefore === 0, "no bars are marked pulsing on a re-render with unchanged inputs (nothing actually changed)", String(pulseCountBefore));
+const vMSQEl = elements.vMSQ;
+const vMSQOrig = vMSQEl.value;
+vMSQEl.value = String(parseFloat(vMSQOrig) + 5);
+sandbox.calcVariance();
+const pulseCountAfter = (elements.waterfallChart.innerHTML.match(/waterfall-bar-pulse/g) || []).length;
+// Pre-registered (B35): changing vMSQ only feeds MQV = (MAQ-MSQ)*MSP -- exactly 2 real bars change (MQV itself, and NET, which sums all 6) -- verified live in-browser before writing this check.
+check(pulseCountAfter === 2, "editing MSQ correctly pulses exactly the 2 real bars it actually changes (MQV and NET), not all 7 or none", String(pulseCountAfter));
+vMSQEl.value = vMSQOrig;
+sandbox.calcVariance(); // restore before any later check relies on the real default variance state
+
+console.log("--- concept 5: Commodity Exposure Tide (same real shiftPct/8% threshold, re-framed) ---");
+sandbox.activateTab("shouldcost", { focus: false });
+check(typeof sandbox.calcCommodityTide === "function" && typeof sandbox.renderCommodityTide === "function", "calcCommodityTide/renderCommodityTide are exposed as functions");
+// Pre-registered (B35): frozen=26.00, spot=29.50 -> shiftPct = (29.50-26.00)/26.00*100 = 13.461538...%, warning=true (>8%).
+const tideState = sandbox.calcCommodityTide(13.461538461538462, true);
+check(Math.abs(tideState.clamped - 12) < 0.001, "the tide's real clamped value caps at the real 12% gauge ceiling (1.5x the real 8% threshold) for a shift this large, not an unbounded value that would blow out the gauge", String(tideState.clamped));
+check(elements.commodityTideWrap.innerHTML.includes("13.5%"), "the live-rendered tide shows the real, correctly-rounded shift percentage", elements.commodityTideWrap.innerHTML.includes("13.5%"));
+
+console.log("--- concept 6: Capacity Absorption Sankey (same real weekly avail/booked/overhead-rate data, re-framed) ---");
+sandbox.activateTab("capacity", { focus: false });
+const sankeyState = sandbox.calcCapacitySankey();
+// Pre-registered (B35, cross-checked against this repo's own already-verified $5,740 6-week total unabsorbed-dollars golden value): weeks [160/150,160/140,160/100,160/90,160/155,160/120] at $28/hr -> per-week unabsorbed $ = [280,560,1680,1960,140,1120], total $5,740.
+check(JSON.stringify(sankeyState.weeks.map((w) => w.unabDollars)) === JSON.stringify([280, 560, 1680, 1960, 140, 1120]), "each real week's unabsorbed dollar flow matches this repo's own already-verified per-week figures", JSON.stringify(sankeyState.weeks.map((w) => w.unabDollars)));
+check(sankeyState.totalUnabDollars === 5740, "the Sankey's real running total matches this repo's own already-verified $5,740 golden value exactly, not a recomputed-and-drifted number", String(sankeyState.totalUnabDollars));
+sandbox.renderCapacitySankey(sankeyState);
+const sankeyPathCount = (elements.capSankeyWrap.innerHTML.match(/<path/g) || []).length;
+check(sankeyPathCount === 12, "renders exactly 12 real flow paths (6 weeks x 2: every week has real unabsorbed hours at the default inputs)", String(sankeyPathCount));
+
+console.log("--- concept 16: Governance Gate Nested Rings (same real 3 gate states, re-framed) ---");
+sandbox.activateTab("governance", { focus: false });
+const gatesState = sandbox.calcGates();
+check(typeof sandbox.renderGateRings === "function", "renderGateRings is exposed as a function");
+// Pre-registered (B35): defaults are BOM 8% (threshold 15, PASS), PO 7% (threshold 5, BLOCKED), Confirmation 12% (threshold 15, PASS) -- exactly 1 of 3 blocked.
+check(gatesState.bomPass === true && gatesState.poPass === false && gatesState.confPass === true, "the real default gate states match this page's own established defaults (only the PO gate blocked)", JSON.stringify(gatesState));
+check(elements.gateRingsWrap.innerHTML.includes("1/3"), "the rendered center readout shows the real 1-of-3-blocked count, not a stale or hardcoded number", elements.gateRingsWrap.innerHTML.includes("1/3"));
+check((elements.gateRingsWrap.innerHTML.match(/class="gate-ring"/g) || []).length === 3, "renders exactly 3 real rings, one per real gate");
+
+console.log("--- concept 3: MDQS Deduction Flow (same real 4 weighted factors, re-framed) ---");
+const mdqsFlowState = sandbox.calcMdqsFlow();
+// Pre-registered (B35): MDQS defaults 6/300 routing, 15/500 confirmation, 4/80 scrap, 10/400 stale -> weighted terms 0.60/0.90/1.25/0.375, total deduction 3.125 (score 96.875%, matching this page's own already-verified golden MDQS score).
+const expectedFlowValues = [0.6, 0.9, 1.25, 0.375];
+check(mdqsFlowState.factors.every((f, i) => Math.abs(f.value - expectedFlowValues[i]) < 0.0001), "all 4 real weighted deduction factors match the pre-registered golden values exactly", JSON.stringify(mdqsFlowState.factors.map((f) => f.value)));
+check(Math.abs(mdqsFlowState.totalDeduction - 3.125) < 0.0001, "the flow's real total deduction matches this page's own already-verified 3.125-point golden value (100% - 96.875% MDQS score)", String(mdqsFlowState.totalDeduction));
+
+console.log("--- concept 4: Threshold Disagreement Bridge (two real, differently-sourced bands) ---");
+check(typeof sandbox.renderThresholdBridge === "function", "renderThresholdBridge is exposed as a function");
+sandbox.renderThresholdBridge(96.875);
+check(elements.thresholdBridgeWrap.innerHTML.includes("AMS: 93%") && elements.thresholdBridgeWrap.innerHTML.includes("Doc: 99%"), "both real, independently-sourced thresholds (this page's own 93% and the audited document's real 99%) are shown, neither silently dropped or averaged away", elements.thresholdBridgeWrap.innerHTML.includes("AMS: 93%") && elements.thresholdBridgeWrap.innerHTML.includes("Doc: 99%"));
+check(elements.thresholdBridgeWrap.innerHTML.includes("96.9%"), "the live score marker shows the real, correctly-rounded current MDQS score", elements.thresholdBridgeWrap.innerHTML.includes("96.9%"));
 
 console.log("--- Stress-test finding (2026-09-06, proactive): #verifyBadge now self-checks against this file's own final tally ---");
 // The existing verifyBadgeNums check above only confirms the badge's own two numbers agree with EACH

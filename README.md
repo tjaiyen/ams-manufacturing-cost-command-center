@@ -11,7 +11,7 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (38 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+modals (41 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
 directly to any of the 43 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1041 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1059 checks, all passing as of this writing.
 
 ## Status
 
@@ -1533,3 +1533,41 @@ its-own-stress-test merge; 36 = resolve-limitations; 37 = this planning round), 
 position-dependent `stress.cjs` checks updated to match the real, now-longer chain. Checks: 1039 → 1041
 (+2: the corrected round-count/family-distribution assertions after the HISTORY split). Committed
 locally — pending push with explicit confirmation, same discipline as every prior round.
+
+**2026-09-08, thirty-eighth round (`/viz-innovation` Batch A: 6 concepts, first batch of the 30-concept
+plan actually built):** All 6 concepts re-frame data this page already computes — zero new fabricated
+facts, matching the discipline the plan itself committed to. Built serially (lowest-precedent-risk
+first), each pre-registered (B35) via a standalone `node -e` before writing any `stress.cjs` assertion,
+verified live in-browser, then checked.
+
+1. **Living Variance Waterfall** — the existing waterfall chart now pulses only the specific bar(s)
+   that actually changed since the last edit (verified: editing MSQ correctly pulses exactly MQV and
+   NET, not all 7 or none). True continuous position interpolation isn't possible without restructuring
+   this already-shipped chart's DOM strategy (it rebuilds via `innerHTML` every render, so there's no
+   persistent element to CSS-transition) — scoped honestly to a real per-bar pulse instead, stated in
+   the card's own new caption, not oversold as smooth animation it doesn't do.
+2. **Commodity Exposure Tide** — the same real shift%/8% threshold re-framed as a rising tide toward a
+   marked shoreline.
+3. **MDQS Deduction Flow** — the same 4 real weighted MDQS factors traced as a Sankey flow (near-literal
+   reuse of the already-shipped Circulatory Cost Flow's bezier technique).
+4. **Threshold Disagreement Bridge** — this page's own real 93% MDQS red band plotted against the
+   audited document's real, differently-sourced 99% Master Data Quality Index red band — both shown,
+   neither silently reconciled or dropped (sabotage-tested: collapsing the two thresholds to one value
+   correctly failed the check).
+5. **Capacity Absorption Sankey** — the same 6 real weekly avail/booked/overhead-rate figures traced as
+   flows into absorbed/unabsorbed sinks; the real running total ($5,740) cross-checked against this
+   page's own already-verified 6-week golden value and matched exactly (sabotage-tested: inflating the
+   rate by 10% correctly failed the check).
+6. **Governance Gate Nested Rings** — the same 3 real gate pass/blocked states as concentric rings with
+   a real "N of 3 blocked" center readout; click-to-jump verified live (the stub's `querySelectorAll`
+   doesn't support attribute selectors, an accepted, precedented gap — same shape as this repo's
+   existing Q\*-solver-drag carve-out).
+
+One real bug found and fixed during the build, not after: a `font-size="9.5"` in 2 new labels tripped
+this repo's own existing regression guard against illegible SVG text sizes — bumped to the established
+real floor (10) instead of hand-picking a technically-compliant-but-still-small value. One accepted,
+explicitly-stated limitation: `getBoundingClientRect()` on the Commodity Tide read all-zero mid-build —
+confirmed via `tabs_context` to be this session's own already-documented "Browser pane hidden" artifact,
+not a real layout bug (the same SVG verified correct via its real `innerHTML`/`aria-label` content
+instead). Checks: 1041 → 1059 (+18). Committed locally — pending push with explicit confirmation, same
+discipline as every prior round.

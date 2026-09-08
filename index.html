@@ -92,6 +92,12 @@
      ArrowUp/ArrowDown wrap actually lands on -- confirms the wrap really happened, distinct from a
      dropped keypress. Visual-only; the real boundary-handling logic doesn't depend on it. */
   @keyframes boundaryBounce{0%{transform:translateY(0)}35%{transform:translateY(4px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+  /* /viz-innovation Batch A, concept 1 "Living Variance Waterfall": a real, honest pulse on
+     whichever bar(s) actually changed value since the last edit -- SVG stroke, not fill, since a
+     freshly-drawn element (this chart rebuilds via innerHTML on every render) can't smoothly
+     interpolate its own fill from a "previous" state that no longer exists in the DOM. */
+  @keyframes waterfallBarPulse{0%{stroke:rgb(var(--c-accent));stroke-width:3}100%{stroke:none;stroke-width:0}}
+  .waterfall-bar-pulse{animation:waterfallBarPulse .6s ease-out}
   .sidenav-item.boundary-bounce{animation:boundaryBounce .22s ease}
   /* /nav-innovation, scaled-down "Directional Transition Choreography": the newly active panel
      slides in from the direction it came from in the real sidenav order -- entrance-only (the old
@@ -366,6 +372,7 @@
     .kaleidophone-rod{animation:none}
     .metronome-arm{animation:none}
     .sidenav-item.boundary-bounce{animation:none}
+    .waterfall-bar-pulse{animation:none}
     .tabpanel.panel-enter-down,.tabpanel.panel-enter-up{animation:none}
     html{scroll-behavior:auto}
   }
@@ -446,7 +453,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1041/1041 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1059/1059 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -832,6 +839,8 @@
 
       <div class="card">
         <div class="card-head"><h2>Variance Waterfall</h2><span class="tag">GREEN = FAVORABLE, RED = UNFAVORABLE</span></div>
+        <p class="kpi-foot" style="margin-bottom:6px">/viz-innovation Batch A: whichever bar actually
+          changed since your last edit gets a brief real pulse — not just a redraw.</p>
         <div class="waterfall" id="waterfallChart"></div>
         <div class="outline" style="margin-top:8px">
           <div class="line"><span>Material Price Variance (MPV) <button class="explain-btn" data-explain="mpv" type="button" aria-label="Explain this formula">?</button></span><span class="mono" id="outMPV">$0</span></div>
@@ -876,6 +885,15 @@
       <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Warning threshold
         (&gt;8% above frozen standard) is the source document's own stated number — a real,
         well-defined early-warning pattern, not a claim about AMS's actual commodity contracts.</p>
+
+      <!-- viz-innovation Batch A, concept 5: Commodity Exposure Tide -- the same real shiftPct/8%
+           threshold above, re-framed as a rising/falling tide toward a marked shoreline instead of
+           read as one percentage. No new data; a pure re-framing of calcCommodityExposure's output. -->
+      <div style="display:flex;align-items:center;gap:16px;margin-top:14px">
+        <div id="commodityTideWrap" style="flex:none"></div>
+        <p class="kpi-foot" style="margin:0">How close the real price shift is to the real 8% shoreline
+          above — the same number as "Price shift vs. frozen standard," as distance instead of digits.</p>
+      </div>
 
       <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Mean-Reversion Forward Band <button class="explain-btn" data-explain="ou" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">ORNSTEIN-UHLENBECK</span></div>
       <p class="lede" style="margin-bottom:12px">Where the spot price above is actually expected to
@@ -1045,6 +1063,14 @@
     </div>
 
     <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Capacity Absorption Sankey <button class="explain-btn" data-explain="capsankey" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6-WEEK DATA ABOVE — WHERE THE HOURS ACTUALLY GO</span></div>
+      <p class="lede" style="margin-bottom:12px">The same 6 real weeks above, traced as a flow instead
+        of a table — showing where each week's real hours actually go: absorbed into production, or
+        unabsorbed into the real overhead-rate dollar cost already computed above.</p>
+      <div id="capSankeyWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
       <div class="card-head"><h2>Comet Tail Velocity Tracker <button class="explain-btn" data-explain="comettail" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 6-WEEK DATA ABOVE — VELOCITY + ACCELERATION</span></div>
       <p class="lede" style="margin-bottom:12px">Not level, and not just week-over-week delta (already
         shown on the honeycomb) — this highlights WHICH single transition saw the sharpest change in
@@ -1199,6 +1225,18 @@
           how much room is left before the red band — the same 4 weighted deductions, read as pressure
           building toward a 93% failure threshold instead of a static percentage.</p>
         <div id="pressureVesselWrap"></div>
+
+        <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">MDQS Deduction Flow <button class="explain-btn" data-explain="mdqsflow" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 WEIGHTED FACTORS ABOVE — WHERE THE DEDUCTION COMES FROM</span></div>
+        <p class="lede" style="margin-bottom:12px">The same 4 real weighted factors from the formula
+          above, traced as flows into the total deduction instead of read as 4 separate lines.</p>
+        <div id="mdqsFlowWrap"></div>
+
+        <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Threshold Disagreement Bridge <button class="explain-btn" data-explain="thresholdbridge" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">TWO REAL, DIFFERENTLY-SOURCED BANDS</span></div>
+        <p class="lede" style="margin-bottom:12px">This page's own MDQS reds out below 93% (above).
+          A separate, real operational-visibility document independently audited this session states a
+          Master Data Quality Index red band below 99% — a genuine disagreement between two real
+          sources, not a bug. Both real thresholds, plotted against the live score.</p>
+        <div id="thresholdBridgeWrap"></div>
       </div>
 
       <div class="card">
@@ -1211,6 +1249,15 @@
           <div class="line"><span>PO gate</span><span id="gatePoOut"></span></div>
           <div class="line"><span>Confirmation gate</span><span id="gateConfOut"></span></div>
         </div>
+
+        <!-- /viz-innovation Batch A, concept 16: Governance Gate Nested Rings -- the same 3 real
+             gate pass/blocked states above, nested as concentric rings so simultaneous blocks read
+             at a glance instead of needing all 3 lines re-read. -->
+        <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
+          <div id="gateRingsWrap" style="flex:none"></div>
+          <p class="kpi-foot" style="margin:0">Click a ring to jump to that gate's real input above.</p>
+        </div>
+
         <p style="font-size:11px;color:rgb(var(--c-text-secondary));margin-top:8px">Thresholds are
           taken directly from the source document's own stated numbers — this simulates the gate
           logic, it does not claim AMS's real SAP instance enforces exactly these values.</p>
@@ -2475,6 +2522,8 @@
     circulatory: { title: 'Circulatory Cost Flow', formula: 'vessel width ∝ component value / max(component values), floored at a minimum-visible width', body: 'The same 4 should-cost components as the outline and Nesting Doll above, a third way — as flow converging into the total, with each vessel\'s width directly proportional to its real dollar contribution. The dominant driver (marked ★) is whichever component is currently largest; this updates live as inputs change, so a shift in what drives cost most is visible as a change in which vessel is thickest, not just a re-sorted list.' },
     glacial: { title: 'Glacial Calving Event Tracker', formula: 'naive chunk = (cost/batch)×batch = cost;  correct chunk = (cost/run)×batch', body: 'The same "First-batch unit cost overstated by N×" line above, decomposed into what each treatment actually attributes to that one first batch: the naive treatment dumps the ENTIRE tooling investment there (a one-time "calved iceberg"), while the correct treatment attributes only that batch\'s true share of the cost spread evenly across the whole run (a small, steady "ice cube"). Chunk area (not radius) is proportional to dollar value, so the visual size ratio is honest even at a 100:1 real-world scale difference.' },
     pressurevessel: { title: 'Pressure-Vessel Cost Containment', formula: 'pressure ratio = deduction / (100 − 93)  — 1.0 = exactly at the red threshold', body: 'The same MDQS deduction the score above computes, re-expressed as a fraction of the real 7-point gap between a perfect score and the red band (93%) this document defines. The "valve" is a static state indicator (open = currently in breach, closed = within tolerance) — not a claim that AMS runs an automated corrective mechanism; no such system is asserted or implied to exist.' },
+    mdqsflow: { title: 'MDQS Deduction Flow', formula: 'Same 4 terms as MDQS above: 30%·routing + 30%·confirmation + 25%·scrap + 15%·stale', body: 'The exact same 4 weighted deduction terms the MDQS score above already computes, re-read directly (not recalculated in parallel) and traced as 4 flows into one total instead of 4 table rows — stream width is each factor’s real point contribution, so the single largest driver of the current score is visually obvious without comparing 4 numbers.' },
+    thresholdbridge: { title: 'Threshold Disagreement Bridge', formula: 'This page’s real MDQS red band: <93%.  A separate, independently-verified document’s Master Data Quality Index red band: <99%.', body: 'Both numbers are real and independently sourced — this page cites the source document that gives it its own real 93%/98% bands (Methodology tab), and a second, separately-audited document this session states a Master Data Quality Index at a different, real 99% red threshold. That disagreement is a genuine fact about two real sources, not a bug in either one — shown here explicitly rather than silently picking one, or averaging them into a number neither document actually states.' },
     kaleidophone: { title: 'Kaleidophone Resonance Chart', formula: 'sensitivity = |d(penalty)/d(param)| × slider step, evaluated at the CURRENT value (0 once a threshold is crossed)', body: 'The same 3 DFM penalty formulas above, differentiated with respect to each slider and evaluated at exactly where it sits right now — "if I nudge this one slider by one step from here, how much does the total move?" Wall-thickness and pocket-depth are threshold formulas (their real derivative is 0 once thickness ≥ 3.0mm or pocket ≤ 4:1), so a rod can go fully silent; build-height has no threshold and always contributes. Not a claim about which lever "matters most" in general — only which one has leverage from the CURRENT design point.' },
     compassrose: { title: 'Compass Rose Scenario Navigator', formula: 'magnitude = |NPV| / (|NPV| + transition cost)  — bounded in [0, 1) by construction', body: 'The same NPV the outline above computes, split into direction (North = build in-house wins, South = outsource wins — the sign of NPV) and magnitude (how large the return is relative to the up-front transition investment it took to get there). East/West on the compass are decorative dressing only, carrying no data meaning — stated explicitly so the compass shape is never mistaken for a 2-axis encoding it isn\'t.' },
     domino: { title: 'Domino Effect Probability Cascade', formula: 'P(neither)=(1−p1)(1−p2), P(exactly one)=p1(1−p2)+(1−p1)p2, P(both)=p1×p2', body: 'The 2 real, literature-confirmed cross-KPI tradeoffs from the map above have no attached likelihood in the source research — this applies illustrative EXAMPLE probabilities (adjustable) to the exact, standard compound-probability formula for 2 independent events, teaching how real tradeoffs compound even without a claimed real-world frequency for either one. The 3 outcome bars always sum to exactly 100%.' },
@@ -2482,6 +2531,7 @@
     sonar: { title: 'Sonar Ping Anomaly Sweep', formula: 'distance ratio = (util − mean) / (UCL − mean)  — exactly 1.0 at the control limit, by I-MR construction', body: 'The same 6-week SPC control-chart data above (center line and control limits derived from this shop\'s own history), re-plotted as distance from the mean instead of a time-ordered trend line — a ping that reaches the outer ring is genuinely out of statistical control, not just a fixed-band "red" reading. Angle around the sonar screen is purely for visual separation between the 6 weeks and carries no data meaning; only radial distance does.' },
     metronome: { title: 'Metronome Cadence Drift Tracker', formula: 'tick count = floor(illustrative days elapsed / cadence interval)', body: 'The same 4 named cadences from the Operating Cadence card above, using each cadence NAME\'s own standard real-world interval (daily=1 day, weekly=7, monthly=30, a semi-annual OP1/OP2 split≈182) — a generic definition of what those words mean, not a claim about AMS\'s actual calendar dates. Swing PERIOD (not amplitude) is the real signal: the daily arm visibly swings fastest, OP1/OP2 slowest, directly encoding how often each cadence actually fires.' },
     comettail: { title: 'Comet Tail Velocity Tracker', formula: 'velocity[i] = util[i]−util[i−1];  acceleration[k] = velocity[k+1]−velocity[k]', body: 'The same 6-week utilization series as the table/SPC/Honeycomb views above, extended one derivative further: acceleration (the change in the week-over-week delta itself) highlights WHICH single transition saw the sharpest swing in rate of change, not just which week had the biggest raw delta. The flared tail segment is whichever one carries the largest |acceleration| this period.' },
+    capsankey: { title: 'Capacity Absorption Sankey', formula: 'absorbed_hrs = min(avail, booked);  unabsorbed_hrs = max(0, avail − booked);  unabsorbed_$ = unabsorbed_hrs × overhead_rate', body: 'The exact same per-week split and overhead-rate formula the 6-week table above already computes, re-read directly (not recalculated in parallel) and traced as two flows per week instead of two table columns — where each week’s real hours actually end up, and the running real dollar total unabsorbed hours are already costing at the same overhead rate used everywhere else on this tab.' },
     suspensionbridge: { title: 'Suspension Bridge Load Monitor', formula: 'each cable rate = (fixed component / productive hours) for depreciation/floor/service, or the raw $/hr rate for power/consumables — all 5 sum exactly to the fully burdened MHR', body: 'The same 5 real cost drivers the MHR Build-Up Calculator above sums into one blended rate, converted to a consistent $/hr basis so each cable\'s sag is directly proportional to its real share of the total load. The heaviest-loaded cable (marked in red) updates live as any of the 10 MHR inputs change.' },
     shadowpuppet: { title: 'Shadow Puppet Overlay Comparator', formula: 'excess = max(0, DFM-adjusted estimate − $100 reference)', body: 'The same $100 reference should-cost and DFM-adjusted actual estimate the outline above already states as two separate lines, drawn as two overlapping silhouettes instead — bar height is directly proportional to dollar value, so the excess is a felt visual gap, not a percentage requiring mental translation. Updates live with the same 3 DFM sliders.' },
     relayrace: { title: 'Relay Race Baton Pass Timeline', formula: 'gap = interval(tier N) − interval(tier N−1), using the same 4 cadence intervals as the Metronome above', body: 'The same 4 named cadences and their real standard intervals (daily=1, weekly=7, monthly=30, OP1/OP2≈182), one derivative further than the metronome above: the GAP between consecutive tiers is the real, structural worst-case wait before an unresolved issue reaches the next level of visibility — a generic property of the cadence definitions, not a claim about any specific AMS issue.' },
@@ -3442,6 +3492,14 @@
   // pattern the research verified as standard FP&A practice for exactly this variance-to-actual
   // story (Domo, Storytelling with Data); the prior grouped-bar version showed magnitude but not the
   // running total a reader would need to see "how did we get here."
+  // /viz-innovation Batch A, concept 1 "Living Variance Waterfall" -- module-level, session-only
+  // memory of the last real render's per-label values, so renderWaterfall (below) can flag exactly
+  // which bars actually changed since the previous edit. innerHTML replacement means the DOM nodes
+  // themselves aren't persistent (no true position/size CSS transition between old and new), so
+  // "living" here means each genuinely-changed bar gets a real, honest pulse animation on its own
+  // freshly-drawn element -- not a continuous interpolation, which would need restructuring this
+  // already-shipped chart's DOM strategy for a batch-A quick win.
+  var previousWaterfallValues = null;
   function renderWaterfall(items, net){
     var cum = 0;
     var steps = items.map(function(item){
@@ -3450,6 +3508,12 @@
       return { label: item.label, value: item.value, from: from, to: cum, isTotal: false };
     });
     steps.push({ label: 'NET', value: net, from: 0, to: net, isTotal: true });
+    var changedLabels = {};
+    if (previousWaterfallValues){
+      steps.forEach(function(s){
+        if (previousWaterfallValues[s.label] !== undefined && previousWaterfallValues[s.label] !== s.value) changedLabels[s.label] = true;
+      });
+    }
 
     var allYs = [0];
     steps.forEach(function(s){ allYs.push(s.from, s.to); });
@@ -3473,7 +3537,7 @@
       var yBot = yAt(Math.min(s.from, s.to));
       var h = Math.max(1.5, yBot - yTop);
       var fill = s.isTotal ? 'rgb(var(--c-accent)/.85)' : (s.value > 0 ? 'rgb(var(--c-danger)/.75)' : (s.value < 0 ? 'rgb(var(--c-success)/.75)' : 'rgb(var(--c-text-secondary)/.5)'));
-      bars += '<rect x="' + x.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + fill + '"/>';
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + fill + '"' + (changedLabels[s.label] ? ' class="waterfall-bar-pulse"' : '') + '/>';
       bars += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (yTop - 6).toFixed(1) + '" font-size="12" fill="rgb(var(--c-text-primary))" text-anchor="middle">' + fmtMoney(s.value) + '</text>';
       bars += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (marginTop + plotH + 16) + '" font-size="12" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + s.label + '</text>';
       if (i > 0){
@@ -3488,7 +3552,10 @@
       connectors + bars +
       '</svg>';
     document.getElementById('waterfallChart').innerHTML = svg;
-    return { steps: steps, yMin: yMin, yMax: yMax };
+    var newValues = {};
+    steps.forEach(function(s){ newValues[s.label] = s.value; });
+    previousWaterfallValues = newValues;
+    return { steps: steps, yMin: yMin, yMax: yMax, changedLabels: changedLabels };
   }
 
   ['vMSQ','vMAQ','vMSP','vMAP','vLSH','vLAH','vLSR','vLAR','vVOSR','vVOAct','vBudHrs','vFOHR'].forEach(function(id){
@@ -3512,6 +3579,43 @@
   window.calcCommodityExposure = calcCommodityExposure;
   ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcCommodityExposure); });
   ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){ document.getElementById(id).addEventListener('input', function(){ if (typeof syncNavStatusFromTriage === 'function') syncNavStatusFromTriage(); }); });
+
+  // ---------- Commodity Exposure Tide: viz-innovation Batch A, concept 5 -- the same real
+  // shiftPct/8% threshold above, re-framed as a rising/falling tide toward a marked shoreline. Pure
+  // re-framing of calcCommodityExposure's own real output; no new data, no new threshold. ----------
+  function calcCommodityTide(shiftPct, warning){
+    var threshold = 8;
+    var cap = threshold * 1.5; // headroom so a real shift beyond 8% still has room to rise before hitting the gauge's own edge
+    var clamped = Math.max(-cap, Math.min(cap, shiftPct));
+    return { shiftPct: shiftPct, warning: warning, clamped: clamped, threshold: threshold, cap: cap };
+  }
+  window.calcCommodityTide = calcCommodityTide;
+
+  function renderCommodityTide(state){
+    var W = 90, H = 140, baseY = 130, topY = 10;
+    var range = state.cap * 2;
+    var frac = (state.clamped + state.cap) / range;
+    var waterY = baseY - frac * (baseY - topY);
+    var shoreFrac = (state.threshold + state.cap) / range;
+    var shoreY = baseY - shoreFrac * (baseY - topY);
+    var color = state.warning ? 'var(--c-danger)' : 'var(--c-accent)';
+    var ariaLabel = 'Commodity exposure tide: ' + state.shiftPct.toFixed(2) + '% shift, ' + (state.warning ? 'above' : 'below') + ' the real 8% early-warning shoreline.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="90" height="140" style="display:block" role="img" aria-label="' + ariaLabel + '">' +
+      '<rect x="10" y="' + topY + '" width="' + (W - 20) + '" height="' + (baseY - topY) + '" rx="4" fill="none" stroke="rgb(var(--c-line))" stroke-width="1.5"/>' +
+      '<rect x="11" y="' + waterY.toFixed(1) + '" width="' + (W - 22) + '" height="' + (baseY - waterY).toFixed(1) + '" fill="rgb(' + color + '/.35)"/>' +
+      '<line x1="7" y1="' + shoreY.toFixed(1) + '" x2="' + (W - 7) + '" y2="' + shoreY.toFixed(1) + '" stroke="rgb(var(--c-warning))" stroke-width="1.5" stroke-dasharray="3 2"/>' +
+      '<text x="' + (W - 7) + '" y="' + (shoreY - 3).toFixed(1) + '" font-size="10" text-anchor="end" fill="rgb(var(--c-warning))">8% shoreline</text>' +
+      '<text x="' + (W / 2) + '" y="' + (baseY + 12).toFixed(1) + '" font-size="10" font-weight="700" text-anchor="middle" fill="rgb(' + color + ')">' + state.shiftPct.toFixed(1) + '%</text>' +
+      '</svg>';
+    document.getElementById('commodityTideWrap').innerHTML = svg;
+  }
+  window.renderCommodityTide = renderCommodityTide;
+  ['cpFrozen', 'cpSpot', 'cpVolume'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(){
+      var s = calcCommodityExposure();
+      renderCommodityTide(calcCommodityTide(s.shiftPct, s.warning));
+    });
+  });
 
   // ---------- Mean-Reversion Forward Band (Ornstein-Uhlenbeck) ----------
   // Uses the current spot price (cpSpot) above as the process's starting point P_t.
@@ -3979,6 +4083,7 @@
       '<td class="mono">' + overallUtil.toFixed(2) + '%</td><td><span class="status-pill ' + utilStatus(overallUtil) + '">' + statusSymbol(utilStatus(overallUtil)) + ' ' + utilStatus(overallUtil).toUpperCase() + '</span></td>';
     renderCapacitySPC();
     renderHoneycomb(calcHoneycomb());
+    renderCapacitySankey(calcCapacitySankey());
     renderCometTail(calcCometTail());
     renderThermostat(calcThermostat(overallUtil));
     return { totalAvail: totalAvail, totalBooked: totalBooked, totalUnabHrs: totalUnabHrs, totalUnabDollars: totalUnabDollars, overallUtil: overallUtil };
@@ -4087,6 +4192,61 @@
     document.getElementById('honeycombWrap').innerHTML = svg;
   }
   window.renderHoneycomb = renderHoneycomb;
+
+  // ---------- Capacity Absorption Sankey: viz-innovation Batch A, concept 6 -- the same 6 real
+  // weekly avail/booked inputs and overhead rate the table above already uses, re-read directly
+  // (same pattern as calcHoneycomb above), not a parallel calculation. Each week splits into two real
+  // bezier flows: absorbed hours and unabsorbed hours, the latter continuing into a running real
+  // dollar total using the same overhead-rate formula calcCapacity() already computes. ----------
+  function calcCapacitySankey(){
+    var ohRate = parseFloat(document.getElementById('capOhRate').value) || 0;
+    var weeks = [];
+    var totalUnabDollars = 0;
+    for (var i = 0; i < 6; i++){
+      var avail = parseFloat(document.getElementById('capAvail' + i).value) || 0;
+      var booked = parseFloat(document.getElementById('capBooked' + i).value) || 0;
+      var absorbedHrs = Math.min(avail, booked);
+      var unabHrs = Math.max(0, avail - booked);
+      var unabDollars = unabHrs * ohRate;
+      totalUnabDollars += unabDollars;
+      weeks.push({ week: i + 1, avail: avail, absorbedHrs: absorbedHrs, unabHrs: unabHrs, unabDollars: unabDollars });
+    }
+    return { weeks: weeks, totalUnabDollars: totalUnabDollars };
+  }
+  window.calcCapacitySankey = calcCapacitySankey;
+
+  function renderCapacitySankey(state){
+    var W = 460, H = 220;
+    var sourceX = 50, sinkX = 400;
+    var absorbedY = 40, unabsorbedY = 180;
+    var n = state.weeks.length;
+    var rowH = H / n;
+    var maxHrs = Math.max.apply(null, state.weeks.map(function(w){ return w.avail; })) || 1;
+    var flowsSvg = '', labelsSvg = '';
+    state.weeks.forEach(function(w, i){
+      var sourceY = rowH * i + rowH / 2;
+      var midX = (sourceX + sinkX) / 2;
+      var absorbedW = Math.max(0.5, (w.absorbedHrs / maxHrs) * 14);
+      var unabW = Math.max(0.5, (w.unabHrs / maxHrs) * 14);
+      flowsSvg += '<path d="M ' + sourceX + ' ' + sourceY.toFixed(1) + ' C ' + midX.toFixed(1) + ' ' + sourceY.toFixed(1) + ', ' + midX.toFixed(1) + ' ' + absorbedY + ', ' + sinkX + ' ' + absorbedY + '" fill="none" stroke="rgb(var(--c-success))" stroke-width="' + absorbedW.toFixed(1) + '" stroke-linecap="round" opacity="0.55"/>';
+      if (w.unabHrs > 0){
+        flowsSvg += '<path d="M ' + sourceX + ' ' + sourceY.toFixed(1) + ' C ' + midX.toFixed(1) + ' ' + sourceY.toFixed(1) + ', ' + midX.toFixed(1) + ' ' + unabsorbedY + ', ' + sinkX + ' ' + unabsorbedY + '" fill="none" stroke="rgb(var(--c-danger))" stroke-width="' + unabW.toFixed(1) + '" stroke-linecap="round" opacity="0.55"/>';
+      }
+      labelsSvg += '<circle cx="' + sourceX + '" cy="' + sourceY.toFixed(1) + '" r="3.5" fill="rgb(var(--c-text-secondary))"/>' +
+        '<text x="' + (sourceX - 8) + '" y="' + (sourceY + 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="end">W' + w.week + '</text>';
+    });
+    labelsSvg += '<circle cx="' + sinkX + '" cy="' + absorbedY + '" r="6" fill="rgb(var(--c-success))"/>' +
+      '<text x="' + (sinkX + 12) + '" y="' + (absorbedY + 3) + '" font-size="10" font-weight="700" fill="rgb(var(--c-success))" text-anchor="start">Absorbed</text>' +
+      '<circle cx="' + sinkX + '" cy="' + unabsorbedY + '" r="6" fill="rgb(var(--c-danger))"/>' +
+      '<text x="' + (sinkX + 12) + '" y="' + (unabsorbedY + 3) + '" font-size="10" font-weight="700" fill="rgb(var(--c-danger))" text-anchor="start">Unabsorbed</text>' +
+      '<text x="' + (sinkX + 12) + '" y="' + (unabsorbedY + 16) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="start">$' + Math.round(state.totalUnabDollars).toLocaleString() + ' total</text>';
+    var ariaLabel = 'Capacity absorption Sankey. ' + state.weeks.map(function(w){ return 'Week ' + w.week + ': ' + w.absorbedHrs.toFixed(1) + ' absorbed hours, ' + w.unabHrs.toFixed(1) + ' unabsorbed hours'; }).join(', ') + '. Real running total unabsorbed cost: $' + Math.round(state.totalUnabDollars).toLocaleString() + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:460px" role="img" aria-label="' + ariaLabel + '">' +
+      flowsSvg + labelsSvg +
+      '</svg>';
+    document.getElementById('capSankeyWrap').innerHTML = svg;
+  }
+  window.renderCapacitySankey = renderCapacitySankey;
 
   // ---------- Comet Tail Velocity Tracker: same 6-week CAP_WEEKS utilization as Honeycomb above, a
   // second derivative (acceleration -- the change in the week-over-week delta itself) highlights
@@ -4414,9 +4574,79 @@
     document.getElementById('mdqsBand').innerHTML = '<span class="status-pill ' + band + '">' + statusSymbol(band) + ' ' + band.toUpperCase() + '</span>';
     updateGovernanceNavStatus();
     renderPressureVessel(calcPressureVessel(deduction, band));
+    renderMdqsFlow(calcMdqsFlow());
+    renderThresholdBridge(score);
     return { score: score, band: band };
   }
   window.calcMdqs = calcMdqs;
+
+  // /viz-innovation Batch A, concept 3: MDQS Deduction Flow -- the same 4 real weighted factors
+  // calcMdqs() already computes, re-read directly from the same real inputs (matching the
+  // calcHoneycomb precedent above, not a parallel formula).
+  function calcMdqsFlow(){
+    var routingErr = Math.max(0, parseFloat(document.getElementById('mdqsRoutingErr').value) || 0);
+    var totalRoutings = parseFloat(document.getElementById('mdqsTotalRoutings').value) || 1;
+    var confVar = Math.max(0, parseFloat(document.getElementById('mdqsConfVar').value) || 0);
+    var totalConf = parseFloat(document.getElementById('mdqsTotalConf').value) || 1;
+    var unlinkedScrap = Math.max(0, parseFloat(document.getElementById('mdqsUnlinkedScrap').value) || 0);
+    var scrapEvents = parseFloat(document.getElementById('mdqsScrapEvents').value) || 1;
+    var staleStandards = Math.max(0, parseFloat(document.getElementById('mdqsStaleStandards').value) || 0);
+    var activeParts = parseFloat(document.getElementById('mdqsActiveParts').value) || 1;
+    var factors = [
+      { label: 'Routing errors', value: MDQS_WEIGHTS.routing * (routingErr / totalRoutings) * 100 },
+      { label: 'Confirmation variances', value: MDQS_WEIGHTS.confirmation * (confVar / totalConf) * 100 },
+      { label: 'Unlinked scrap', value: MDQS_WEIGHTS.scrap * (unlinkedScrap / scrapEvents) * 100 },
+      { label: 'Stale standards', value: MDQS_WEIGHTS.stale * (staleStandards / activeParts) * 100 },
+    ];
+    var totalDeduction = factors.reduce(function(sum, f){ return sum + f.value; }, 0);
+    return { factors: factors, totalDeduction: totalDeduction };
+  }
+  window.calcMdqsFlow = calcMdqsFlow;
+
+  function renderMdqsFlow(state){
+    var W = 380, H = 170, sourceX = 40, sinkX = 320, sinkY = H / 2;
+    var n = state.factors.length, rowH = H / n;
+    var colors = ['rgb(var(--c-accent))', 'rgb(var(--c-warning))', 'rgb(var(--c-danger))', 'rgb(var(--c-text-secondary))'];
+    var maxVal = Math.max.apply(null, state.factors.map(function(f){ return f.value; })) || 1;
+    var flowsSvg = '', labelsSvg = '';
+    state.factors.forEach(function(f, i){
+      var sourceY = rowH * i + rowH / 2;
+      var midX = (sourceX + sinkX) / 2;
+      var strokeW = Math.max(1, (f.value / maxVal) * 12);
+      flowsSvg += '<path d="M ' + sourceX + ' ' + sourceY.toFixed(1) + ' C ' + midX.toFixed(1) + ' ' + sourceY.toFixed(1) + ', ' + midX.toFixed(1) + ' ' + sinkY.toFixed(1) + ', ' + sinkX + ' ' + sinkY.toFixed(1) + '" fill="none" stroke="' + colors[i] + '" stroke-width="' + strokeW.toFixed(1) + '" stroke-linecap="round" opacity="0.6"/>';
+      labelsSvg += '<circle cx="' + sourceX + '" cy="' + sourceY.toFixed(1) + '" r="4" fill="' + colors[i] + '"/>' +
+        '<text x="' + (sourceX - 8) + '" y="' + (sourceY + 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-primary))" text-anchor="end">' + f.label + ' ' + f.value.toFixed(2) + '</text>';
+    });
+    labelsSvg += '<circle cx="' + sinkX + '" cy="' + sinkY + '" r="9" fill="rgb(var(--c-bg-card))" stroke="rgb(var(--c-text-primary))" stroke-width="2"/>' +
+      '<text x="' + (sinkX + 14) + '" y="' + (sinkY + 3) + '" font-size="11" font-weight="700" fill="rgb(var(--c-text-primary))" text-anchor="start">−' + state.totalDeduction.toFixed(2) + 'pts</text>';
+    var ariaLabel = 'MDQS deduction flow. ' + state.factors.map(function(f){ return f.label + ': ' + f.value.toFixed(2) + ' points'; }).join(', ') + '. Total deduction: ' + state.totalDeduction.toFixed(2) + ' points.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:380px" role="img" aria-label="' + ariaLabel + '">' + flowsSvg + labelsSvg + '</svg>';
+    document.getElementById('mdqsFlowWrap').innerHTML = svg;
+  }
+  window.renderMdqsFlow = renderMdqsFlow;
+
+  // /viz-innovation Batch A, concept 4: Threshold Disagreement Bridge -- AMS's own real 93% red band
+  // (bandFor above) vs. a real, differently-sourced 99% Master Data Quality Index red band from a
+  // separate document independently verified this session. Both real; disclosed as disagreeing, not
+  // silently reconciled.
+  var DOC_MDQ_THRESHOLD = 99; // the audited document's own real, stated Master Data Quality Index band
+  function renderThresholdBridge(score){
+    var W = 380, H = 70, x0 = 20, x1 = 360, y = 40;
+    function xAt(pct){ return x0 + (pct / 100) * (x1 - x0); }
+    var amsX = xAt(93), docX = xAt(DOC_MDQ_THRESHOLD), scoreX = xAt(Math.max(0, Math.min(100, score)));
+    var ariaLabel = 'Threshold disagreement bridge. This page\'s own real MDQS red band: 93%. A separate real document\'s Master Data Quality Index red band: ' + DOC_MDQ_THRESHOLD + '%. Current live score: ' + score.toFixed(1) + '%.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:380px" role="img" aria-label="' + ariaLabel + '">' +
+      '<line x1="' + x0 + '" y1="' + y + '" x2="' + x1 + '" y2="' + y + '" stroke="rgb(var(--c-line))" stroke-width="1.5"/>' +
+      '<line x1="' + amsX.toFixed(1) + '" y1="' + (y - 10) + '" x2="' + amsX.toFixed(1) + '" y2="' + (y + 10) + '" stroke="rgb(var(--c-danger))" stroke-width="2"/>' +
+      '<text x="' + amsX.toFixed(1) + '" y="' + (y - 14) + '" font-size="10" text-anchor="middle" fill="rgb(var(--c-danger))">AMS: 93%</text>' +
+      '<line x1="' + docX.toFixed(1) + '" y1="' + (y - 10) + '" x2="' + docX.toFixed(1) + '" y2="' + (y + 10) + '" stroke="rgb(var(--c-warning))" stroke-width="2" stroke-dasharray="3 2"/>' +
+      '<text x="' + docX.toFixed(1) + '" y="' + (y + 24) + '" font-size="10" text-anchor="middle" fill="rgb(var(--c-warning))">Doc: ' + DOC_MDQ_THRESHOLD + '%</text>' +
+      '<circle cx="' + scoreX.toFixed(1) + '" cy="' + y + '" r="6" fill="rgb(var(--c-accent))" stroke="rgb(var(--c-bg-card))" stroke-width="1.5"/>' +
+      '<text x="' + scoreX.toFixed(1) + '" y="' + (y + 22) + '" font-size="10" font-weight="700" text-anchor="middle" fill="rgb(var(--c-accent))">' + score.toFixed(1) + '%</text>' +
+      '</svg>';
+    document.getElementById('thresholdBridgeWrap').innerHTML = svg;
+  }
+  window.renderThresholdBridge = renderThresholdBridge;
 
   // ---------- Pressure-Vessel Cost Containment: same MDQS deduction as above, re-framed as pressure
   // building toward the real 93%-red failure threshold instead of a static percentage. Pure state
@@ -4466,10 +4696,40 @@
     document.getElementById('gatePoOut').innerHTML = gatePill(poPass);
     document.getElementById('gateConfOut').innerHTML = gatePill(confPass);
     updateGovernanceNavStatus();
+    renderGateRings({ bomPass: bomPass, poPass: poPass, confPass: confPass });
     return { bomPass: bomPass, poPass: poPass, confPass: confPass };
   }
   window.calcGates = calcGates;
   ['gateBom', 'gatePo', 'gateConf'].forEach(function(id){ document.getElementById(id).addEventListener('input', calcGates); });
+
+  // /viz-innovation Batch A, concept 16: Governance Gate Nested Rings -- the same real 3 gate
+  // pass/blocked states calcGates() already computes, re-read directly (not recomputed), nested as
+  // concentric rings.
+  function renderGateRings(state){
+    var gates = [
+      { key: 'gateBom', label: 'BOM', pass: state.bomPass, r: 30 },
+      { key: 'gatePo', label: 'PO', pass: state.poPass, r: 21 },
+      { key: 'gateConf', label: 'Confirmation', pass: state.confPass, r: 12 },
+    ];
+    var blockedCount = gates.filter(function(g){ return !g.pass; }).length;
+    var cx = 40, cy = 40, sw = 6;
+    var ringsSvg = '';
+    gates.forEach(function(g){
+      var color = g.pass ? 'var(--c-success)' : 'var(--c-danger)';
+      ringsSvg += '<circle class="gate-ring" data-jump="' + g.key + '" cx="' + cx + '" cy="' + cy + '" r="' + g.r + '" fill="none" stroke="rgb(' + color + ')" stroke-width="' + sw + '" style="cursor:pointer"/>';
+    });
+    var ariaLabel = 'Governance gate nested rings. ' + gates.map(function(g){ return g.label + ' gate: ' + (g.pass ? 'PASS' : 'BLOCKED'); }).join(', ') + '. ' + blockedCount + ' of 3 gates blocked.';
+    var svg = '<svg viewBox="0 0 80 80" style="width:80px;height:80px;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      ringsSvg +
+      '<text x="' + cx + '" y="' + (cy + 4) + '" font-size="14" font-weight="700" text-anchor="middle" fill="rgb(var(--c-text-primary))">' + blockedCount + '/3</text>' +
+      '</svg>';
+    var wrap = document.getElementById('gateRingsWrap');
+    wrap.innerHTML = svg;
+    wrap.querySelectorAll('[data-jump]').forEach(function(el){
+      el.addEventListener('click', function(){ jumpToDecomposition(el.getAttribute('data-jump')); });
+    });
+  }
+  window.renderGateRings = renderGateRings;
   // Ambient nav status for the Governance tab: red if ANY guardrail gate is blocked or the MDQS
   // band itself is red; amber if MDQS is amber (gates all passing); else green. Reads both
   // calculators' own live DOM output rather than recomputing in parallel, so it can never drift
@@ -5500,6 +5760,7 @@
     { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause) + its own /stress-test (README rounds 35-36 combined)', before: 1001, after: 1036, family: 'nav-innovation', sabotageTested: true },
     { n: 36, date: '2026-09-08', title: '/stress-test "resolve all limitations" pass on the viz-innovation batch plan', before: 1036, after: 1039, family: 'fix', sabotageTested: false },
     { n: 37, date: '2026-09-08', title: '/brainstorm batch-plan upgrades + /stress-test the top cluster (planning round, no code executed)', before: 1039, after: 1041, family: 'planning', sabotageTested: false },
+    { n: 38, date: '2026-09-08', title: '/viz-innovation Batch A (6 concepts: Living Variance Waterfall, Commodity Exposure Tide, Capacity Absorption Sankey, Governance Gate Nested Rings, MDQS Deduction Flow, Threshold Disagreement Bridge)', before: 1041, after: 1059, family: 'viz-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -5526,7 +5787,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 39, lines: 5815 };
+  var SELF_METRICS = { commits: 40, lines: 6077 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 
@@ -5780,7 +6041,8 @@
   calcDfm();
   calcMdqs();
   calcGates();
-  calcCommodityExposure();
+  var cpInitialState = calcCommodityExposure();
+  renderCommodityTide(calcCommodityTide(cpInitialState.shiftPct, cpInitialState.warning));
   calcOuForward();
   renderPendulum(calcPendulum());
   renderPlaybook();
