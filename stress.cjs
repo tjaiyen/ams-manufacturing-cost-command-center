@@ -2115,6 +2115,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
 check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 31, "HISTORY has all 31 real build rounds (5 through 35)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+// /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
+// family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
+// golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
+// this check was written (B35), same discipline as every other golden-value check in this file.
+const historyFamilyCounts = {};
+sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 5, "viz-innovation": 6, phase4: 5, "self-audit": 1, "nav-innovation": 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 31 rounds", JSON.stringify(historyFamilyCounts));
+const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35]), "HISTORY's real sabotageTested tags match exactly the 5 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
 check(sandbox.HISTORY[5].n === 10 && sandbox.HISTORY[5].before === 357 && sandbox.HISTORY[5].after === 400, "round 10 (first tracked round) matches README's real Checks: 357 -> 400");
@@ -2170,7 +2180,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("37") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("38") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");

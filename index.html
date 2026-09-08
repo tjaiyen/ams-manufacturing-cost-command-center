@@ -446,7 +446,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1036/1036 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1039/1039 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -5451,38 +5451,53 @@
   // and format drift (confirmed while stress-testing the original 30-concept plan's own Batch 0), so
   // this table was built by reading every round directly instead. Rounds 5-9 predate check-count
   // tracking entirely -- `before`/`after` are null there, not zero, on purpose.
+  //
+  // `family` and `sabotageTested` (/stress-test, 2026-09-08, "resolve all limitations" pass, added
+  // for the viz-innovation batch's Feature-Family Streamgraph and Threshold-Break Cadence Ring
+  // concepts): both hand-tagged by re-reading every one of README.md's 31 tracked rounds directly --
+  // `family` from each round's own real title text (feature / research / fix / viz-innovation /
+  // nav-innovation / phase4 / self-audit / stress-test); `sabotageTested` by searching the FULL
+  // changelog for every real phrasing this repo has actually used for a deliberate break-then-
+  // restore detection-power proof, not just the literal word "sabotage" -- "falsification-tested"
+  // (round 20) and "temporarily broke... confirmed each correctly failed, then reverted" (round 17)
+  // both describe the identical real practice under different words, and were caught by widening the
+  // search rather than trusting one keyword. Result: all 31 rounds resolved with zero ambiguity --
+  // no `null`/"unknown" placeholder was needed, because every round's real text was unambiguous once
+  // actually read (round 27's "the new symbol prefix correctly broke [existing checks]" was
+  // deliberately excluded: that's checks needing updates after an intentional behavior change, not a
+  // deliberate injected-bug detection-power proof, a different real practice this repo also does).
   var HISTORY = [
-    { n: 5,  date: '2026-09-04', title: 'Cost Diagnostic Playbook tab + MHR Build-Up Calculator', before: null, after: null },
-    { n: 6,  date: '2026-09-04', title: 'Predictive & Risk Models tab', before: null, after: null },
-    { n: 7,  date: '2026-09-04', title: 'Volume Crossover Point (Q*) solver', before: null, after: null },
-    { n: 8,  date: '2026-09-04', title: 'Build-vs-Buy Crossover chart + Monte Carlo Should-Cost', before: null, after: null },
-    { n: 9,  date: '2026-09-05', title: 'Vertical collapsible navigation overhaul', before: null, after: null },
-    { n: 10, date: '2026-09-05', title: 'Stress-test of the navigation overhaul', before: 357, after: 400 },
-    { n: 11, date: '2026-09-05', title: 'KPI research pass (Cost Diagnostic Playbook)', before: 400, after: 420 },
-    { n: 12, date: '2026-09-05', title: 'Pathways B and C', before: 420, after: 462 },
-    { n: 13, date: '2026-09-05', title: 'Stress-test of Pathways A/B/C', before: 462, after: 475 },
-    { n: 14, date: '2026-09-05', title: 'Org verification + terminology calibration', before: 475, after: 486 },
-    { n: 15, date: '2026-09-05', title: '8 curated navigation features', before: 486, after: 551 },
-    { n: 16, date: '2026-09-05', title: 'Break-Even Crossover Playground', before: 551, after: 564 },
-    { n: 17, date: '2026-09-05', title: 'Stress-test of the Break-Even Playground', before: 564, after: 577 },
-    { n: 18, date: '2026-09-06', title: 'Follow-up fix', before: 577, after: 582 },
-    { n: 19, date: '2026-09-06', title: 'Variance Tug-of-War visualization', before: 582, after: 601 },
-    { n: 20, date: '2026-09-06', title: 'First full adversarial /stress-test audit', before: 601, after: 640 },
-    { n: 21, date: '2026-09-06', title: 'Viz-innovation batch 1 of 4', before: 640, after: 691 },
-    { n: 22, date: '2026-09-06', title: 'Viz-innovation batch 2 of 4', before: 691, after: 737 },
-    { n: 23, date: '2026-09-06', title: 'Viz-innovation batch 3 of 4', before: 737, after: 788 },
-    { n: 24, date: '2026-09-06', title: 'Viz-innovation batch 4 of 4 (20/20 shipped)', before: 788, after: 844 },
-    { n: 25, date: '2026-09-07', title: '/design-qa pass, one fix', before: 844, after: 851 },
-    { n: 26, date: '2026-09-07', title: 'Nesting Doll Cost Peel label-clipping fix', before: 851, after: 857 },
-    { n: 27, date: '2026-09-07', title: 'Phase 4 batch A/5 (/plan-exec + /stress-test)', before: 857, after: 885 },
-    { n: 28, date: '2026-09-07', title: 'Phase 4 batch B/5 (2 built, 1 honestly declined)', before: 885, after: 906 },
-    { n: 29, date: '2026-09-07', title: 'Phase 4 batch C/5 ("View as: Role" nav visibility)', before: 906, after: 915 },
-    { n: 30, date: '2026-09-07', title: 'Phase 4 batch D/5 (Attention & Triage tab)', before: 915, after: 932 },
-    { n: 31, date: '2026-09-07', title: 'Phase 4 batch E/5 (guided tour + printable one-pager)', before: 932, after: 956 },
-    { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973 },
-    { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974 },
-    { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (7 concepts, plan-exec + stress-test on a 30-idea catalog)', before: 974, after: 1001 },
-    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause)', before: 1001, after: 1036 },
+    { n: 5,  date: '2026-09-04', title: 'Cost Diagnostic Playbook tab + MHR Build-Up Calculator', before: null, after: null, family: 'feature', sabotageTested: false },
+    { n: 6,  date: '2026-09-04', title: 'Predictive & Risk Models tab', before: null, after: null, family: 'feature', sabotageTested: false },
+    { n: 7,  date: '2026-09-04', title: 'Volume Crossover Point (Q*) solver', before: null, after: null, family: 'feature', sabotageTested: false },
+    { n: 8,  date: '2026-09-04', title: 'Build-vs-Buy Crossover chart + Monte Carlo Should-Cost', before: null, after: null, family: 'feature', sabotageTested: false },
+    { n: 9,  date: '2026-09-05', title: 'Vertical collapsible navigation overhaul', before: null, after: null, family: 'feature', sabotageTested: false },
+    { n: 10, date: '2026-09-05', title: 'Stress-test of the navigation overhaul', before: 357, after: 400, family: 'stress-test', sabotageTested: false },
+    { n: 11, date: '2026-09-05', title: 'KPI research pass (Cost Diagnostic Playbook)', before: 400, after: 420, family: 'research', sabotageTested: false },
+    { n: 12, date: '2026-09-05', title: 'Pathways B and C', before: 420, after: 462, family: 'feature', sabotageTested: false },
+    { n: 13, date: '2026-09-05', title: 'Stress-test of Pathways A/B/C', before: 462, after: 475, family: 'stress-test', sabotageTested: false },
+    { n: 14, date: '2026-09-05', title: 'Org verification + terminology calibration', before: 475, after: 486, family: 'fix', sabotageTested: false },
+    { n: 15, date: '2026-09-05', title: '8 curated navigation features', before: 486, after: 551, family: 'feature', sabotageTested: false },
+    { n: 16, date: '2026-09-05', title: 'Break-Even Crossover Playground', before: 551, after: 564, family: 'viz-innovation', sabotageTested: false },
+    { n: 17, date: '2026-09-05', title: 'Stress-test of the Break-Even Playground', before: 564, after: 577, family: 'stress-test', sabotageTested: true },
+    { n: 18, date: '2026-09-06', title: 'Follow-up fix', before: 577, after: 582, family: 'fix', sabotageTested: false },
+    { n: 19, date: '2026-09-06', title: 'Variance Tug-of-War visualization', before: 582, after: 601, family: 'viz-innovation', sabotageTested: false },
+    { n: 20, date: '2026-09-06', title: 'First full adversarial /stress-test audit', before: 601, after: 640, family: 'stress-test', sabotageTested: true },
+    { n: 21, date: '2026-09-06', title: 'Viz-innovation batch 1 of 4', before: 640, after: 691, family: 'viz-innovation', sabotageTested: false },
+    { n: 22, date: '2026-09-06', title: 'Viz-innovation batch 2 of 4', before: 691, after: 737, family: 'viz-innovation', sabotageTested: false },
+    { n: 23, date: '2026-09-06', title: 'Viz-innovation batch 3 of 4', before: 737, after: 788, family: 'viz-innovation', sabotageTested: false },
+    { n: 24, date: '2026-09-06', title: 'Viz-innovation batch 4 of 4 (20/20 shipped)', before: 788, after: 844, family: 'viz-innovation', sabotageTested: false },
+    { n: 25, date: '2026-09-07', title: '/design-qa pass, one fix', before: 844, after: 851, family: 'fix', sabotageTested: false },
+    { n: 26, date: '2026-09-07', title: 'Nesting Doll Cost Peel label-clipping fix', before: 851, after: 857, family: 'fix', sabotageTested: false },
+    { n: 27, date: '2026-09-07', title: 'Phase 4 batch A/5 (/plan-exec + /stress-test)', before: 857, after: 885, family: 'phase4', sabotageTested: false },
+    { n: 28, date: '2026-09-07', title: 'Phase 4 batch B/5 (2 built, 1 honestly declined)', before: 885, after: 906, family: 'phase4', sabotageTested: false },
+    { n: 29, date: '2026-09-07', title: 'Phase 4 batch C/5 ("View as: Role" nav visibility)', before: 906, after: 915, family: 'phase4', sabotageTested: false },
+    { n: 30, date: '2026-09-07', title: 'Phase 4 batch D/5 (Attention & Triage tab)', before: 915, after: 932, family: 'phase4', sabotageTested: false },
+    { n: 31, date: '2026-09-07', title: 'Phase 4 batch E/5 (guided tour + printable one-pager)', before: 932, after: 956, family: 'phase4', sabotageTested: false },
+    { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973, family: 'stress-test', sabotageTested: true },
+    { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974, family: 'fix', sabotageTested: false },
+    { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (7 concepts, plan-exec + stress-test on a 30-idea catalog)', before: 974, after: 1001, family: 'self-audit', sabotageTested: true },
+    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause)', before: 1001, after: 1039, family: 'nav-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -5509,7 +5524,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 37, lines: 5798 };
+  var SELF_METRICS = { commits: 38, lines: 5813 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 

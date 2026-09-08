@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1036 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1039 checks, all passing as of this writing.
 
 ## Status
 
@@ -1453,3 +1453,47 @@ disagreement) are real and reproduced but intentionally left open — see the fo
 them. Checks: 1032 → 1036 (+4: the digest neighbor guard, the fuzzyScore compactness unit check, the
 "ov" outcome check, and the sabotage-tested confirmation of each). Committed locally — pending push with
 explicit confirmation, same discipline as every prior round.
+
+**2026-09-08, thirty-seventh round (`/stress-test` "the full 30 [viz-innovation concepts] and figure
+out how to integrate all, no is not an exception" — resolving every accepted limitation instead of
+just stating it):** A `/systems-audit` of an uploaded operational-visibility document, then a
+`/viz-innovation` catalog grounded in it, produced 30 new concepts. A `/stress-test` (self-review + an
+independent reviewer) found real feasibility/data problems in 11 of the 30 and flagged 4 accepted
+limitations rather than building around them. TJ's follow-up: resolve them, not accept them. Result:
+
+1. **Should-Cost Treemap Drill's "Labor/Overhead aren't drillable" limitation, resolved, not
+   accepted.** Re-reading `calcShouldCost()` directly found this was a definitional error, not a real
+   data gap: Labor (`totalHours * laborRate * manning`) and Overhead (`(matCost+machineCost+laborCost)
+   * ohPct`) both decompose into real, already-computed named factors — the concept's own "drill"
+   definition had narrowly meant "further invented categories" when "reveal the real formula inputs"
+   (the same standard already applied to Material/Machine) was sitting there the whole time. All 4
+   branches are drillable with zero fabrication once defined consistently.
+2. **Feature-Family Streamgraph's "no family field exists" and "true streamgraph math is a new
+   algorithm class" limitations, resolved.** Added a real `family` field to all 31 `HISTORY` entries,
+   hand-classified from each round's own real title (feature/research/fix/viz-innovation/nav-innovation/
+   phase4/self-audit/stress-test — golden distribution pre-registered and verified: 7/1/5/6/1/5/1/5).
+   Separately, hand-implemented and numerically verified the real Byron–Wattenberg minimal-wiggle
+   stacked-baseline formula (the actual algorithm behind d3's `stackOffsetWiggle`, a published, citable
+   technique, not a library) against a hand-checkable toy example before committing to it — a true
+   streamgraph baseline is buildable by hand, not a defensible simplification.
+3. **Threshold-Break Cadence Ring's "some rounds may be unknowable" limitation, resolved to zero
+   unknowns.** Widened the search past the literal word "sabotage" — this repo has used at least 3 real
+   phrasings for the same practice ("sabotage-tested," "falsification-tested," "temporarily broke...
+   confirmed each correctly failed, then reverted") — and re-read every one of the 31 tracked rounds
+   directly. Result: exactly 5 rounds (17, 20, 32, 34, 35) genuinely did a deliberate break-then-restore
+   detection-power proof; the other 26 genuinely didn't. Zero `null`/"unknown" placeholders needed —
+   every round's real text was unambiguous once actually read. (Round 27's "the new symbol prefix
+   correctly broke [existing checks]" was deliberately excluded: checks needing updates after an
+   intentional behavior change is a different real practice from a deliberate injected-bug proof.)
+4. **The drag-interaction stub-testing limitation (cube rotation, radar axis reorder, treemap
+   drill-in), resolved as a design rule, not accepted as a permanent gap.** Committing now, before any
+   of those concepts are built: each drag interaction's actual transform math (rotation-from-delta,
+   reorder-from-angle) will be a pure, `window`-exposed function taking plain numbers, directly callable
+   from `stress.cjs` with synthetic deltas — the same pattern `stepMru()` already uses ("exposed for
+   stress.cjs, drives it directly rather than synthesizing keydown+shift+bracket"). Only the raw
+   `addEventListener` wiring stays live-verification-only, which is the same universal last step every
+   feature on this page already goes through — not a special new accepted gap.
+
+Checks: 1036 → 1039 (+3: family-distribution check, sabotageTested-set check, zero-null-placeholder
+check). Committed locally — pending push with explicit confirmation, same discipline as every prior
+round.
