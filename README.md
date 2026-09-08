@@ -11,7 +11,7 @@ absorption forecasting, tooling amortization, design-for-cost sensitivity, data 
 30-scenario cost diagnostic playbook, a predictive/risk-modeling suite (learning-curve forecaster,
 a Monte Carlo should-cost explorer, cost-adapted FMEA risk register, Manufacturing Value at Risk), a
 multi-site executive rollup, and an honest operating framework. Click-to-open "Explain the Math"
-modals (45 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
+modals (46 of them) cover the highest-traffic KPIs throughout, a Cmd/Ctrl+K command palette jumps
 directly to any of the 44 indexed modules, and a **collapsible vertical side navigation** (real
 WAI-ARIA Tabs pattern, roving tabindex, full arrow-key navigation) plus a genuine **High-Contrast
 Mode** replace the original horizontal tab bar. See [`UX_ROADMAP.md`](UX_ROADMAP.md) for the fuller
@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1196 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1258 checks, all passing as of this writing.
 
 ## Status
 
@@ -1666,3 +1666,49 @@ earlier in this script's top-to-bottom execution than `var PLAYBOOK = [...]` —
 correctly-ordered init call later in the script. No accepted limitations this round. Checks:
 1117 → 1196 (+79). Committed locally — pending push with explicit confirmation, same discipline as
 every prior round.
+
+**2026-09-08, forty-first round (`/viz-innovation` Batch D: 6 concepts, Self-Audit extensions + meta):**
+All 6 built serially, same discipline as Batches A/B/C — pre-registered (B35) via a standalone `node -e`
+before writing any `stress.cjs` assertion, verified live in-browser, then checked; every critical
+formula sabotage-tested.
+
+1. **Ten-Domain Zoomable Matrix** — the same audited operational-visibility document already cited by
+   the Threshold Disagreement Bridge, its own real 10-domain "Enterprise Operating Architecture Matrix"
+   table transcribed verbatim (re-read straight from the source `.docx`, not from memory) — owner, SAP
+   module, critical metric, root-cause trigger, and cross-silo resolution forum per domain, each
+   collapsed by default behind a native `<details>` disclosure. Deliberately carries no Explain-the-Math
+   button — a reference table has no formula, avoiding the fabricated-pseudo-formula anti-pattern this
+   page already found live elsewhere (sabotage-tested: a fabricated owner name correctly failed).
+2. **Cost Pillar Radar Lens** — the same 4 real should-cost components, a 4th re-framing distinct from
+   Nesting Doll, Circulatory Flow, and the Waterfall — the first radar/spider shape on this page, each
+   axis scaled to the current largest pillar so the shape's roundness itself is the signal
+   (sabotage-tested: a halved scale factor correctly failed).
+3. **Build Velocity Heartbeat, Anomaly-Annotated** — the same real per-round check-count deltas the
+   Heartbeat already tracks, run through a real z-score outlier test (mean/stdev across every tracked
+   round); 3 real rounds (15, 40, 41) exceed \|z\|>1.5 as of this round — a genuinely interesting
+   finding: round 39 (Batch B) was flagged as an outlier before this round widened the dataset, but
+   dropped back under threshold once Batch D's own real numbers joined it, an honest recalculation, not
+   a moved goalpost (sabotage-tested: a threshold raised to hide real anomalies correctly failed).
+4. **Milestone Cairn Distance Rings** — the same real `sabotageTested` flags, read for how many real
+   rounds separate each cairn from the nearest sabotage-tested round — a real "how far from rigorous
+   proof" signal, ring opacity fading with distance (sabotage-tested: an offset bug in the distance
+   formula correctly failed).
+5. **Threshold-Break Cadence Ring** (this limitation was already resolved during planning — "same
+   `sabotageTested` field... closes this one too") — the same 9 real sabotage-tested rounds, spaced
+   evenly around a ring with spoke length proportional to the real round-number gap since the previous
+   one; round 32's real 12-round gap is the session's own widest rigor interval, visibly spiking out
+   from the otherwise tight recent cadence (sabotage-tested: a halved gap-to-radius scale correctly
+   failed).
+6. **Sibling Dashboard Benchmark Radar** — the same 3 real metrics the comparator table already states,
+   overlaid as two shapes on one radar, each axis independently scaled to whichever repo is larger on
+   that metric (never a shared scale, which would let the sibling's much larger absolute numbers swamp
+   every axis) — sabotage-tested: a shared-scale bug correctly failed.
+
+No real bugs found and fixed during this build (the discipline held clean this round). One real, honest
+finding worth naming plainly: adding round 41 itself changed the mean/stdev the Heartbeat anomaly test
+runs against, which in turn changed which rounds show as anomalies (round 39 dropped out, rounds 40/41
+both qualify) — every affected golden value in `stress.cjs` was recomputed against the true final
+converged state, not left pointing at a stale intermediate one. Flagged one unrelated pre-existing
+staleness (the Milestone Trail's own "All 29 real build rounds" caption, now 37) as a follow-up task
+rather than fixing it inline. No accepted limitations this round. Checks: 1196 → 1258 (+62). Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.

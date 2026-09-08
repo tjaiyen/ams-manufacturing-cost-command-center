@@ -706,6 +706,21 @@ check(elements.circulatoryWrap.innerHTML.includes("<svg") && elements.circulator
 check((elements.circulatoryWrap.innerHTML.match(/<path/g) || []).length === 4, "exactly 4 vessel paths are rendered, one per component", (elements.circulatoryWrap.innerHTML.match(/<path/g) || []).length);
 check(elements.circulatoryWrap.innerHTML.includes("Material $81.35 ★"), "the dominant vessel's label is marked with the star, distinguishing it from the other 3", elements.circulatoryWrap.innerHTML);
 
+console.log("--- concept 18: Cost Pillar Radar Lens (same 4 real should-cost components, as a 4-axis radar) ---");
+check(typeof sandbox.calcCostPillarRadar === "function", "window.calcCostPillarRadar is exposed as a function");
+check(typeof sandbox.renderCostPillarRadar === "function", "window.renderCostPillarRadar is exposed as a function");
+const radarState = sandbox.calcCostPillarRadar(81.35, 14.67, 10.39, 14.90);
+check(Math.abs(radarState.maxVal - 81.35) < 1e-9, "the real current largest pillar (Material) matches the golden value", radarState.maxVal);
+check(Math.abs(radarState.pillars[0].pct - 1) < 1e-9, "Material (the dominant pillar) correctly reaches exactly 100% of its own axis", radarState.pillars[0].pct);
+check(Math.round(radarState.pillars[1].pct * 100) === 18 && Math.round(radarState.pillars[2].pct * 100) === 13 && Math.round(radarState.pillars[3].pct * 100) === 18, "Machine/Labor/Overhead's real percentages match the golden values (18%, 13%, 18%)", JSON.stringify(radarState.pillars.map((p) => Math.round(p.pct * 100))));
+sandbox.renderCostPillarRadar(radarState);
+check(elements.costRadarWrap.innerHTML.includes("<svg") && elements.costRadarWrap.innerHTML.includes('role="img"'), "renderCostPillarRadar() renders an actual accessible <svg>, not just numbers");
+check(elements.costRadarWrap.innerHTML.includes('points="120.0,35.0 135.3,120.0 120.0,130.9 104.4,120.0"'), "the real 4-point radar polygon matches the pre-registered golden geometry exactly", elements.costRadarWrap.innerHTML);
+check((elements.costRadarWrap.innerHTML.match(/<polygon/g) || []).length === 5, "renders exactly 5 real polygons (4 background reference rings + 1 real data shape)", (elements.costRadarWrap.innerHTML.match(/<polygon/g) || []).length);
+check(elements.costRadarWrap.innerHTML.includes("Material: $81.35 (100%") && elements.costRadarWrap.innerHTML.includes("Labor: $10.39 (13%"), "the aria-label states the exact real dollar values and percentages", elements.costRadarWrap.innerHTML);
+sandbox.calcShouldCost(); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.costRadarWrap.innerHTML.includes('points="120.0,35.0 135.3,120.0 120.0,130.9 104.4,120.0"'), "calcShouldCost() itself re-renders the radar lens back to the default golden state on every recalculation", elements.costRadarWrap.innerHTML);
+
 console.log("--- Variance Waterfall: golden values ---");
 check(elements.outMPV.textContent === "+$3,025", "MPV matches golden value", elements.outMPV.textContent);
 check(elements.outMQV.textContent === "-$1,040", "MQV matches golden value", elements.outMQV.textContent);
@@ -1949,7 +1964,7 @@ check(typeof sandbox.EXPLAIN === "object" && sandbox.EXPLAIN !== null, "window.E
   check(!!e && !!e.title && !!e.formula && !!e.body, `EXPLAIN["${key}"] has a title, formula, and body`);
 });
 const explainButtonCount = (html.match(/data-explain="/g) || []).length;
-check(explainButtonCount === 45, "exactly 45 explain buttons are wired in the HTML (43 from before + viz-innovation Batch C's riskcube/cascade)", explainButtonCount);
+check(explainButtonCount === 46, "exactly 46 explain buttons are wired in the HTML (45 from before + viz-innovation Batch D's costradar)", explainButtonCount);
 check(typeof sandbox.openExplain === "function", "window.openExplain is exposed as a function");
 
 console.log("--- Stress-test round (2026-09-05) fix 4: modal focus management (WAI-ARIA \"Dialog (Modal)\" pattern) ---");
@@ -2400,16 +2415,16 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 36, "HISTORY has all 36 real build rounds (5 through 40)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 37, "HISTORY has all 37 real build rounds (5 through 41)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 9, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 36 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 10, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 37 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
-check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39, 40]), "HISTORY's real sabotageTested tags match exactly the 8 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
+check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35, 38, 39, 40, 41]), "HISTORY's real sabotageTested tags match exactly the 9 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
 check(sandbox.HISTORY[0].n === 5 && sandbox.HISTORY[0].before === null && sandbox.HISTORY[0].after === null, "round 5 (the earliest) correctly has no check-count data, not an invented zero");
 check(sandbox.HISTORY[4].n === 9 && sandbox.HISTORY[4].after === null, "round 9 (last pre-tracking round) still has no check-count data");
@@ -2429,13 +2444,14 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 8].n === 33 && trackedRounds[trackedRounds.length - 8].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 7].n === 34 && trackedRounds[trackedRounds.length - 7].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
-check(trackedRounds[trackedRounds.length - 6].n === 35 && trackedRounds[trackedRounds.length - 6].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
-check(trackedRounds[trackedRounds.length - 5].n === 36 && trackedRounds[trackedRounds.length - 5].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
-check(trackedRounds[trackedRounds.length - 4].n === 37 && trackedRounds[trackedRounds.length - 4].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
-check(trackedRounds[trackedRounds.length - 3].n === 38 && trackedRounds[trackedRounds.length - 3].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
-check(trackedRounds[trackedRounds.length - 2].n === 39 && trackedRounds[trackedRounds.length - 2].after === 1117, "round 39 (viz-innovation Batch B) ends at the real 1117");
+check(trackedRounds[trackedRounds.length - 9].n === 33 && trackedRounds[trackedRounds.length - 9].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 8].n === 34 && trackedRounds[trackedRounds.length - 8].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 7].n === 35 && trackedRounds[trackedRounds.length - 7].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 6].n === 36 && trackedRounds[trackedRounds.length - 6].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
+check(trackedRounds[trackedRounds.length - 5].n === 37 && trackedRounds[trackedRounds.length - 5].after === 1041, "round 37 (brainstorm + stress-test planning round) ends at the real 1041");
+check(trackedRounds[trackedRounds.length - 4].n === 38 && trackedRounds[trackedRounds.length - 4].after === 1059, "round 38 (viz-innovation Batch A) ends at the real 1059");
+check(trackedRounds[trackedRounds.length - 3].n === 39 && trackedRounds[trackedRounds.length - 3].after === 1117, "round 39 (viz-innovation Batch B) ends at the real 1117");
+check(trackedRounds[trackedRounds.length - 2].n === 40 && trackedRounds[trackedRounds.length - 2].after === 1196, "round 40 (viz-innovation Batch C) ends at the real 1196");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2465,13 +2481,77 @@ sandbox.renderSelfAudit();
 check(elements.onionWrap.innerHTML.includes("onion-ring"), "renderOnion populates onionWrap with the 3-ring SVG");
 check((elements.onionWrap.innerHTML.match(/class="onion-ring"/g) || []).length === 4, "the onion renders exactly 4 ring elements (outer + mid + the inner ring's 2-way real/illustrative split)");
 check(elements.thermoWrap.innerHTML.includes("4/4") && elements.thermoWrap.innerHTML.includes("2/7") && elements.thermoWrap.innerHTML.includes("1/6"), "renderThermo shows all 3 phases' real done/total fractions");
+// concept 20 "Build Velocity Heartbeat, Anomaly-Annotated" adds one extra warning-colored ring
+// <circle> per real velocity anomaly (|z| > 1.5), on top of the one beat <circle> per tracked round --
+// pre-registered via node -e: 3 real anomalies (rounds 15/39/40), so total circles = tracked + 3.
 const heartbeatCircleCount = (elements.heartbeatWrap.innerHTML.match(/<circle/g) || []).length;
-check(heartbeatCircleCount === trackedRounds.length, "renderHeartbeat draws exactly one beat per tracked round (" + trackedRounds.length + "), none for the 5 pre-tracking rounds", String(heartbeatCircleCount));
+check(heartbeatCircleCount === trackedRounds.length + 3, "renderHeartbeat draws exactly one beat per tracked round (" + trackedRounds.length + "), none for the 5 pre-tracking rounds, plus 3 real anomaly rings", String(heartbeatCircleCount));
+
+console.log("--- concept 20: Build Velocity Heartbeat, Anomaly-Annotated (real z-score outlier test on the SAME per-round deltas) ---");
+check(typeof sandbox.calcHeartbeatAnomalies === "function", "window.calcHeartbeatAnomalies is exposed as a function");
+const anomalyState = sandbox.calcHeartbeatAnomalies();
+check(Math.abs(anomalyState.mean - 28.15625) < 1e-6, "the real mean velocity across all 32 tracked rounds matches the pre-registered golden value", anomalyState.mean);
+check(Math.abs(anomalyState.stdev - 21.023958617194335) < 1e-6, "the real population stdev matches the pre-registered golden value", anomalyState.stdev);
+const flaggedRounds = anomalyState.anomalies.filter((a) => a.isAnomaly).map((a) => a.n);
+check(JSON.stringify(flaggedRounds) === JSON.stringify([15, 40, 41]), "exactly the 3 real rounds whose velocity exceeds |z|>1.5 are flagged (rounds 15, 40, 41 -- round 39 dropped out of anomaly status once Batch D widened the real dataset, an honest recalculation, not a hardcoded list)", JSON.stringify(flaggedRounds));
+check(Math.abs(anomalyState.anomalies.find((a) => a.n === 40).z - 2.418371864488817) < 1e-6, "round 40's own real z-score matches the pre-registered golden value (Batch C's own +79 delta is still the session's biggest single-round jump)", anomalyState.anomalies.find((a) => a.n === 40).z);
+check((elements.heartbeatWrap.innerHTML.match(/stroke-dasharray="2,2"/g) || []).length === 3, "renders exactly 3 real anomaly rings, matching the 3 flagged rounds exactly", (elements.heartbeatWrap.innerHTML.match(/stroke-dasharray="2,2"/g) || []).length);
+check(elements.heartbeatWrap.innerHTML.includes("Velocity anomalies (beyond 1.5 standard deviations from the session mean): round 15 (+1.8σ), round 40 (+2.4σ), round 41 (+1.6σ)"), "the aria-label states all 3 real anomalous rounds with their exact real z-scores", elements.heartbeatWrap.innerHTML);
 const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) || []).length;
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
+
+console.log("--- concept 22: Milestone Cairn Distance Rings (real distance-to-nearest-sabotage-tested-round signal) ---");
+check(typeof sandbox.calcCairnDistances === "function", "window.calcCairnDistances is exposed as a function");
+const cairnDistances = sandbox.calcCairnDistances();
+check(cairnDistances.length === sandbox.HISTORY.length, "one real distance entry per real round", cairnDistances.length);
+// Golden values pre-registered via node -e from the real HISTORY array: 8 real sabotage-tested rounds
+// (17,20,32,34,35,38,39,40); round 5 (earliest) sits 12 rounds from the nearest one (the real max
+// distance); round 17 itself is a sabotage-tested round (distance 0).
+check(cairnDistances.find((d) => d.n === 5).distanceToSabotage === 12, "round 5 (earliest, farthest from any sabotage-tested round) matches the golden max distance of 12", cairnDistances.find((d) => d.n === 5).distanceToSabotage);
+check(cairnDistances.find((d) => d.n === 17).distanceToSabotage === 0, "round 17 (itself sabotage-tested) matches the golden distance of 0", cairnDistances.find((d) => d.n === 17).distanceToSabotage);
+check(cairnDistances.find((d) => d.n === 36).distanceToSabotage === 1, "round 36 (one round from sabotage-tested round 35) matches the golden distance of 1", cairnDistances.find((d) => d.n === 36).distanceToSabotage);
+sandbox.renderCairnTrail();
+check((elements.cairnWrap.innerHTML.match(/class="cairn-distance-ring"/g) || []).length === sandbox.HISTORY.length, "renders exactly one real distance ring per cairn, matching the real round count", (elements.cairnWrap.innerHTML.match(/class="cairn-distance-ring"/g) || []).length);
+check(elements.cairnWrap.innerHTML.includes('stroke="rgb(var(--c-success)/1.00)"'), "a sabotage-tested round's own ring renders at full real opacity", elements.cairnWrap.innerHTML.includes('stroke="rgb(var(--c-success)/1.00)"'));
+check(elements.cairnWrap.innerHTML.includes('stroke="rgb(var(--c-success)/0.12)"'), "the farthest real round's ring renders at the real floor opacity (0.12), never fully invisible", elements.cairnWrap.innerHTML.includes('stroke="rgb(var(--c-success)/0.12)"'));
+check(elements.cairnWrap.innerHTML.includes("a real sabotage-tested round itself"), "the aria-label states plainly when a round IS the sabotage-tested one, not just its distance", elements.cairnWrap.innerHTML.includes("a real sabotage-tested round itself"));
+
+console.log("--- concept 24: Threshold-Break Cadence Ring (real round-number gaps between the 8 sabotage-tested rounds) ---");
+check(typeof sandbox.calcCadenceRing === "function", "window.calcCadenceRing is exposed as a function");
+check(typeof sandbox.renderCadenceRing === "function", "window.renderCadenceRing is exposed as a function");
+const cadenceState = sandbox.calcCadenceRing();
+check(cadenceState.gaps.length === 9, "exactly 9 real sabotage-tested rounds feed the ring", cadenceState.gaps.length);
+check(cadenceState.gaps[0].n === 17 && cadenceState.gaps[0].gap === null, "the first sabotage-tested round (17) correctly has no prior gap (null, not a fabricated 0)", JSON.stringify(cadenceState.gaps[0]));
+check(cadenceState.gaps[1].n === 20 && cadenceState.gaps[1].gap === 3, "round 20's real gap since round 17 matches the golden value (3)", JSON.stringify(cadenceState.gaps[1]));
+check(cadenceState.gaps[2].n === 32 && cadenceState.gaps[2].gap === 12, "round 32's real gap since round 20 matches the golden value (12, the session's own widest rigor gap)", JSON.stringify(cadenceState.gaps[2]));
+check(cadenceState.maxGap === 12, "the real max gap across all 7 real intervals matches the golden value", cadenceState.maxGap);
+sandbox.renderCadenceRing(cadenceState);
+check(elements.cadenceRingWrap.innerHTML.includes("<svg") && elements.cadenceRingWrap.innerHTML.includes('role="img"'), "renderCadenceRing() renders an actual accessible <svg>, not just numbers");
+check((elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length === 9, "renders exactly 9 real spoke-tip circles, one per sabotage-tested round", (elements.cadenceRingWrap.innerHTML.match(/<circle/g) || []).length);
+check(elements.cadenceRingWrap.innerHTML.includes('cx="193.7" cy="95.2"'), "round 32's real spoke position (the max-gap round, reaching the outer radius) matches the pre-registered golden geometry exactly (geometry shifted from 8 to 9 spokes once round 41 joined the real sabotage-tested set)", elements.cadenceRingWrap.innerHTML);
+check(elements.cadenceRingWrap.innerHTML.includes('cx="110.0" cy="90.0"'), "round 17's real spoke position (the first round, at the fixed inner floor radius) matches the pre-registered golden geometry exactly", elements.cadenceRingWrap.innerHTML);
+check(elements.cadenceRingWrap.innerHTML.includes("round 32: 12 rounds since the previous"), "the aria-label states the exact real widest-gap round for screen-reader users", elements.cadenceRingWrap.innerHTML);
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("42") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("43") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+
+console.log("--- concept 26: Sibling Dashboard Benchmark Radar (same 3 real metrics above, as a dual-shape radar) ---");
+check(typeof sandbox.calcSiblingRadar === "function", "window.calcSiblingRadar is exposed as a function");
+check(typeof sandbox.renderSiblingRadar === "function", "window.renderSiblingRadar is exposed as a function");
+const radarState2 = sandbox.calcSiblingRadar(sandbox.calcSelfAudit());
+check(radarState2.metrics.length === 3, "exactly 3 real metrics feed the radar, matching the comparator table above", radarState2.metrics.length);
+check(radarState2.metrics[0].self === 43 && radarState2.metrics[0].sibling === 261, "the Commits axis reads the SAME real SELF_METRICS/SIBLING_METRICS values as the table above", JSON.stringify(radarState2.metrics[0]));
+check(Math.abs(radarState2.metrics[0].selfPct - 0.16475095785440613) < 1e-9, "Commits' real selfPct matches the pre-registered golden value (43/261)", radarState2.metrics[0].selfPct);
+check(radarState2.metrics[0].siblingPct === 1, "the sibling always reaches exactly 100% on whichever axis it's larger on (by construction)", radarState2.metrics[0].siblingPct);
+check(Math.abs(radarState2.metrics[1].selfPct - 0.2970484061393152) < 1e-9, "Checks' real selfPct matches the pre-registered golden value (reads the SAME live badge count as the comparator table, not a duplicate parse)", radarState2.metrics[1].selfPct);
+check(Math.abs(radarState2.metrics[2].selfPct - 0.467002349781806) < 1e-9, "Lines' real selfPct matches the pre-registered golden value", radarState2.metrics[2].selfPct);
+sandbox.renderSiblingRadar(radarState2);
+check(elements.siblingRadarWrap.innerHTML.includes("<svg") && elements.siblingRadarWrap.innerHTML.includes('role="img"'), "renderSiblingRadar() renders an actual accessible <svg>, not just numbers");
+check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,106.0 141.9,132.6 85.6,139.8"'), "this-dashboard's real solid shape matches the pre-registered golden geometry exactly", elements.siblingRadarWrap.innerHTML);
+check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,35.0 193.6,162.5 46.4,162.5"'), "the sibling's real dashed shape (always the full-size outer triangle by construction) matches the pre-registered golden geometry exactly", elements.siblingRadarWrap.innerHTML);
+check(elements.siblingRadarWrap.innerHTML.includes("stroke-dasharray=\"4,3\""), "the sibling's shape is dual-encoded by a dashed stroke, not color alone, distinguishing it from this dashboard's solid shape");
+sandbox.renderSibling(sandbox.calcSelfAudit()); // re-trigger via the real calculator (not a parallel path) to confirm the wiring
+check(elements.siblingRadarWrap.innerHTML.includes('points="120.0,106.0 141.9,132.6 85.6,139.8"'), "renderSibling() itself re-renders the benchmark radar back to the default golden state on every recalculation", elements.siblingRadarWrap.innerHTML);
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");
@@ -2531,9 +2611,9 @@ check(typeof sandbox.renderWayfindingDigest === "function", "renderWayfindingDig
 sandbox.activateTab("shouldcost", { focus: false });
 const digestText = sandbox.renderWayfindingDigest();
 // Pre-registered from calcSelfAudit()'s own already-verified real numbers above: shouldcost is tab 2
-// of 13, has 32 real interactive controls (the busiest tab), with exec/variance as its real sidenav
+// of 13, has 33 real interactive controls (the busiest tab), with exec/variance as its real sidenav
 // neighbors.
-check(digestText === "You are on Should-Cost & MHR (section 2 of 13). This section has 32 interactive controls. Nearby: Executive Overview, Variance Waterfall.", "the digest's real position/count/neighbor facts match calcSelfAudit()'s own already-verified numbers, not a hand-written duplicate", digestText);
+check(digestText === "You are on Should-Cost & MHR (section 2 of 13). This section has 33 interactive controls. Nearby: Executive Overview, Variance Waterfall.", "the digest's real position/count/neighbor facts match calcSelfAudit()'s own already-verified numbers, not a hand-written duplicate", digestText);
 elements.digestBtn.click();
 check(elements.wayfindingDigest.hidden === false && elements.wayfindingDigest.textContent === digestText, "clicking the real digest button announces the same real text into the live aria-live region");
 sandbox.activateTab("exec", { focus: false });
@@ -2601,6 +2681,21 @@ check(typeof sandbox.renderGateRings === "function", "renderGateRings is exposed
 check(gatesState.bomPass === true && gatesState.poPass === false && gatesState.confPass === true, "the real default gate states match this page's own established defaults (only the PO gate blocked)", JSON.stringify(gatesState));
 check(elements.gateRingsWrap.innerHTML.includes("1/3"), "the rendered center readout shows the real 1-of-3-blocked count, not a stale or hardcoded number", elements.gateRingsWrap.innerHTML.includes("1/3"));
 check((elements.gateRingsWrap.innerHTML.match(/class="gate-ring"/g) || []).length === 3, "renders exactly 3 real rings, one per real gate");
+
+console.log("--- concept 13: Ten-Domain Zoomable Matrix (real, sourced reference table, no formula) ---");
+check(Array.isArray(sandbox.DOMAIN_MATRIX), "window.DOMAIN_MATRIX is exposed as an array");
+check(sandbox.DOMAIN_MATRIX.length === 10, "exactly 10 real domains, matching the source document's own 10-domain matrix", sandbox.DOMAIN_MATRIX.length);
+check(new Set(sandbox.DOMAIN_MATRIX.map((d) => d.domain)).size === 10, "all 10 domain names are unique");
+// Grounding check (B39-style): every field below is transcribed verbatim from the audited source
+// document's own "Enterprise Operating Architecture Matrix" table, not paraphrased or invented.
+check(sandbox.DOMAIN_MATRIX[0].domain === "Operations" && sandbox.DOMAIN_MATRIX[0].owner === "VP of Manufacturing" && sandbox.DOMAIN_MATRIX[0].sapModule === "PP / MES" && sandbox.DOMAIN_MATRIX[0].metric === "OEE / Downtime" && sandbox.DOMAIN_MATRIX[0].trigger === "Machine stall > 15 min" && sandbox.DOMAIN_MATRIX[0].forum === "Daily Tier 2 Operational Standup", "row 1 (Operations) matches the source document's own table verbatim", JSON.stringify(sandbox.DOMAIN_MATRIX[0]));
+check(sandbox.DOMAIN_MATRIX[9].domain === "Data Governance" && sandbox.DOMAIN_MATRIX[9].owner === "Head of Enterprise BI" && sandbox.DOMAIN_MATRIX[9].sapModule === "MDG / Lakehouse" && sandbox.DOMAIN_MATRIX[9].metric === "Data Accuracy" && sandbox.DOMAIN_MATRIX[9].trigger === "Incomplete Master Record" && sandbox.DOMAIN_MATRIX[9].forum === "Data Stewards Bi-Weekly Review", "row 10 (Data Governance) matches the source document's own table verbatim", JSON.stringify(sandbox.DOMAIN_MATRIX[9]));
+check(typeof sandbox.renderDomainMatrix === "function", "window.renderDomainMatrix is exposed as a function");
+sandbox.renderDomainMatrix();
+check((elements.domainMatrixWrap.innerHTML.match(/<details/g) || []).length === 10, "renders exactly 10 real <details> disclosure rows, one per domain", (elements.domainMatrixWrap.innerHTML.match(/<details/g) || []).length);
+check(!elements.domainMatrixWrap.innerHTML.includes(" open"), "all 10 rows start collapsed (no 'open' attribute) -- a zoomable matrix, not a wall of text on load", elements.domainMatrixWrap.innerHTML.includes(" open"));
+check(elements.domainMatrixWrap.innerHTML.includes("Cross-silo resolution forum: </b>Data Stewards Bi-Weekly Review"), "the collapsed markup still carries the real full detail inside each <details> (native disclosure, not lazy-loaded on click)", elements.domainMatrixWrap.innerHTML.includes("Cross-silo resolution forum: </b>Data Stewards Bi-Weekly Review"));
+check(!html.includes('data-explain="domainmatrix"') && !html.includes('data-explain="tendomainmatrix"'), "the matrix deliberately carries no Explain-the-Math button -- a reference table has no formula, avoiding the fabricated-pseudo-formula anti-pattern this page already found live elsewhere");
 
 console.log("--- concept 3: MDQS Deduction Flow (same real 4 weighted factors, re-framed) ---");
 const mdqsFlowState = sandbox.calcMdqsFlow();

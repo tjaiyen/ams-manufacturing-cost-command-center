@@ -291,6 +291,9 @@
   body.dyslexia-mode code,body.dyslexia-mode .mono,body.dyslexia-mode .kpi-value,body.dyslexia-mode .amz-badge{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
   .bookmarks-details summary{list-style:none;cursor:pointer}
   .bookmarks-details summary::-webkit-details-marker{display:none}
+  .domain-matrix-row{border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;margin-bottom:6px}
+  .domain-matrix-row summary{cursor:pointer;font-size:13px}
+  .domain-matrix-row[open] summary{margin-bottom:6px}
   .bookmarks-panel{padding:6px 2px 2px}
   .bookmarks-list{list-style:none;margin:4px 0 0;padding:0;max-height:160px;overflow-y:auto}
   .bookmarks-item{display:flex;align-items:center;gap:4px}
@@ -462,7 +465,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1196/1196 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1258/1258 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -728,6 +731,15 @@
         converging into the should-cost total, vessel width proportional to dollar contribution, so
         the dominant driver reads as the thickest line into the total, not just the tallest bar.</p>
       <div id="circulatoryWrap"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Cost Pillar Radar Lens <button class="explain-btn" data-explain="costradar" type="button" aria-label="Explain this formula">?</button></h2><span class="tag">SAME 4 COMPONENTS ABOVE, AS A 4-AXIS RADAR</span></div>
+      <p class="lede" style="margin-bottom:12px">A fourth re-framing of the same 4 real components,
+        the first radar/spider shape on this page — each axis scaled to the current largest pillar, so
+        an evenly-round shape means the 4 pillars are genuinely balanced, and a spiked shape shows
+        exactly which one dominates.</p>
+      <div id="costRadarWrap"></div>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -1305,6 +1317,16 @@
           logic, it does not claim AMS's real SAP instance enforces exactly these values.</p>
       </div>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-head"><h2>Ten-Domain Operating Architecture Matrix</h2><span class="tag">REAL, SOURCED — NO FORMULA, A REFERENCE MATRIX</span></div>
+      <p class="lede" style="margin-bottom:12px">The same audited operational-visibility document's
+        own 10-domain "Enterprise Operating Architecture Matrix" table, verbatim — owner, SAP module,
+        critical metric, root-cause trigger, and cross-silo resolution forum for each domain. Each row
+        starts collapsed to a single line; click to zoom into the full detail. No calculation here —
+        this is reference data, not a formula, so it carries no Explain-the-Math button.</p>
+      <div id="domainMatrixWrap"></div>
+    </div>
   </section>
 
   <!-- ============ TAB: COST DIAGNOSTIC PLAYBOOK ============ -->
@@ -1678,6 +1700,15 @@
     </div>
 
     <div class="card">
+      <div class="card-head"><h2>Threshold-Break Cadence Ring</h2></div>
+      <p class="lede" style="margin-bottom:10px">The same real 8 sabotage-tested rounds above (a
+        deliberate break-then-restore detection-power proof), spaced evenly around a ring — spoke
+        length is the real number of rounds since the PREVIOUS sabotage-tested round, so an even ring
+        means a steady rigor cadence and a spiked one shows exactly where the gap widened.</p>
+      <div id="cadenceRingWrap"></div>
+    </div>
+
+    <div class="card">
       <div class="card-head"><h2>Tab Density Leaderboard</h2></div>
       <p class="lede" style="margin-bottom:10px">This page's 13 tabs, ranked by real interactive-element
         count (inputs + buttons + selects), read live from the DOM.</p>
@@ -1700,6 +1731,12 @@
         manufacturing cost) kept as a separate repo on purpose. Real structural facts, hand-verified as of
         2026-09-07, not a live fetch — this page makes zero network calls by design.</p>
       <div id="siblingWrap"></div>
+      <div class="card-head" style="margin-top:18px"><h2 style="font-size:13.5px">Sibling Dashboard Benchmark Radar</h2></div>
+      <p class="lede" style="margin-bottom:10px">The same 3 real metrics in the table above, overlaid
+        as two shapes on one radar — each axis independently scaled to whichever repo is larger on
+        that metric, so the shapes' relative size is directly comparable across all 3 at once, not
+        just 3 separate ratios to read.</p>
+      <div id="siblingRadarWrap"></div>
     </div>
     <!--SELFAUDIT_END-->
 
@@ -2593,6 +2630,7 @@
     honeycomb: { title: 'Honeycomb Capacity Lattice', formula: 'Same util% per week as the table above; delta = util(week N) − util(week N−1)', body: 'The same 6-week Capacity table, laid out as a density grid instead of rows — utilization reads as cell color/fill at a glance, and the connecting edge between two adjacent weeks is colored/thickened by their real week-over-week delta, making a swing (like the week-4-to-5 jump) visible without cross-referencing two separate rows. Cell "adjacency" here is purely temporal (week N next to week N+1) — not a claim about cross-trained backup capacity between physical resources.' },
     nestingdoll: { title: 'Nesting Doll Cost Peel', formula: 'doll[i] = total − sum(components larger than i-th), ordered descending by value', body: 'The same 4 should-cost components (material/machine/labor/overhead) shown in the outline above, re-ordered by size and nested so peeling off the largest reveals a smaller doll worth exactly the sum of what remains — down to the single smallest component at the core. These 4 components are siblings, not a true multi-level hierarchy, so this is a size-ordered peel of one flat breakdown, not a claim about deeper recursive cost structure that doesn\'t exist in this calculator.' },
     circulatory: { title: 'Circulatory Cost Flow', formula: 'vessel width ∝ component value / max(component values), floored at a minimum-visible width', body: 'The same 4 should-cost components as the outline and Nesting Doll above, a third way — as flow converging into the total, with each vessel\'s width directly proportional to its real dollar contribution. The dominant driver (marked ★) is whichever component is currently largest; this updates live as inputs change, so a shift in what drives cost most is visible as a change in which vessel is thickest, not just a re-sorted list.' },
+    costradar: { title: 'Cost Pillar Radar Lens', formula: 'axis length ∝ component value / max(component values)  — each axis scaled to the CURRENT largest pillar, not a fixed reference', body: 'A 4th re-framing of the same 4 real should-cost components — the first radar/spider shape on this page. Because every axis is normalized to whichever pillar is currently largest, the shape\'s roundness itself is the signal: an evenly-round polygon means the 4 components are genuinely balanced right now, while a sharp spike toward one axis shows exactly which pillar dominates the should-cost total — reads at a glance, without comparing 4 separate dollar figures by eye.' },
     glacial: { title: 'Glacial Calving Event Tracker', formula: 'naive chunk = (cost/batch)×batch = cost;  correct chunk = (cost/run)×batch', body: 'The same "First-batch unit cost overstated by N×" line above, decomposed into what each treatment actually attributes to that one first batch: the naive treatment dumps the ENTIRE tooling investment there (a one-time "calved iceberg"), while the correct treatment attributes only that batch\'s true share of the cost spread evenly across the whole run (a small, steady "ice cube"). Chunk area (not radius) is proportional to dollar value, so the visual size ratio is honest even at a 100:1 real-world scale difference.' },
     pressurevessel: { title: 'Pressure-Vessel Cost Containment', formula: 'pressure ratio = deduction / (100 − 93)  — 1.0 = exactly at the red threshold', body: 'The same MDQS deduction the score above computes, re-expressed as a fraction of the real 7-point gap between a perfect score and the red band (93%) this document defines. The "valve" is a static state indicator (open = currently in breach, closed = within tolerance) — not a claim that AMS runs an automated corrective mechanism; no such system is asserted or implied to exist.' },
     mdqsflow: { title: 'MDQS Deduction Flow', formula: 'Same 4 terms as MDQS above: 30%·routing + 30%·confirmation + 25%·scrap + 15%·stale', body: 'The exact same 4 weighted deduction terms the MDQS score above already computes, re-read directly (not recalculated in parallel) and traced as 4 flows into one total instead of 4 table rows — stream width is each factor’s real point contribution, so the single largest driver of the current score is visually obvious without comparing 4 numbers.' },
@@ -3334,9 +3372,58 @@
     document.getElementById('scOutTotal').textContent = '$' + totalCost.toLocaleString(undefined, fmt2);
     renderNestingDoll(calcNestingDoll(matCost, machineCost, laborCost, overheadCost, totalCost));
     renderCirculatory(calcCirculatory(matCost, machineCost, laborCost, overheadCost, totalCost));
+    renderCostPillarRadar(calcCostPillarRadar(matCost, machineCost, laborCost, overheadCost));
     return { matCost: matCost, machineCost: machineCost, laborCost: laborCost, overheadCost: overheadCost, totalCost: totalCost, mhr: mhr };
   }
   window.calcShouldCost = calcShouldCost;
+
+  // /viz-innovation Batch D, concept 18 "Cost Pillar Radar Lens": the same 4 real should-cost
+  // components above, a 4th re-framing distinct from Nesting Doll (concentric), Circulatory Flow
+  // (vessel width), and the Waterfall -- the first radar/spider shape on this page. Each axis is
+  // scaled to the CURRENT largest pillar (not a fixed reference), so the shape's roundness itself is
+  // the signal: round = balanced, spiked = one component dominates.
+  function calcCostPillarRadar(matCost, machineCost, laborCost, overheadCost){
+    var pillars = [
+      { label: 'Material', value: matCost },
+      { label: 'Machine', value: machineCost },
+      { label: 'Labor', value: laborCost },
+      { label: 'Overhead', value: overheadCost },
+    ];
+    var maxVal = Math.max.apply(null, pillars.map(function(p){ return p.value; }));
+    pillars.forEach(function(p){ p.pct = maxVal > 0 ? p.value / maxVal : 0; });
+    return { pillars: pillars, maxVal: maxVal };
+  }
+  window.calcCostPillarRadar = calcCostPillarRadar;
+
+  function renderCostPillarRadar(state){
+    var wrap = document.getElementById('costRadarWrap');
+    if (!wrap) return;
+    var W = 240, H = 240, cx = W / 2, cy = H / 2, maxR = 85;
+    // Standard 4-axis placement, one per compass point (N/E/S/W) -- N=index0, going clockwise.
+    var angles = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
+    var ringsSvg = '';
+    [0.25, 0.5, 0.75, 1].forEach(function(frac){
+      var pts = angles.map(function(a){ return (cx + Math.cos(a) * maxR * frac).toFixed(1) + ',' + (cy + Math.sin(a) * maxR * frac).toFixed(1); });
+      ringsSvg += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+    });
+    var axesSvg = angles.map(function(a){
+      return '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + Math.cos(a) * maxR).toFixed(1) + '" y2="' + (cy + Math.sin(a) * maxR).toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+    }).join('');
+    var shapePts = state.pillars.map(function(p, i){
+      var r = p.pct * maxR;
+      return (cx + Math.cos(angles[i]) * r).toFixed(1) + ',' + (cy + Math.sin(angles[i]) * r).toFixed(1);
+    });
+    var shapeSvg = '<polygon points="' + shapePts.join(' ') + '" fill="rgb(var(--c-accent)/.3)" stroke="rgb(var(--c-accent))" stroke-width="2"/>';
+    var labelsSvg = state.pillars.map(function(p, i){
+      var labelR = maxR + 16;
+      var x = cx + Math.cos(angles[i]) * labelR, y = cy + Math.sin(angles[i]) * labelR;
+      return '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + p.label + ' $' + p.value.toFixed(2) + '</text>';
+    }).join('');
+    var ariaLabel = 'Cost pillar radar lens. ' + state.pillars.map(function(p){ return p.label + ': $' + p.value.toFixed(2) + ' (' + (p.pct * 100).toFixed(0) + '% of the current largest pillar)'; }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:240px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' + ringsSvg + axesSvg + shapeSvg + labelsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderCostPillarRadar = renderCostPillarRadar;
 
   // ---------- Nesting Doll Cost Peel: the same 4 should-cost components above, re-framed as nested
   // "dolls" ordered by size -- each doll's value is the cumulative REMAINDER after peeling off every
@@ -5113,6 +5200,44 @@
     });
   }
   window.renderGateRings = renderGateRings;
+
+  // /viz-innovation Batch D, concept 13 "Ten-Domain Zoomable Matrix": the same audited operational-
+  // visibility document already cited by the Threshold Disagreement Bridge above -- its own real
+  // "Enterprise Operating Architecture Matrix" table, transcribed verbatim (owner/SAP module/metric/
+  // trigger/forum per domain), not summarized or reworded. A reference table has no formula to state
+  // -- deliberately NOT wired to Explain-the-Math (see UX_ROADMAP.md's own finding on why forcing a
+  // button here would produce a fabricated pseudo-formula, the same anti-pattern already found live
+  // in this page's Card Catalog entry and flagged as a follow-up). "Zoomable" = native <details>/
+  // <summary> disclosure per row, the same real, keyboard-accessible mechanism Spatial Bookmarks
+  // already uses -- no custom expand/collapse JS state to fabricate or drift.
+  var DOMAIN_MATRIX = [
+    { domain: 'Operations', owner: 'VP of Manufacturing', sapModule: 'PP / MES', metric: 'OEE / Downtime', trigger: 'Machine stall > 15 min', forum: 'Daily Tier 2 Operational Standup' },
+    { domain: 'Materials/Receiving', owner: 'Materials Director', sapModule: 'MM-IM / EWM', metric: 'Dock-to-Stock', trigger: 'Dock backlog > 8 hrs', forum: 'Daily Logistics-Procurement Triage' },
+    { domain: 'Mfg Engineering', owner: 'Chief Engineer', sapModule: 'PLM / CA', metric: 'BOM Drift', trigger: 'Routing deviation > 2%', forum: 'Engineering Change Board (ECB)' },
+    { domain: 'Quality Control', owner: 'VP of Quality', sapModule: 'QM', metric: 'First Pass Yield', trigger: 'Batch yield < 98.5%', forum: '8D / CAPA Failure Review Board' },
+    { domain: 'WIP Management', owner: 'Master Scheduler', sapModule: 'PP-SFC', metric: 'WIP Aging', trigger: 'Order idle > 1.5x target', forum: 'Daily Dispatch Re-Balancing' },
+    { domain: 'Procurement', owner: 'Chief Procurement Officer', sapModule: 'MM-PUR', metric: 'Vendor OTIF', trigger: 'Late supplier delivery notice', forum: 'Sourcing-Operations Escalation Meeting' },
+    { domain: 'Finance/Costing', owner: 'Corporate Controller', sapModule: 'FI / CO-PC', metric: 'Standard Variance', trigger: 'Line variance > 1.5% budget', forum: 'Weekly Manufacturing Variance Review' },
+    { domain: 'Program Mgmt', owner: 'Program Vice President', sapModule: 'PS / P6', metric: 'CPI / SPI', trigger: 'Total float < 0 days', forum: 'Monthly Executive Program Review' },
+    { domain: 'Sales / S&OP', owner: 'Chief Commercial Officer', sapModule: 'SD / IBP', metric: 'Forecast WAPE', trigger: 'Demand shift > 5%', forum: 'Monthly Consensus S&OP Meeting' },
+    { domain: 'Data Governance', owner: 'Head of Enterprise BI', sapModule: 'MDG / Lakehouse', metric: 'Data Accuracy', trigger: 'Incomplete Master Record', forum: 'Data Stewards Bi-Weekly Review' },
+  ];
+  window.DOMAIN_MATRIX = DOMAIN_MATRIX;
+  function renderDomainMatrix(){
+    var html = DOMAIN_MATRIX.map(function(d, i){
+      return '<details class="domain-matrix-row" id="domainRow' + i + '">' +
+        '<summary><b>' + escapeHtml(d.domain) + '</b> <span style="color:rgb(var(--c-text-secondary))">— ' + escapeHtml(d.metric) + '</span></summary>' +
+        '<div class="pb-row"><b>Owner: </b>' + escapeHtml(d.owner) + '</div>' +
+        '<div class="pb-row"><b>SAP module: </b>' + escapeHtml(d.sapModule) + '</div>' +
+        '<div class="pb-row"><b>Root-cause trigger: </b>' + escapeHtml(d.trigger) + '</div>' +
+        '<div class="pb-row"><b>Cross-silo resolution forum: </b>' + escapeHtml(d.forum) + '</div>' +
+      '</details>';
+    }).join('');
+    document.getElementById('domainMatrixWrap').innerHTML = html;
+  }
+  window.renderDomainMatrix = renderDomainMatrix;
+  renderDomainMatrix();
+
   // Ambient nav status for the Governance tab: red if ANY guardrail gate is blocked or the MDQS
   // band itself is red; amber if MDQS is amber (gates all passing); else green. Reads both
   // calculators' own live DOM output rather than recomputing in parallel, so it can never drift
@@ -6365,6 +6490,7 @@
     { n: 38, date: '2026-09-08', title: '/viz-innovation Batch A (6 concepts: Living Variance Waterfall, Commodity Exposure Tide, Capacity Absorption Sankey, Governance Gate Nested Rings, MDQS Deduction Flow, Threshold Disagreement Bridge)', before: 1041, after: 1059, family: 'viz-innovation', sabotageTested: true },
     { n: 39, date: '2026-09-08', title: '/viz-innovation Batch B (6 concepts: Should-Cost Peel Recompute Trail, Monte Carlo Should-Cost Cloud, DFM Penalty Lever Board, Q* Crossover Fog, Break-Even Playground Depth Layers, Compass Rose Scenario Blend)', before: 1059, after: 1117, family: 'viz-innovation', sabotageTested: true },
     { n: 40, date: '2026-09-08', title: '/viz-innovation Batch C (6 concepts: Learning Curve Forecast Ribbon, Risk Register P/S/D Cube, Aurora Correlation Depth Explorer, RCA Trigger-Duration Pulse, Capacity SPC Break Cascade, Quality Pareto Velocity Overlay)', before: 1117, after: 1196, family: 'viz-innovation', sabotageTested: true },
+    { n: 41, date: '2026-09-08', title: '/viz-innovation Batch D (6 concepts: Ten-Domain Zoomable Matrix, Cost Pillar Radar Lens, Build Velocity Heartbeat Anomaly-Annotated, Milestone Cairn Distance Rings, Threshold-Break Cadence Ring, Sibling Dashboard Benchmark Radar)', before: 1196, after: 1258, family: 'viz-innovation', sabotageTested: true },
   ];
   window.HISTORY = HISTORY;
 
@@ -6391,7 +6517,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 42, lines: 6681 };
+  var SELF_METRICS = { commits: 43, lines: 6956 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 
@@ -6479,11 +6605,36 @@
   }
   window.renderThermo = renderThermo;
 
+  // /viz-innovation Batch D, concept 20 "Build Velocity Heartbeat, Anomaly-Annotated": the SAME real
+  // per-round check-count deltas the Heartbeat below already computes, run through a real z-score
+  // outlier test (mean/stdev across every tracked round) -- the same class of statistical technique
+  // already established for this page's own SPC control chart, just mean/stdev instead of I-MR's
+  // moving-range (a round's own delta isn't naturally "sequential variation" the way weekly
+  // utilization is, so a plain z-score is the more honest fit here, not a forced re-use of I-MR).
+  function calcHeartbeatAnomalies(){
+    var tracked = HISTORY.filter(function(h){ return h.after !== null; });
+    var deltas = tracked.map(function(h){ return h.after - h.before; });
+    var n = deltas.length;
+    var mean = deltas.reduce(function(a, b){ return a + b; }, 0) / n;
+    var variance = deltas.reduce(function(s, d){ return s + Math.pow(d - mean, 2); }, 0) / n;
+    var stdev = Math.sqrt(variance);
+    var anomalies = tracked.map(function(h, i){
+      var d = deltas[i];
+      var z = stdev > 0 ? (d - mean) / stdev : 0;
+      return { n: h.n, delta: d, z: z, isAnomaly: Math.abs(z) > 1.5 };
+    });
+    return { mean: mean, stdev: stdev, anomalies: anomalies };
+  }
+  window.calcHeartbeatAnomalies = calcHeartbeatAnomalies;
+
   function renderHeartbeat(){
     var W = 760, H = 140, baseline = 100;
     var stepX = W / HISTORY.length;
     var tracked = HISTORY.filter(function(h){ return h.after !== null; });
     var maxDelta = Math.max.apply(null, tracked.map(function(h){ return h.after - h.before; }));
+    var anomalyState = calcHeartbeatAnomalies();
+    var anomalyByN = {};
+    anomalyState.anomalies.forEach(function(a){ anomalyByN[a.n] = a; });
     var points = '', spikes = '';
     HISTORY.forEach(function(h, i){
       var x = stepX * i + stepX / 2;
@@ -6493,13 +6644,16 @@
         var d = h.after - h.before;
         var amp = maxDelta ? (d / maxDelta) * 55 : 0;
         var peakY = (baseline - amp).toFixed(1);
+        var anomaly = anomalyByN[h.n];
+        var anomalyRing = anomaly && anomaly.isAnomaly ? '<circle cx="' + x.toFixed(1) + '" cy="' + peakY + '" r="8" fill="none" stroke="rgb(var(--c-warning))" stroke-width="1.5" stroke-dasharray="2,2"/>' : '';
         points += (i === 0 ? '' : ' ') + (x - stepX / 2).toFixed(1) + ',' + baseline + ' ' + x.toFixed(1) + ',' + peakY + ' ' + (x + stepX / 2).toFixed(1) + ',' + baseline;
-        spikes += '<circle cx="' + x.toFixed(1) + '" cy="' + peakY + '" r="4" fill="rgb(var(--c-accent))"><title>Round ' + h.n + ' (' + h.date + '): ' + h.title + '. Checks ' + h.before + ' → ' + h.after + ' (+' + d + ').</title></circle>';
+        spikes += anomalyRing + '<circle cx="' + x.toFixed(1) + '" cy="' + peakY + '" r="4" fill="rgb(var(--c-accent))"><title>Round ' + h.n + ' (' + h.date + '): ' + h.title + '. Checks ' + h.before + ' → ' + h.after + ' (+' + d + ').' + (anomaly && anomaly.isAnomaly ? ' Anomaly: this round\'s velocity is ' + anomaly.z.toFixed(1) + ' standard deviations from the session mean of +' + anomalyState.mean.toFixed(1) + ' checks/round.' : '') + '</title></circle>';
       }
     });
     var firstTracked = tracked[0];
     var last = HISTORY[HISTORY.length - 1];
-    var ariaLabel = HISTORY.length + ' build rounds, ' + HISTORY[0].date + ' to ' + last.date + '. Check-count tracking starts round ' + firstTracked.n + ' (' + firstTracked.before + ' checks) and reaches ' + last.after + ' by round ' + last.n + '. Hover a beat, or use the Milestone Trail below, for any round’s detail.';
+    var anomalyRounds = anomalyState.anomalies.filter(function(a){ return a.isAnomaly; }).map(function(a){ return 'round ' + a.n + ' (' + (a.z > 0 ? '+' : '') + a.z.toFixed(1) + 'σ)'; });
+    var ariaLabel = HISTORY.length + ' build rounds, ' + HISTORY[0].date + ' to ' + last.date + '. Check-count tracking starts round ' + firstTracked.n + ' (' + firstTracked.before + ' checks) and reaches ' + last.after + ' by round ' + last.n + '. Hover a beat, or use the Milestone Trail below, for any round’s detail.' + (anomalyRounds.length ? ' Velocity anomalies (beyond 1.5 standard deviations from the session mean): ' + anomalyRounds.join(', ') + '.' : '');
     var boundaryX = stepX * tracked.length && stepX * (HISTORY.length - tracked.length);
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
       '<line x1="0" y1="' + baseline + '" x2="' + W + '" y2="' + baseline + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
@@ -6512,13 +6666,80 @@
   }
   window.renderHeartbeat = renderHeartbeat;
 
+  // /viz-innovation Batch D, concept 22 "Milestone Cairn Distance Rings": the SAME real HISTORY array
+  // already feeding the Cairn Trail below, read for its real `sabotageTested` flags (8 real rounds
+  // that got a genuine break-then-restore detection-power proof) -- distance = how many real rounds
+  // separate THIS cairn from the nearest sabotage-tested one, a real "how far from rigorous proof"
+  // signal, not a fabricated confidence score.
+  function calcCairnDistances(){
+    var sabotageRounds = HISTORY.filter(function(h){ return h.sabotageTested; }).map(function(h){ return h.n; });
+    return HISTORY.map(function(h){
+      var distances = sabotageRounds.map(function(sn){ return Math.abs(h.n - sn); });
+      var minDist = distances.length ? Math.min.apply(null, distances) : null;
+      return { n: h.n, distanceToSabotage: minDist };
+    });
+  }
+  window.calcCairnDistances = calcCairnDistances;
+
+  // /viz-innovation Batch D, concept 24 "Threshold-Break Cadence Ring" (this limitation was already
+  // resolved during planning: "same sabotageTested field... closes this one too" -- UX_ROADMAP.md).
+  // The SAME real 8 sabotage-tested rounds, gap = real round-number distance since the PREVIOUS one
+  // (the first has no previous, so gets a real fixed baseline spoke instead of a fabricated gap).
+  function calcCadenceRing(){
+    var sabotageRounds = HISTORY.filter(function(h){ return h.sabotageTested; });
+    var gaps = sabotageRounds.map(function(h, i){
+      return { n: h.n, gap: i === 0 ? null : h.n - sabotageRounds[i - 1].n };
+    });
+    var realGaps = gaps.filter(function(g){ return g.gap !== null; }).map(function(g){ return g.gap; });
+    var maxGap = Math.max.apply(null, realGaps);
+    return { gaps: gaps, maxGap: maxGap };
+  }
+  window.calcCadenceRing = calcCadenceRing;
+
+  function renderCadenceRing(state){
+    var wrap = document.getElementById('cadenceRingWrap');
+    if (!wrap) return;
+    var W = 220, H = 220, cx = W / 2, cy = H / 2, minR = 20, maxR = 85;
+    var n = state.gaps.length;
+    var points = state.gaps.map(function(g, i){
+      var angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      // The first spoke has no real "gap since previous" -- given a fixed minimum radius rather than
+      // an invented gap value, so it never silently reads as "gap of 0" (a real, different meaning).
+      var r = g.gap === null ? minR : minR + (state.maxGap > 0 ? (g.gap / state.maxGap) * (maxR - minR) : 0);
+      return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r, angle: angle, r: r, n: g.n, gap: g.gap };
+    });
+    var ringPoints = points.map(function(p){ return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+    var spokesSvg = points.map(function(p){
+      return '<line x1="' + cx + '" y1="' + cy + '" x2="' + p.x.toFixed(1) + '" y2="' + p.y.toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>' +
+        '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="rgb(var(--c-success))"><title>Round ' + p.n + (p.gap === null ? ' (first sabotage-tested round -- no prior gap to measure)' : ': ' + p.gap + ' round' + (p.gap === 1 ? '' : 's') + ' since the previous sabotage-tested round') + '</title></circle>' +
+        '<text x="' + (cx + Math.cos(p.angle) * (maxR + 14)).toFixed(1) + '" y="' + (cy + Math.sin(p.angle) * (maxR + 14) + 3).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">R' + p.n + '</text>';
+    }).join('');
+    var ariaLabel = 'Threshold-break cadence ring, ' + n + ' real sabotage-tested rounds. ' + state.gaps.map(function(g){ return 'round ' + g.n + (g.gap === null ? ': first, no prior gap' : ': ' + g.gap + ' round' + (g.gap === 1 ? '' : 's') + ' since the previous'); }).join(', ') + '.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:220px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+      '<polygon points="' + ringPoints + '" fill="rgb(var(--c-success)/.15)" stroke="rgb(var(--c-success))" stroke-width="1.5"/>' +
+      spokesSvg +
+      '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderCadenceRing = renderCadenceRing;
+
   function renderCairnTrail(){
+    var distances = calcCairnDistances();
+    var distByN = {};
+    distances.forEach(function(d){ distByN[d.n] = d.distanceToSabotage; });
+    var maxDist = Math.max.apply(null, distances.map(function(d){ return d.distanceToSabotage || 0; }));
     var html = '<div style="display:flex;gap:4px;overflow-x:auto;padding:8px 2px" role="list" aria-label="' + HISTORY.length + ' build rounds, in order">';
     HISTORY.forEach(function(h){
       var delta = (h.before !== null) ? ('checks ' + h.before + ' → ' + h.after + ' (+' + (h.after - h.before) + ')') : 'no check-count data (predates tracking)';
-      var label = 'Round ' + h.n + ', ' + h.date + ': ' + h.title + '. ' + delta + '.';
+      var dist = distByN[h.n];
+      var distText = h.sabotageTested ? 'a real sabotage-tested round itself' : (dist === null ? 'no sabotage-tested rounds yet' : dist + ' round' + (dist === 1 ? '' : 's') + ' from the nearest real sabotage-tested round');
+      var label = 'Round ' + h.n + ', ' + h.date + ': ' + h.title + '. ' + delta + '. ' + distText + '.';
+      // Ring opacity fades with real distance: 0 (the sabotage round itself) reads solid, farther
+      // rounds fade toward the background -- never below a floor so a far cairn's ring stays visible,
+      // not silently disappearing.
+      var ringOpacity = h.sabotageTested ? 1 : (maxDist > 0 ? Math.max(0.12, 1 - (dist / maxDist)) : 0.12);
       html += '<button type="button" class="cairn-btn" role="listitem" title="' + label + '" aria-label="' + label + '" style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 5px;border-radius:6px">' +
-        '<svg width="20" height="16" viewBox="0 0 22 18" aria-hidden="true"><path d="M2 17 L7 7 L11 12 L15 4 L20 17 Z" fill="rgb(var(--c-accent)/.75)" stroke="rgb(var(--c-accent))" stroke-width="1"/></svg>' +
+        '<svg width="22" height="18" viewBox="0 0 22 18" aria-hidden="true"><circle class="cairn-distance-ring" cx="11" cy="10" r="8.5" fill="none" stroke="rgb(var(--c-success)/' + ringOpacity.toFixed(2) + ')" stroke-width="1.5"/><path d="M2 17 L7 7 L11 12 L15 4 L20 17 Z" fill="rgb(var(--c-accent)/.75)" stroke="rgb(var(--c-accent))" stroke-width="1"/></svg>' +
         '<span style="font-size:8.5px;color:rgb(var(--c-text-secondary))" aria-hidden="true">' + h.n + '</span>' +
         '</button>';
     });
@@ -6577,8 +6798,61 @@
     });
     html += '</tbody></table></div><p class="kpi-foot" style="margin-top:8px">As of 2026-09-07 — a hand-verified snapshot, not a live fetch (this page makes zero network calls by design). Different domains on purpose (manufacturing cost vs. capital-program EVM/schedule controls) — see Methodology above.</p>';
     document.getElementById('siblingWrap').innerHTML = html;
+    renderSiblingRadar(calcSiblingRadar(state));
   }
   window.renderSibling = renderSibling;
+
+  // /viz-innovation Batch D, concept 26 "Sibling Dashboard Benchmark Radar": the SAME 3 real metrics
+  // the table above already states, overlaid as two radar shapes -- each axis independently scaled
+  // to whichever repo is larger on THAT metric (not a shared scale, which would let the sibling's
+  // much larger absolute numbers swamp every axis and hide the real relative comparison).
+  function calcSiblingRadar(state){
+    var metrics = [
+      { label: 'Commits', self: SELF_METRICS.commits, sibling: SIBLING_METRICS.commits },
+      { label: 'Checks', self: state.liveChecks, sibling: SIBLING_METRICS.checks },
+      { label: 'Lines', self: SELF_METRICS.lines, sibling: SIBLING_METRICS.lines },
+    ];
+    metrics.forEach(function(m){
+      var maxVal = Math.max(m.self, m.sibling);
+      m.selfPct = maxVal > 0 ? m.self / maxVal : 0;
+      m.siblingPct = maxVal > 0 ? m.sibling / maxVal : 0;
+    });
+    return { metrics: metrics };
+  }
+  window.calcSiblingRadar = calcSiblingRadar;
+
+  function renderSiblingRadar(state){
+    var wrap = document.getElementById('siblingRadarWrap');
+    if (!wrap) return;
+    var W = 240, H = 240, cx = W / 2, cy = H / 2, maxR = 85;
+    var n = state.metrics.length;
+    var angles = state.metrics.map(function(_, i){ return (i / n) * 2 * Math.PI - Math.PI / 2; });
+    var ringsSvg = '';
+    [0.33, 0.66, 1].forEach(function(frac){
+      var pts = angles.map(function(a){ return (cx + Math.cos(a) * maxR * frac).toFixed(1) + ',' + (cy + Math.sin(a) * maxR * frac).toFixed(1); });
+      ringsSvg += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+    });
+    var axesSvg = angles.map(function(a){
+      return '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + Math.cos(a) * maxR).toFixed(1) + '" y2="' + (cy + Math.sin(a) * maxR).toFixed(1) + '" stroke="rgb(var(--c-line))" stroke-width="1"/>';
+    }).join('');
+    function shapePoints(key){
+      return state.metrics.map(function(m, i){
+        var r = m[key] * maxR;
+        return (cx + Math.cos(angles[i]) * r).toFixed(1) + ',' + (cy + Math.sin(angles[i]) * r).toFixed(1);
+      }).join(' ');
+    }
+    var selfShapeSvg = '<polygon points="' + shapePoints('selfPct') + '" fill="rgb(var(--c-accent)/.25)" stroke="rgb(var(--c-accent))" stroke-width="2"/>';
+    var siblingShapeSvg = '<polygon points="' + shapePoints('siblingPct') + '" fill="none" stroke="rgb(var(--c-text-secondary))" stroke-width="1.5" stroke-dasharray="4,3"/>';
+    var labelsSvg = state.metrics.map(function(m, i){
+      var labelR = maxR + 18;
+      var x = cx + Math.cos(angles[i]) * labelR, y = cy + Math.sin(angles[i]) * labelR;
+      return '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" font-size="10" fill="rgb(var(--c-text-secondary))" text-anchor="middle">' + m.label + '</text>';
+    }).join('');
+    var ariaLabel = 'Sibling dashboard benchmark radar. ' + state.metrics.map(function(m){ return m.label + ': this dashboard ' + m.self.toLocaleString() + ' (' + (m.selfPct * 100).toFixed(0) + '%) vs. sibling ' + m.sibling.toLocaleString() + ' (' + (m.siblingPct * 100).toFixed(0) + '%)'; }).join(', ') + '. Solid = this dashboard, dashed = the sibling.';
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:240px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' + ringsSvg + axesSvg + siblingShapeSvg + selfShapeSvg + labelsSvg + '</svg>';
+    wrap.innerHTML = svg;
+  }
+  window.renderSiblingRadar = renderSiblingRadar;
 
   function renderSelfAudit(){
     var state = calcSelfAudit();
@@ -6586,6 +6860,7 @@
     renderThermo();
     renderHeartbeat();
     renderCairnTrail();
+    renderCadenceRing(calcCadenceRing());
     renderLeaderboard(state);
     renderScorecard(state);
     renderSibling(state);

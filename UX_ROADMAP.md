@@ -273,9 +273,12 @@ transcript until now).
   critical formula sabotage-tested; see README for the 3 real bugs found (a DOM method the stub
   harness doesn't implement, a straight-apostrophe JS syntax error, and a var-hoisting init-order
   crash) and the zero accepted limitations this round.
-- **Batch D** (Self-Audit extensions + meta): 13 Ten-Domain Zoomable Matrix, 18 Cost Pillar Radar Lens,
-  20 Build Velocity Heartbeat Anomaly-Annotated, 22 Milestone Cairn Distance Rings, 24\* Threshold-Break
-  Cadence Ring, 26 Sibling Dashboard Benchmark Radar.
+- **Batch D ✅ built (2026-09-08, README's forty-first round):** 13 Ten-Domain Zoomable Matrix, 18 Cost
+  Pillar Radar Lens, 20 Build Velocity Heartbeat Anomaly-Annotated, 22 Milestone Cairn Distance Rings,
+  24\* Threshold-Break Cadence Ring, 26 Sibling Dashboard Benchmark Radar. All 6 verified live + every
+  critical formula sabotage-tested; no real bugs found this round. See README for the one real, honest
+  finding (adding round 41 shifted the Heartbeat's own anomaly-detection stats, correctly changing which
+  rounds flag as outliers) and the zero accepted limitations.
 - **Batch E** (hardest last, patterns proven by then): 17\* Should-Cost Component Treemap Drill, 25
   Stakeholder Coverage Ribbon, 27\* Round-by-Round Feature-Family Streamgraph, 28 Domain Trigger
   Threshold Comparator, 29\* Guardrail Gate Cohort Comparison (redesigned to reuse Bookmarks, same as
