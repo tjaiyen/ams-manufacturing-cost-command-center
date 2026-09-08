@@ -446,7 +446,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1039/1039 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 1041/1041 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -5497,7 +5497,9 @@
     { n: 32, date: '2026-09-07', title: '/stress-test of the Phase 4 arc (batches A-E)', before: 956, after: 973, family: 'stress-test', sabotageTested: true },
     { n: 33, date: '2026-09-07', title: 'Site Accuracy Explorer visual fix', before: 973, after: 974, family: 'fix', sabotageTested: false },
     { n: 34, date: '2026-09-07', title: 'Dashboard Self-Audit (7 concepts, plan-exec + stress-test on a 30-idea catalog)', before: 974, after: 1001, family: 'self-audit', sabotageTested: true },
-    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause)', before: 1001, after: 1039, family: 'nav-innovation', sabotageTested: true },
+    { n: 35, date: '2026-09-07', title: '/nav-innovation (9 built: 6 real extensions of existing infra, 3 new; 6 of 30 catalog ideas already existed under other names, 15 genuinely declined for cause) + its own /stress-test (README rounds 35-36 combined)', before: 1001, after: 1036, family: 'nav-innovation', sabotageTested: true },
+    { n: 36, date: '2026-09-08', title: '/stress-test "resolve all limitations" pass on the viz-innovation batch plan', before: 1036, after: 1039, family: 'fix', sabotageTested: false },
+    { n: 37, date: '2026-09-08', title: '/brainstorm batch-plan upgrades + /stress-test the top cluster (planning round, no code executed)', before: 1039, after: 1041, family: 'planning', sabotageTested: false },
   ];
   window.HISTORY = HISTORY;
 
@@ -5524,7 +5526,7 @@
   // SELF_METRICS: this repo's own commit count and index.html line count as of the commit this round
   // makes -- hand-verified the same way as SIBLING_METRICS (git log/wc -l), same discipline as the
   // check-count badge above ("updated by hand each build round, not computed live").
-  var SELF_METRICS = { commits: 38, lines: 5813 };
+  var SELF_METRICS = { commits: 39, lines: 5815 };
   window.SIBLING_METRICS = SIBLING_METRICS;
   window.SELF_METRICS = SELF_METRICS;
 

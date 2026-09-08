@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 1039 checks, all passing as of this writing.
+Run: `node stress.cjs` — 1041 checks, all passing as of this writing.
 
 ## Status
 
@@ -1497,3 +1497,39 @@ limitations rather than building around them. TJ's follow-up: resolve them, not 
 Checks: 1036 → 1039 (+3: family-distribution check, sabotageTested-set check, zero-null-placeholder
 check). Committed locally — pending push with explicit confirmation, same discipline as every prior
 round.
+
+**2026-09-08, thirty-eighth round (`/brainstorm` "propose upgrades to all the batches," then
+`/stress-test` the top-ranked cluster before folding it in — a planning/documentation round, no code
+executed by any new feature):** The brainstorm produced 12 ways to make the 30-concept viz-innovation
+batch plan more comprehensive; a stress-test of the top 3 (self-review + an independent reviewer) found
+5 real findings, one CRIT:
+
+- **CRIT, corrected:** concept 28 (Domain Trigger Threshold Comparator)'s planned cross-domain
+  normalization has no real, named, citable statistical convention behind it — the plan to give it a
+  Source Ledger citation was itself the fabrication-guard violation this repo's own discipline exists
+  to catch. Corrected to ship labeled as this dashboard's own invented convention, same explicit
+  phrasing already used for the real `tow`/`pendulum` EXPLAIN entries.
+- **HIGH:** "wire all 30 concepts to Explain-the-Math uniformly" would force a fabricated formula onto
+  3 concepts with no real math (13, 25, 30) — and this exact failure is **already live** in the
+  codebase (the Card Catalog Drawer's `cardcatalog` EXPLAIN entry manufactures a pseudo-formula for a
+  purely structural view). Filed as a standalone follow-up, not fixed here; the batch plan's own rule
+  corrected to exempt non-formulaic concepts rather than force them through one schema.
+- **MED × 3:** the Cairn Trail family-color retrofit needs shape/pattern dual-encoding, not color-only,
+  to match this page's own established accessibility rule; the Heartbeat family-filter retrofit
+  exposed two latent bugs (a contiguous-null-prefix assumption in the boundary marker; an unguarded
+  empty-array `-Infinity` in `maxDelta`) to fix *before* shipping the filter, not after; concept 15's
+  "correlation without this point" is a real, missed citation (jackknife/leave-one-out influence
+  analysis, Quenouille 1949/Tukey 1958), now added to scope.
+
+The full 30-concept catalog, 5-batch assignment, all 4 previously-resolved limitations, and this
+round's corrections are now persisted in UX_ROADMAP.md's new Phase 7 — a prior stress-test round had
+flagged that this material existed only in session transcript, reconstructable but not durable; that
+gap is now closed. No new viz-innovation feature was built this round, but writing this up surfaced a
+real bookkeeping gap of its own: the prior round's badge-bump had folded THIS round's own
+resolve-all-limitations work into round 35's `HISTORY` entry rather than giving it its own — three real
+README rounds (35 nav-innovation, 36 its stress-test, 37 resolve-limitations) had collapsed into one
+`HISTORY` entry. Split back out to one real entry per round (35 stays the deliberate nav-innovation +
+its-own-stress-test merge; 36 = resolve-limitations; 37 = this planning round), with 4
+position-dependent `stress.cjs` checks updated to match the real, now-longer chain. Checks: 1039 → 1041
+(+2: the corrected round-count/family-distribution assertions after the HISTORY split). Committed
+locally — pending push with explicit confirmation, same discipline as every prior round.

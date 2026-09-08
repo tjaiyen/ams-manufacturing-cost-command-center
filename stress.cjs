@@ -2114,14 +2114,14 @@ sandbox.activateTab("exec", { focus: false }); // restore the default tab before
 
 console.log("--- Dashboard Self-Audit (Phase 5, 2026-09-07 -- 7 concepts, /plan-exec \"all 30\" stress-tested down to the ones needing zero invented data) ---");
 check(typeof sandbox.calcSelfAudit === "function", "calcSelfAudit is exposed as a function");
-check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 31, "HISTORY has all 31 real build rounds (5 through 35)", String(sandbox.HISTORY && sandbox.HISTORY.length));
+check(Array.isArray(sandbox.HISTORY) && sandbox.HISTORY.length === 33, "HISTORY has all 33 real build rounds (5 through 37)", String(sandbox.HISTORY && sandbox.HISTORY.length));
 // /stress-test, 2026-09-08 ("resolve all limitations" pass ahead of the viz-innovation batch):
 // family/sabotageTested hand-tagged by re-reading all 31 rounds directly (not regex-guessed) --
 // golden counts pre-registered via a standalone `node -e` against the real HISTORY array before
 // this check was written (B35), same discipline as every other golden-value check in this file.
 const historyFamilyCounts = {};
 sandbox.HISTORY.forEach((r) => { historyFamilyCounts[r.family] = (historyFamilyCounts[r.family] || 0) + 1; });
-check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 5, "viz-innovation": 6, phase4: 5, "self-audit": 1, "nav-innovation": 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 31 rounds", JSON.stringify(historyFamilyCounts));
+check(JSON.stringify(historyFamilyCounts) === JSON.stringify({ feature: 7, "stress-test": 5, research: 1, fix: 6, "viz-innovation": 6, phase4: 5, "self-audit": 1, "nav-innovation": 1, planning: 1 }), "HISTORY's real family tags sum to the pre-registered golden distribution across all 33 rounds", JSON.stringify(historyFamilyCounts));
 const sabotageTestedRounds = sandbox.HISTORY.filter((r) => r.sabotageTested).map((r) => r.n);
 check(JSON.stringify(sabotageTestedRounds) === JSON.stringify([17, 20, 32, 34, 35]), "HISTORY's real sabotageTested tags match exactly the 5 rounds whose real changelog text describes a deliberate break-then-restore detection-power proof (found by searching for every real phrasing used -- \"sabotage\", \"falsification-tested\", \"temporarily broke... confirmed each correctly failed, then reverted\" -- not just one keyword)", JSON.stringify(sabotageTestedRounds));
 check(sandbox.HISTORY.every((r) => typeof r.family === "string" && typeof r.sabotageTested === "boolean"), "every one of the 31 rounds has a real, non-null family and sabotageTested value -- zero unresolved/unknown placeholders");
@@ -2143,8 +2143,10 @@ for (let i = 1; i < trackedRounds.length; i++) {
   }
 }
 check(historyChainOk, "every tracked round's check-count chains into the next with no gap (hand-verified, not regex-extracted)", historyChainBreak);
-check(trackedRounds[trackedRounds.length - 3].n === 33 && trackedRounds[trackedRounds.length - 3].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
-check(trackedRounds[trackedRounds.length - 2].n === 34 && trackedRounds[trackedRounds.length - 2].after === 1001, "round 34 (Dashboard Self-Audit, before this /nav-innovation round) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 5].n === 33 && trackedRounds[trackedRounds.length - 5].after === 974, "round 33 (before the Self-Audit round) ends at the real 974");
+check(trackedRounds[trackedRounds.length - 4].n === 34 && trackedRounds[trackedRounds.length - 4].after === 1001, "round 34 (Dashboard Self-Audit) ends at the real 1001");
+check(trackedRounds[trackedRounds.length - 3].n === 35 && trackedRounds[trackedRounds.length - 3].after === 1036, "round 35 (/nav-innovation + its own /stress-test, combined) ends at the real 1036");
+check(trackedRounds[trackedRounds.length - 2].n === 36 && trackedRounds[trackedRounds.length - 2].after === 1039, "round 36 (resolve-all-limitations pass) ends at the real 1039");
 // Self-check, same shape as the #verifyBadge one below: HISTORY's own final entry must match the
 // real badge count on THIS page -- otherwise HISTORY (and the Heartbeat/Cairn Trail built from it)
 // would go stale the very next round a check is added and the badge is updated, exactly the kind of
@@ -2180,7 +2182,7 @@ const cairnBtnCount = (elements.cairnWrap.innerHTML.match(/class="cairn-btn"/g) 
 check(cairnBtnCount === sandbox.HISTORY.length, "renderCairnTrail draws exactly one cairn per real round (" + sandbox.HISTORY.length + ")", String(cairnBtnCount));
 check(elements.leaderboardWrap.innerHTML.includes("1. Should-Cost") && (elements.leaderboardWrap.innerHTML.match(/<span style="white-space:nowrap/g) || []).length === 13, "renderLeaderboard ranks all 13 tabs with the real busiest tab in first place");
 check((elements.scorecardWrap.innerHTML.match(/<svg/g) || []).length === 13, "renderScorecard draws exactly one gauge per real tab (13)");
-check(elements.siblingWrap.innerHTML.includes("38") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
+check(elements.siblingWrap.innerHTML.includes("39") && elements.siblingWrap.innerHTML.includes("261") && elements.siblingWrap.innerHTML.includes("14895"), "renderSibling shows both this dashboard's and the sibling's real numbers side by side");
 
 console.log("--- /nav-innovation (2026-09-07): 30-concept catalog triaged down to 9 that extend real infra or need zero new fabrication ---");
 sandbox.applyRoleView("all");

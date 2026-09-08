@@ -232,6 +232,109 @@ sidenav quick-filter) were declined **mid-build**, not before it, once building 
 redundancy/conflict concrete — the ghost trail would have been a third concurrent "recent tab" surface,
 and the quick-filter would have fought the existing chord-navigation system for the same keystrokes.
 
+## Phase 7 — Viz-Innovation batch plan (2026-09-08): 30 concepts, 5 batches, persisted here so a
+## future session doesn't have to reconstruct it from transcript
+
+A `/systems-audit` of an uploaded 10-domain operational-visibility document, then a `/viz-innovation`
+catalog grounded in it and in AMS's own already-computed real data, produced 30 concepts. TJ's
+instruction: integrate all 30, "no is not an exception." A `/stress-test` (self-review + an independent
+reviewer) found real feasibility/data problems in 11 of the 30; all 4 resulting accepted limitations
+were then resolved rather than left standing (see README's thirty-seventh round). A follow-up
+`/brainstorm` produced 12 ways to make the batch plan itself more comprehensive; the top cluster (3
+ideas) was stress-tested again before folding in — this section is the resolved, buildable state of
+all of it, the durable record a prior stress-test flagged as missing (it only existed in session
+transcript until now).
+
+**Batches (5 of 6, by real data dependency — order is sequencing, not priority; none declined):**
+
+- **Batch A** (100% already-real data): 1 Living Variance Waterfall, 3 MDQS Deduction Flow, 4 Threshold
+  Disagreement Bridge (AMS's real MDQS 93% red-band vs. this document's real 99% MDQ Index — a genuine
+  cross-source disagreement, not a bug), 5 Commodity Exposure Tide, 6 Capacity Absorption Sankey, 16
+  Governance Gate Nested Rings.
+- **Batch B** (Should-Cost/DFM/Build-vs-Buy; 2 redesigns): 2\* Should-Cost Peel Recompute Trail
+  (redesigned as a live within-session ghost-trail, not fabricated cross-session history), 7 Monte
+  Carlo Should-Cost Cloud, 8 DFM Penalty Lever Board, 9\* Q\* Crossover Fog (redesigned: a real,
+  user-set "assumed uncertainty ±%" slider drives the band, not an invented confidence interval), 10
+  Break-Even Playground Depth Layers, 12 Compass Rose Scenario Blend.
+- **Batch C** (Risk/Playbook/Triage; new real instrumentation): 11\* Learning Curve Forecast Ribbon
+  (same real-slider redesign as #9), 14 Risk Register P/S/D Cube, 15 Aurora Correlation Depth Explorer,
+  19\* RCA Trigger-Duration Pulse (redesigned: real, session-only in-memory onset tracking, never
+  persisted — consistent with this page's explicit "calculator inputs reset on reload" rule below), 21
+  Capacity SPC Break Cascade (ships with an explicit "illustrative propagation model" disclaimer), 23\*
+  Quality Pareto Velocity Overlay (redesigned to reuse the existing, already-real, already-opt-in
+  Spatial Bookmarks mechanism instead of inventing ambient history).
+- **Batch D** (Self-Audit extensions + meta): 13 Ten-Domain Zoomable Matrix, 18 Cost Pillar Radar Lens,
+  20 Build Velocity Heartbeat Anomaly-Annotated, 22 Milestone Cairn Distance Rings, 24\* Threshold-Break
+  Cadence Ring, 26 Sibling Dashboard Benchmark Radar.
+- **Batch E** (hardest last, patterns proven by then): 17\* Should-Cost Component Treemap Drill, 25
+  Stakeholder Coverage Ribbon, 27\* Round-by-Round Feature-Family Streamgraph, 28 Domain Trigger
+  Threshold Comparator, 29\* Guardrail Gate Cohort Comparison (redesigned to reuse Bookmarks, same as
+  #23), 30 Cross-Domain Forum Cadence Grid.
+
+(\* = built to a redesigned spec, not the concept's original literal wording — see below.)
+
+**4 limitations resolved, not accepted (2026-09-08, README's thirty-seventh round — real work already
+done, not just planned):**
+1. Treemap's "Labor/Overhead not drillable" was a definitional error: `calcShouldCost()` shows both
+   decompose into real, named, already-computed factors (Labor = hours×rate×manning; Overhead =
+   subtotal×%). "Drill" now consistently means "reveal the real formula inputs" for all 4 branches.
+2. Streamgraph: `HISTORY`'s 31 entries each got a real, hand-classified `family` field (verified
+   distribution: feature 7, stress-test 5, research 1, fix 5, viz-innovation 6, phase4 5, self-audit 1,
+   nav-innovation 1) and a real `sabotageTested` boolean (5 rounds: 17, 20, 32, 34, 35 — found by
+   searching every real phrasing this repo has used for a deliberate break-then-restore proof, not just
+   the word "sabotage"; zero unknown/null placeholders needed). The real Byron–Wattenberg minimal-wiggle
+   stacked-baseline formula (the algorithm behind d3's `stackOffsetWiggle`) was hand-implemented and
+   numerically verified against a toy example before committing to it as buildable by hand.
+3. Cadence Ring: same `sabotageTested` field as above closes this one too.
+4. The drag-interaction stub-testing gap (concepts 14/17/18/28's drag/rotate/reorder interactions):
+   resolved as a binding design rule for when they're built — each drag's actual transform math
+   (rotation-from-delta, reorder-from-angle) ships as a pure, `window`-exposed function taking plain
+   numbers, directly testable in `stress.cjs` with synthetic deltas, the same pattern `stepMru()`
+   already uses. Only the raw `addEventListener` wiring stays live-verification-only — the same
+   universal last step every feature on this page already goes through, not a special new gap.
+
+**Cluster-1 comprehensiveness upgrades (from the `/brainstorm`), stress-tested a second time before
+folding in — findings and resolutions:**
+
+- **"Explain the Math" wiring — scope corrected, not applied uniformly.** The original idea ("wire all
+  30") would have forced a fabricated formula onto 3 concepts with no real math (13 Ten-Domain Matrix,
+  25 Stakeholder Ribbon, 30 Cadence Grid) — and this exact failure mode is **already live** in this
+  codebase: the Card Catalog Drawer's `cardcatalog` EXPLAIN entry manufactures a pseudo-formula
+  ("index clamped to [0, 29]") for what's really a structural navigation view, under a button literally
+  labeled "Explain this formula." Flagged as a standalone follow-up (not fixed here, out of scope for
+  this batch plan). **Corrected rule for the 30 new concepts:** only concepts with real, calculable
+  underlying math get an "Explain the Math" formula-box entry; concepts 13/25/30 get a genuine
+  structural explainer instead (no formula-box, no manufactured formula) once built.
+- **Reuse `HISTORY`'s `family`/`sabotageTested` fields more broadly — 2 real bugs pre-empted before
+  either retrofit is built.** Extending the Milestone Cairn Trail to color-code by family must pair
+  color with a distinct shape/pattern per family (this page's own established rule everywhere else:
+  "fixed shape... in addition to color" — 8 families can't be color-only on a 20×16px icon without
+  breaking that existing convention). Extending the Build Velocity Heartbeat with a family-filter
+  toggle exposed two latent bugs to fix *before* shipping the toggle, not after: the "check-count
+  tracking starts →" boundary marker assumes pre-tracking (`after:null`) rounds are a contiguous prefix
+  of the array (true today only by coincidence — all 5 null rounds happen to share `family:'feature'`
+  and sit first); and `maxDelta` silently returns `-Infinity` on an empty filtered set (not reachable
+  with today's real data, but unguarded). Both must be fixed as part of building the toggle, not after.
+- **Source Ledger citations — scope expanded, one critical correction.** The original idea named only
+  Byron–Wattenberg (concept 27). A second pass found real, additional citable techniques the first pass
+  missed: concept 15's "correlation without this point" is the classical **jackknife / leave-one-out
+  influence analysis** (Quenouille 1949; Tukey 1958) — a genuine citation gap, now closed. Concepts
+  18/26 (radar charts) trace to the **Kiviat diagram**; concept 17 (treemap) to **Shneiderman (1991)**;
+  concept 29 (small-multiples) to **Tufte** — all real, added for consistency with this page's own
+  comprehensive-sourcing standard, even though they're display-convention rather than
+  methodology citations (a judgment call, resolved in favor of citing since the goal was
+  comprehensiveness). Concept 20's outlier-detection gets the same σ-threshold-naming treatment already
+  established for the real I-MR control-chart citation. **Concept 14's CSS 3D-transform cube needs NO
+  Source Ledger entry** — real technique, but an implementation choice, not a borrowed analytical
+  methodology (this page doesn't cite its own SVG/Sankey rendering mechanics either, only the math).
+  **CRIT, corrected:** concept 28's cross-domain threshold normalization ("% deviation allowed before
+  trigger" across minutes/hours/%/score) is **not** a real, named, citable convention — there is no
+  established standard for this. It must ship labeled as this dashboard's own invented convention
+  (ILLUSTRATIVE/own-convention, same explicit phrasing already used for the real `tow`/`pendulum`
+  EXPLAIN entries — "not a named industry technique... not a new claim about AMS"), never cited as if
+  borrowed. Treating an invented convention as a real citation would be the exact fabrication-guard
+  violation every prior round's changelog in this repo has been defending against.
+
 ## Technical architecture & component breakdown
 
 This is a **zero-dependency, single-file, no-build-step** application by deliberate design (see
