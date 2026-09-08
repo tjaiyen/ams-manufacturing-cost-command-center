@@ -550,6 +550,11 @@ check(elements.archeryAvgOut.textContent === "97.7%", "rendered average CMAR mat
 check(elements.archerySpreadOut.textContent === "0.6 pts", "rendered spread matches golden value", elements.archerySpreadOut.textContent);
 check(elements.archeryWrap.innerHTML.includes("<svg") && elements.archeryWrap.innerHTML.includes('role="img"'), "renderArchery() renders an actual accessible <svg>, not just text outputs");
 check((elements.archeryWrap.innerHTML.match(/<circle/g) || []).length === 4 + 3, "exactly 7 <circle> elements: 4 ring/bullseye circles (outer boundary, 90% ring, 95% ring, bullseye) + 3 arrow markers (one per site)", (elements.archeryWrap.innerHTML.match(/<circle/g) || []).length);
+// TJ flagged this chart looking small in its 2-column card (the ~473px-wide right column dwarfing a
+// 260px-capped graphic) -- fixed by raising max-width so the whole SVG (rings, arrows, AND text,
+// since font-size is in the same viewBox coordinate system) scales up together, not just its
+// container. Guarded here so the size fix can't silently revert.
+check(elements.archeryWrap.innerHTML.includes('max-width:340px'), "the chart's max-width was raised from 260px to 340px so it isn't visually lost in its column's whitespace", elements.archeryWrap.innerHTML.includes('max-width:340px'));
 check(!html.includes('font-size="9"') && !elements.archeryWrap.innerHTML.includes('font-size="9"'), "no 9px SVG text in the archery target (matches the page-wide minimum-legible-size convention)");
 
 console.log("--- Should-Cost calculator: golden values (verified live in-browser before this file existed) ---");

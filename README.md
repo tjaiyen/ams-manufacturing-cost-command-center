@@ -420,7 +420,7 @@ against exact numbers **independently verified live in a real browser before thi
   logic silently saw `null` — caught by the very checks written to verify it, fixed the same session
   (see `stress.cjs`'s `makeNavTab` helper and its comment).
 
-Run: `node stress.cjs` — 973 checks, all passing as of this writing.
+Run: `node stress.cjs` — 974 checks, all passing as of this writing.
 
 ## Status
 
@@ -1282,3 +1282,21 @@ that round's entry above) and isn't re-verified here; everything else about the 
 
 Checks: 956 → 973 (+17). Committed locally, then **pushed** to `origin/main` per this round's
 explicit instruction.
+
+**2026-09-07, thirty-third round (user-reported: Site Accuracy Explorer chart "looks small"):**
+
+TJ flagged a screenshot of the Executive Overview's Site Accuracy Explorer — the archery-target chart
+sitting small and visually lost in the right half of its 2-column card. Root cause: `.grid.cols-2`
+gives that column roughly 473–487px (confirmed live), but the chart's own `max-width:260px` capped it
+at little more than half that, leaving ~200px of bare margin around a graphic that should be the
+visual center of the card. Fixed by raising `max-width` to 340px — since the SVG uses `viewBox`-based
+scaling with no explicit width/height attributes, this scales the *entire* drawing uniformly (rings,
+site markers, AND text, since font-size lives in the same coordinate system), not just its container;
+no changes needed to the internal geometry (`W`/`H`/`maxRadius`/ring radii) at all.
+
+Live-verified via precise DOM geometry (the Browser pane's screenshot compositing was intermittently
+unavailable this round, so `getBoundingClientRect()` was used instead of a visual pixel check): the
+chart now renders at 340×340px, filling 69.8% of its 487px-wide column, up from 53.4% before — a real,
+measured improvement, not just a style-string change. Confirmed live at a second CMAR value (not just
+the default) that the whole drawing still scales correctly, 0 console errors. Checks: 973 → 974 (+1).
+Committed locally — pending push with explicit confirmation, same discipline as every prior round.

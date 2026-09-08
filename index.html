@@ -404,7 +404,7 @@
   </div>
   <div class="sidenav-footer">
     <span class="amz-badge">ILLUSTRATIVE DATA — SEE METHODOLOGY TAB</span>
-    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 973/973 CHECKS PASSING</span>
+    <span class="amz-badge" id="verifyBadge" title="node stress.cjs — updated by hand each build round, not computed live; see README/Methodology for the run this reflects">✓ 974/974 CHECKS PASSING</span>
     <button class="icobtn" id="paletteBtn" type="button" aria-label="Quick navigation" data-tooltip="Quick Jump (⌘K)"><span class="label-text">Quick Jump</span> <span class="mono" style="opacity:.65">⌘K</span></button>
     <button class="icobtn" id="shortcutsBtn" type="button" aria-label="Keyboard shortcuts" data-tooltip="Keyboard Shortcuts (?)"><span class="label-text">Shortcuts</span> <span class="mono" style="opacity:.65">?</span></button>
     <button class="icobtn" id="printBriefBtn" type="button" aria-label="Print a 60-second summary" data-tooltip="Print Brief"><span class="label-text">Print Brief</span></button>
@@ -2836,7 +2836,7 @@
     });
     var ariaLabel = 'Site accuracy target. ' + state.sites.map(function(s){ return 'Site ' + s.label + ': ' + s.cmar.toFixed(1) + '% CMAR'; }).join(', ') +
       '. Average ' + state.avg.toFixed(1) + '%, spread ' + state.spread.toFixed(1) + ' points across sites. Arrow angle is only for visual separation; distance from center is the real accuracy signal.';
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:260px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:340px;margin:0 auto;display:block" role="img" aria-label="' + ariaLabel + '">' +
       ringSvg + arrowsSvg +
       '</svg>';
     document.getElementById('archeryWrap').innerHTML = svg;
