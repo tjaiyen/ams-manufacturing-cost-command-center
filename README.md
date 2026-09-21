@@ -253,7 +253,7 @@ so the very keyboard-nav checks written to test the new nav caught it first — 
    **Mean-Reversion Forward Band** (Ornstein-Uhlenbeck): where the spot price is actually expected
    to drift back to, and a two-sided 95% confidence band around that forecast.
 4. **Build-vs-Buy / CapEx** — an NPV/payback analyzer generalizing the same methodology used in
-   [`ams-narrative.html`](https://tjaiyen.github.io/cost-management-command-center/ams-narrative.html)'s
+   `ams-narrative.html`'s
    worked example, with a year-by-year discounted cash-flow table. Plus a **Volume Crossover Point
    (Q\*)** solver — the NPV analyzer answers "is this a good deal at my assumed volume"; this answers
    "at what volume does the vendor's falling per-unit price actually beat my own cost," a closed-form
@@ -297,7 +297,7 @@ so the very keyboard-nav checks written to test the new nav caught it first — 
      unfavorable cost variance at 95%/99% confidence, with the sign-convention nuance worked through
      explicitly rather than either copied or "corrected" against the wrong precedent.
 11. **Operating Framework** — a dashboard-native condensation of
-   [`ams-90day-plan.html`](https://tjaiyen.github.io/cost-management-command-center/ams-90day-plan.html)'s
+   `ams-90day-plan.html`'s
    4-pillar thesis and operating cadence, explicitly framed as a hypothesis, not a claim about AMS.
 12. **Methodology & Sourcing** — the source ledger described above.
 
