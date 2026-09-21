@@ -64,7 +64,7 @@ const sidenavItemAriaLabelCount = (html.match(/class="sidenav-item"[^>]*aria-lab
 check(sidenavItemAriaLabelCount === 13, "all 13 side-nav item buttons carry a real aria-label, not just a CSS-only tooltip/label", sidenavItemAriaLabelCount);
 check(html.includes('aria-label="High Contrast"'), "the High-Contrast toggle carries a real aria-label independent of its CSS-hideable .label-text span");
 check(html.includes('aria-label="Toggle theme"'), "the theme toggle carries a real aria-label independent of its CSS-hideable .label-text span");
-check(html.includes('aria-label="Fit brief (opens in the same tab)"'), "the Fit-brief footer link carries a real aria-label independent of its CSS-hideable .label-text span");
+check(!html.includes('aria-label="Fit brief (opens in the same tab)"') && !/cost-management-command-center\/(ams-|variance)/.test(html), "the header 'Fit brief' button and all links to the audience-specific pages stay removed (2026-09-20)");
 check(/id="sidenavToggle"[^>]*aria-controls="sidenav"/.test(html), "the collapse toggle's aria-controls correctly points at the real #sidenav id");
 
 console.log("--- Stress-test round (2026-09-05) fix 7: dead CSS removed ---");
